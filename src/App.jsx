@@ -231,6 +231,8 @@ function App() {
       return;
     }
 
+    setMobileOpen(false);
+
     if (!walletConnectAnchorRef.current) {
       setMobileWalletError("Wallet connection area is not ready yet.");
       return;
