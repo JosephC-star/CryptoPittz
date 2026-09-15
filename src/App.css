@@ -4897,3 +4897,31 @@ header::after {
 .mobile-wallet-actions .btn {
   width: 100%;
 }
+
+.walletconnect-close {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+
+  z-index: 3100;
+
+  width: 44px;
+  height: 44px;
+
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+
+  background: rgba(8, 10, 22, 0.88);
+  color: white;
+
+  font-size: 20px;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 0 14px rgba(0, 229, 255, 0.16),
+    0 0 20px rgba(255, 61, 247, 0.08);
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}

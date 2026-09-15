@@ -178,6 +178,7 @@ function App() {
   const [randomPittMode, setRandomPittMode] = useState("surprise");
   const [myPittzCollection, setMyPittzCollection] = useState("original");
   const walletConnectAnchorRef = useRef(null);
+  const [walletOverlayOpen, setWalletOverlayOpen] = useState(false);
 
   const [mobileWalletConnecting, setMobileWalletConnecting] = useState(false);
   const [mobileWalletError, setMobileWalletError] = useState("");
@@ -241,6 +242,7 @@ function App() {
     try {
       setMobileWalletConnecting(true);
       setMobileWalletError("");
+      setWalletOverlayOpen(true);
 
       const provider = await ProviderFactory.create({
         type: ProviderTypeEnum.walletConnect,
@@ -248,6 +250,12 @@ function App() {
       });
 
       await provider.login();
+
+      if (walletConnectAnchorRef.current) {
+        walletConnectAnchorRef.current.replaceChildren();
+      }
+
+      setWalletOverlayOpen(false);
     } catch (error) {
       console.error("xPortal mobile connection failed:", error);
 
