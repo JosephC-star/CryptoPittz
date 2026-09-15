@@ -4841,17 +4841,16 @@ header::after {
   position: fixed;
   inset: 0;
 
-  z-index: 2000;
+  width: 100vw;
+  height: 100dvh;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  z-index: 3000;
 
   pointer-events: none;
 }
 
 .walletconnect-anchor:empty {
-  display: none;
+  display: block;
 }
 
 .mobile-connect-wallet {

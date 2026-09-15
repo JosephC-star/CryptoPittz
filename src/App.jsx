@@ -2287,12 +2287,6 @@ function App() {
                     </a>
                   </div>
 
-                  <div
-                    ref={walletConnectAnchorRef}
-                    className="walletconnect-anchor"
-                    aria-hidden="true"
-                  />
-
                   <div className="nft-detail-stats">
                     {stats.rank && (
                       <div className="nft-detail-stat rank-stat">
@@ -2339,6 +2333,8 @@ function App() {
             </div>
           );
         })()}
+
+      <div ref={walletConnectAnchorRef} className="walletconnect-anchor" />
     </>
   );
 }
