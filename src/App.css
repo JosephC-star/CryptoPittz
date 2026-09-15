@@ -4836,3 +4836,53 @@ header::after {
     padding: 18px;
   }
 }
+
+.walletconnect-anchor {
+  position: fixed;
+  inset: 0;
+
+  z-index: 2000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  pointer-events: none;
+}
+
+.walletconnect-anchor:empty {
+  display: none;
+}
+
+.mobile-connect-wallet {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 12px;
+
+  box-shadow:
+    0 0 14px rgba(0, 229, 255, 0.14),
+    0 0 22px rgba(255, 61, 247, 0.08);
+}
+
+.mobile-wallet-area {
+  display: grid;
+  gap: 10px;
+
+  margin-top: 12px;
+  padding: 12px;
+
+  border: 1px solid rgba(69, 255, 169, 0.18);
+  border-radius: 14px;
+
+  background: linear-gradient(135deg, rgba(69, 255, 169, 0.06), rgba(0, 229, 255, 0.03));
+}
+
+.mobile-wallet-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.mobile-wallet-actions .btn {
+  width: 100%;
+}

@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
 
 import { UnlockPanelManager } from "@multiversx/sdk-dapp/out/managers/UnlockPanelManager";
 import { useGetAccount } from "@multiversx/sdk-dapp/out/react/account/useGetAccount";
 import { getAccountProvider } from "@multiversx/sdk-dapp/out/providers/helpers/accountProvider";
+
+import { ProviderFactory } from "@multiversx/sdk-dapp/out/providers/ProviderFactory";
+import { ProviderTypeEnum } from "@multiversx/sdk-dapp/out/providers/types/providerFactory.types";
 
 const galleryItems = [
   { src: "/images/pittz-01.jpg", title: "CryptoPittz #0001" },
@@ -174,6 +177,10 @@ function App() {
   const [viceTotal, setViceTotal] = useState(0);
   const [randomPittMode, setRandomPittMode] = useState("surprise");
   const [myPittzCollection, setMyPittzCollection] = useState("original");
+  const walletConnectAnchorRef = useRef(null);
+
+  const [mobileWalletConnecting, setMobileWalletConnecting] = useState(false);
+  const [mobileWalletError, setMobileWalletError] = useState("");
 
   const EXPLORER_PAGE_SIZE = 100;
 
@@ -198,6 +205,9 @@ function App() {
   function toggleMobileGroup(group) {
     setMobileGroup((current) => (current === group ? null : group));
   }
+  function isMobileDevice() {
+    return window.matchMedia("(max-width: 700px)").matches;
+  }
 
   function openLightbox(index) {
     setLightboxIndex(index);
@@ -215,8 +225,36 @@ function App() {
     setLightboxIndex((current) => (current === galleryItems.length - 1 ? 0 : current + 1));
   }
 
-  function connectWallet() {
-    unlockPanelManager.openUnlockPanel();
+  async function connectWallet() {
+    if (!isMobileDevice()) {
+      void UnlockPanelManager.getInstance().openUnlockPanel();
+      return;
+    }
+
+    if (!walletConnectAnchorRef.current) {
+      setMobileWalletError("Wallet connection area is not ready yet.");
+      return;
+    }
+
+    try {
+      setMobileWalletConnecting(true);
+      setMobileWalletError("");
+
+      const provider = await ProviderFactory.create({
+        type: ProviderTypeEnum.walletConnect,
+        anchor: walletConnectAnchorRef.current,
+      });
+
+      await provider.login();
+    } catch (error) {
+      console.error("xPortal mobile connection failed:", error);
+
+      setMobileWalletError(
+        error instanceof Error ? error.message : "Unable to connect with xPortal.",
+      );
+    } finally {
+      setMobileWalletConnecting(false);
+    }
   }
 
   function openNftDetails(nft, nftList = [nft]) {
@@ -908,8 +946,13 @@ function App() {
                   </button>
                 </div>
               ) : (
-                <button className="btn primary" type="button" onClick={connectWallet}>
-                  Connect Wallet
+                <button
+                  className="btn primary"
+                  type="button"
+                  onClick={connectWallet}
+                  disabled={mobileWalletConnecting}
+                >
+                  {mobileWalletConnecting ? "Opening xPortal..." : "Connect Wallet"}
                 </button>
               )}
             </nav>
@@ -1050,6 +1093,52 @@ function App() {
                 Contact
               </a>
             </div>
+
+            {account.address ? (
+              <div className="mobile-wallet-area">
+                <div className="wallet-status">
+                  <span className="wallet-dot"></span>
+
+                  <div>
+                    <small>Connected</small>
+
+                    <strong>
+                      {account.address.slice(0, 6)}...
+                      {account.address.slice(-4)}
+                    </strong>
+                  </div>
+                </div>
+
+                <div className="mobile-wallet-actions">
+                  <button
+                    className="btn"
+                    type="button"
+                    onClick={() => navigator.clipboard.writeText(account.address)}
+                  >
+                    Copy
+                  </button>
+
+                  <button
+                    className="btn wallet-disconnect"
+                    type="button"
+                    onClick={disconnectWallet}
+                  >
+                    Disconnect
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                className="btn primary mobile-connect-wallet"
+                type="button"
+                onClick={connectWallet}
+                disabled={mobileWalletConnecting}
+              >
+                {mobileWalletConnecting ? "Opening xPortal..." : "Connect Wallet"}
+              </button>
+            )}
+
+            {mobileWalletError && <p className="wallet-error">{mobileWalletError}</p>}
 
             <div style={{ marginTop: "12px" }}>
               <a
@@ -2197,6 +2286,12 @@ function App() {
                       🛒 View on OOX Marketplace ↗
                     </a>
                   </div>
+
+                  <div
+                    ref={walletConnectAnchorRef}
+                    className="walletconnect-anchor"
+                    aria-hidden="true"
+                  />
 
                   <div className="nft-detail-stats">
                     {stats.rank && (
