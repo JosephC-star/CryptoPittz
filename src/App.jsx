@@ -1,0 +1,2251 @@
+import { useEffect, useState } from "react";
+import "./App.css";
+
+import { UnlockPanelManager } from "@multiversx/sdk-dapp/out/managers/UnlockPanelManager";
+import { useGetAccount } from "@multiversx/sdk-dapp/out/react/account/useGetAccount";
+import { getAccountProvider } from "@multiversx/sdk-dapp/out/providers/helpers/accountProvider";
+
+const galleryItems = [
+  { src: "/images/pittz-01.jpg", title: "CryptoPittz #0001" },
+  { src: "/images/pittz-02.jpg", title: "CryptoPittz #0002" },
+  { src: "/images/pittz-03.jpg", title: "CryptoPittz #0003" },
+  { src: "/images/pittz-04.jpg", title: "CryptoPittz #0004" },
+  { src: "/images/pittz-05.jpg", title: "CryptoPittz #0005" },
+  { src: "/images/pittz-06.jpg", title: "CryptoPittz #0006" },
+  { src: "/images/pittz-07.jpg", title: "CryptoPittz #0007" },
+  { src: "/images/pittz-08.jpg", title: "CryptoPittz #0008" },
+];
+
+function decodePittzAttributes(encodedAttributes) {
+  if (!encodedAttributes) return [];
+
+  try {
+    const decoded = atob(encodedAttributes);
+
+    return decoded
+      .split(";")
+      .filter((item) => item.includes(":"))
+      .map((item) => {
+        const [trait, ...valueParts] = item.split(":");
+
+        return {
+          trait: trait.trim(),
+          value: valueParts.join(":").trim(),
+        };
+      })
+      .filter((item) => item.trait !== "metadata" && item.trait !== "tags");
+  } catch (error) {
+    console.error("Unable to decode NFT attributes:", error);
+    return [];
+  }
+}
+
+function getPittzStats(encodedAttributes) {
+  if (!encodedAttributes) {
+    return {
+      type: "",
+      bloodline: "",
+      score: "",
+      rank: "",
+    };
+  }
+
+  try {
+    const decoded = atob(encodedAttributes);
+
+    const tagsSection = decoded.split(";").find((item) => item.startsWith("tags:"));
+
+    if (!tagsSection) {
+      return {
+        type: "",
+        bloodline: "",
+        score: "",
+        rank: "",
+      };
+    }
+
+    const tags = tagsSection.replace("tags:", "").split(",");
+
+    const getTagValue = (prefix) => {
+      const tag = tags.find((item) => item.startsWith(prefix));
+
+      return tag ? tag.replace(prefix, "") : "";
+    };
+
+    return {
+      type: getTagValue("Type-"),
+      bloodline: getTagValue("Bloodline-"),
+      score: getTagValue("PointScore-"),
+      rank: getTagValue("Rank-"),
+    };
+  } catch (error) {
+    console.error("Unable to decode CryptoPittz stats:", error);
+
+    return {
+      type: "",
+      bloodline: "",
+      score: "",
+      rank: "",
+    };
+  }
+}
+
+const EXPLORER_COLLECTIONS = {
+  original: {
+    name: "Original Pittz",
+    collection: "PITTZ-1a4c2d",
+    marketplace: "https://www.oox.art/marketplace/collections/PITTZ-1a4c2d",
+  },
+
+  vice: {
+    name: "Vice Pittz",
+    collection: "PITTZVICE-c3ec94",
+    marketplace: "https://www.oox.art/marketplace/collections/PITTZVICE-c3ec94",
+  },
+};
+
+function getNftMarketplace(nft) {
+  if (!nft?.identifier || !nft?.collection) {
+    return EXPLORER_COLLECTIONS.original.marketplace;
+  }
+
+  const collectionUrl =
+    nft.collection === "PITTZVICE-c3ec94"
+      ? EXPLORER_COLLECTIONS.vice.marketplace
+      : EXPLORER_COLLECTIONS.original.marketplace;
+
+  return `${collectionUrl}?nftId=${encodeURIComponent(nft.identifier)}`;
+}
+
+function getNftImage(nft) {
+  return (
+    nft?.media?.[0]?.thumbnailUrl ||
+    nft?.media?.[0]?.url ||
+    nft?.url ||
+    nft?.media?.[0]?.originalUrl ||
+    nft?.metadata?.image ||
+    ""
+  );
+}
+
+function getCollectionBadge(nft) {
+  if (nft?.collection === "PITTZVICE-c3ec94") {
+    return {
+      label: "VICE PITTZ",
+      className: "vice-badge",
+    };
+  }
+
+  return {
+    label: "ORIGINAL PITTZ",
+    className: "original-badge",
+  };
+}
+
+function App() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileGroup, setMobileGroup] = useState(null);
+  const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [nfts, setNfts] = useState([]);
+  const [nftsLoading, setNftsLoading] = useState(false);
+  const [nftsError, setNftsError] = useState("");
+  const [selectedNft, setSelectedNft] = useState(null);
+  const [modalNfts, setModalNfts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("rank");
+  const [bloodlineFilter, setBloodlineFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [explorerNfts, setExplorerNfts] = useState([]);
+  const [explorerLoading, setExplorerLoading] = useState(true);
+  const [explorerError, setExplorerError] = useState("");
+  const [explorerSearch, setExplorerSearch] = useState("");
+  const [explorerSort, setExplorerSort] = useState("rank");
+  const [explorerBloodline, setExplorerBloodline] = useState("all");
+  const [explorerType, setExplorerType] = useState("all");
+  const [explorerTotal, setExplorerTotal] = useState(0);
+  const [explorerPage, setExplorerPage] = useState(0);
+  const [globalSearchResult, setGlobalSearchResult] = useState(null);
+  const [globalSearchLoading, setGlobalSearchLoading] = useState(false);
+  const [globalSearchError, setGlobalSearchError] = useState("");
+  const [randomPittLoading, setRandomPittLoading] = useState(false);
+  const [randomPittError, setRandomPittError] = useState("");
+  const [explorerCollection, setExplorerCollection] = useState("original");
+  const [originalTotal, setOriginalTotal] = useState(0);
+  const [viceTotal, setViceTotal] = useState(0);
+  const [randomPittMode, setRandomPittMode] = useState("surprise");
+  const [myPittzCollection, setMyPittzCollection] = useState("original");
+
+  const EXPLORER_PAGE_SIZE = 100;
+
+  const lightboxOpen = lightboxIndex !== null;
+  const account = useGetAccount();
+
+  const unlockPanelManager = UnlockPanelManager.init({
+    loginHandler: () => {
+      console.log("Wallet connected!");
+    },
+  });
+  const activeCollection = EXPLORER_COLLECTIONS[explorerCollection];
+  const ownedOriginalPittz = nfts.filter((nft) => nft.collection === "PITTZ-1a4c2d");
+
+  const ownedVicePittz = nfts.filter((nft) => nft.collection === "PITTZVICE-c3ec94");
+  const activeOwnedPittz = myPittzCollection === "vice" ? ownedVicePittz : ownedOriginalPittz;
+
+  function closeMobileMenu() {
+    setMobileOpen(false);
+  }
+
+  function toggleMobileGroup(group) {
+    setMobileGroup((current) => (current === group ? null : group));
+  }
+
+  function openLightbox(index) {
+    setLightboxIndex(index);
+  }
+
+  function closeLightbox() {
+    setLightboxIndex(null);
+  }
+
+  function showPrevious() {
+    setLightboxIndex((current) => (current === 0 ? galleryItems.length - 1 : current - 1));
+  }
+
+  function showNext() {
+    setLightboxIndex((current) => (current === galleryItems.length - 1 ? 0 : current + 1));
+  }
+
+  function connectWallet() {
+    unlockPanelManager.openUnlockPanel();
+  }
+
+  function openNftDetails(nft, nftList = [nft]) {
+    setSelectedNft(nft);
+    setModalNfts(nftList);
+  }
+
+  function closeNftDetails() {
+    setSelectedNft(null);
+    setModalNfts([]);
+  }
+
+  function showPreviousNft() {
+    if (!selectedNft || modalNfts.length <= 1) return;
+
+    const currentIndex = modalNfts.findIndex((nft) => nft.identifier === selectedNft.identifier);
+
+    if (currentIndex === -1) return;
+
+    const previousIndex = currentIndex === 0 ? modalNfts.length - 1 : currentIndex - 1;
+
+    setSelectedNft(modalNfts[previousIndex]);
+  }
+
+  function showNextNft() {
+    if (!selectedNft || modalNfts.length <= 1) return;
+
+    const currentIndex = modalNfts.findIndex((nft) => nft.identifier === selectedNft.identifier);
+
+    if (currentIndex === -1) return;
+
+    const nextIndex = currentIndex === modalNfts.length - 1 ? 0 : currentIndex + 1;
+
+    setSelectedNft(modalNfts[nextIndex]);
+  }
+
+  async function disconnectWallet() {
+    const provider = getAccountProvider();
+    await provider.logout();
+  }
+
+  async function showRandomPitt() {
+    try {
+      setRandomPittLoading(true);
+      setRandomPittError("");
+
+      let collectionId;
+      let total;
+
+      if (randomPittMode === "original") {
+        collectionId = "PITTZ-1a4c2d";
+        total = originalTotal || 5310;
+      } else if (randomPittMode === "vice") {
+        collectionId = "PITTZVICE-c3ec94";
+        total = viceTotal || 1395;
+      } else {
+        const chooseVice = Math.random() < 0.5;
+
+        collectionId = chooseVice ? "PITTZVICE-c3ec94" : "PITTZ-1a4c2d";
+
+        total = chooseVice ? viceTotal || 1395 : originalTotal || 5310;
+      }
+
+      const randomIndex = Math.floor(Math.random() * total);
+
+      const response = await fetch(
+        `https://api.multiversx.com/collections/${collectionId}/nfts?from=${randomIndex}&size=1`,
+      );
+
+      if (!response.ok) {
+        throw new Error("Unable to load random CryptoPitt");
+      }
+
+      const data = await response.json();
+
+      if (!data.length) {
+        throw new Error("No CryptoPitt found");
+      }
+
+      openNftDetails(data[0], [data[0]]);
+    } catch (error) {
+      console.error("Random Pitt lookup failed:", error);
+
+      setRandomPittError("Couldn't summon a random Pitt. Try again!");
+    } finally {
+      setRandomPittLoading(false);
+    }
+  }
+
+  async function searchCryptoPittz() {
+    const search = explorerSearch.trim();
+
+    if (!search) {
+      setGlobalSearchResult(null);
+      setGlobalSearchError("");
+      return;
+    }
+
+    try {
+      setGlobalSearchLoading(true);
+      setGlobalSearchError("");
+      setGlobalSearchResult(null);
+
+      /*
+      Use whichever Explorer collection tab is currently active.
+      Original:
+        PITTZ-1a4c2d
+
+      Vice:
+        PITTZVICE-c3ec94
+    */
+      const collectionId = activeCollection.collection;
+
+      const normalizedSearch = search.toLowerCase();
+
+      /*
+      If somebody pasted the complete NFT identifier,
+      use MultiversX's direct NFT endpoint.
+    */
+      const looksLikeFullIdentifier =
+        normalizedSearch.startsWith("pittz-") || normalizedSearch.startsWith("pittzvice-");
+
+      if (looksLikeFullIdentifier) {
+        const response = await fetch(
+          `https://api.multiversx.com/nfts/${encodeURIComponent(search)}`,
+        );
+
+        if (!response.ok) {
+          throw new Error("NFT not found");
+        }
+
+        const nft = await response.json();
+
+        if (nft.collection !== collectionId) {
+          setGlobalSearchError(`That Pitt belongs to a different CryptoPittz collection.`);
+          return;
+        }
+
+        setGlobalSearchResult(nft);
+        return;
+      }
+
+      /*
+      Pull the visible Pitt number out of searches such as:
+
+      4809
+      #4809
+      Pittz #4809
+      CryptoPittz #4809
+    */
+      const pittNumber = search.match(/\d+/)?.[0];
+
+      let searchName = search;
+
+      if (pittNumber) {
+        searchName =
+          explorerCollection === "vice"
+            ? `CryptoPittz VICE #${pittNumber}`
+            : `CryptoPittz #${pittNumber}`;
+      }
+
+      const response = await fetch(
+        `https://api.multiversx.com/collections/${collectionId}/nfts?name=${encodeURIComponent(
+          searchName,
+        )}&size=10`,
+      );
+
+      if (!response.ok) {
+        throw new Error("Unable to search CryptoPittz");
+      }
+
+      const data = await response.json();
+
+      if (!data.length) {
+        setGlobalSearchError(`No ${activeCollection.name} matching that search was found.`);
+        return;
+      }
+
+      /*
+      Prefer the exact displayed number/name when possible.
+    */
+      const exactMatch =
+        data.find((nft) => (nft.name || "").toLowerCase() === searchName.toLowerCase()) || data[0];
+
+      setGlobalSearchResult(exactMatch);
+    } catch (error) {
+      console.error("CryptoPittz search failed:", error);
+
+      setGlobalSearchError("The collection search could not be completed.");
+    } finally {
+      setGlobalSearchLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    function handleKeyDown(event) {
+      if (!lightboxOpen) return;
+
+      if (event.key === "Escape") {
+        closeLightbox();
+      }
+
+      if (event.key === "ArrowLeft") {
+        showPrevious();
+      }
+
+      if (event.key === "ArrowRight") {
+        showNext();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    document.body.style.overflow = lightboxOpen ? "hidden" : "";
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [lightboxOpen]);
+
+  useEffect(() => {
+    async function fetchWalletNfts() {
+      if (!account.address) {
+        setNfts([]);
+        return;
+      }
+
+      try {
+        setNftsLoading(true);
+        setNftsError("");
+
+        const response = await fetch(
+          `https://api.multiversx.com/accounts/${account.address}/nfts?size=100`,
+        );
+
+        if (!response.ok) {
+          throw new Error("Unable to load NFTs");
+        }
+
+        const data = await response.json();
+
+        const pittzOnly = data.filter(
+          (nft) => nft.collection === "PITTZ-1a4c2d" || nft.collection === "PITTZVICE-c3ec94",
+        );
+
+        console.log("CryptoPittz NFTs:", pittzOnly);
+
+        setNfts(pittzOnly);
+
+        console.log("Wallet NFTs:", data);
+      } catch (error) {
+        console.error("NFT lookup failed:", error);
+
+        setNftsError("We couldn't load NFTs from this wallet.");
+      } finally {
+        setNftsLoading(false);
+      }
+    }
+
+    fetchWalletNfts();
+  }, [account.address]);
+
+  useEffect(() => {
+    function handleNftDetailKeys(event) {
+      if (!selectedNft) return;
+
+      if (event.key === "Escape") {
+        closeNftDetails();
+      }
+
+      if (event.key === "ArrowLeft") {
+        showPreviousOwnedNft();
+      }
+
+      if (event.key === "ArrowRight") {
+        showNextOwnedNft();
+      }
+    }
+
+    window.addEventListener("keydown", handleNftDetailKeys);
+
+    return () => {
+      window.removeEventListener("keydown", handleNftDetailKeys);
+    };
+  }, [selectedNft, nfts]);
+
+  const walletSummary = (() => {
+    if (!nfts.length) {
+      return {
+        total: 0,
+        bestRank: null,
+        highestScore: null,
+        bloodlines: {},
+        types: {},
+      };
+    }
+
+    const summaries = nfts.map((nft) => getPittzStats(nft.attributes));
+
+    const ranks = summaries
+      .map((item) => Number(item.rank))
+      .filter((value) => Number.isFinite(value) && value > 0);
+
+    const scores = summaries
+      .map((item) => Number(item.score))
+      .filter((value) => Number.isFinite(value));
+
+    const bloodlines = {};
+    const types = {};
+
+    summaries.forEach((item) => {
+      if (item.bloodline) {
+        bloodlines[item.bloodline] = (bloodlines[item.bloodline] || 0) + 1;
+      }
+
+      if (item.type) {
+        types[item.type] = (types[item.type] || 0) + 1;
+      }
+    });
+
+    return {
+      total: nfts.length,
+      bestRank: ranks.length ? Math.min(...ranks) : null,
+      highestScore: scores.length ? Math.max(...scores) : null,
+      bloodlines,
+      types,
+    };
+  })();
+
+  const filteredNfts = activeOwnedPittz
+    .filter((nft) => {
+      const stats = getPittzStats(nft.attributes);
+
+      const matchesSearch =
+        nft.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        nft.identifier?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesBloodline = bloodlineFilter === "all" || stats.bloodline === bloodlineFilter;
+
+      const matchesType = typeFilter === "all" || stats.type === typeFilter;
+
+      return matchesSearch && matchesBloodline && matchesType;
+    })
+    .sort((a, b) => {
+      const aStats = getPittzStats(a.attributes);
+      const bStats = getPittzStats(b.attributes);
+
+      if (sortBy === "rank") {
+        return Number(aStats.rank || Infinity) - Number(bStats.rank || Infinity);
+      }
+
+      if (sortBy === "score") {
+        return Number(bStats.score || 0) - Number(aStats.score || 0);
+      }
+
+      if (sortBy === "name") {
+        return (a.name || "").localeCompare(b.name || "");
+      }
+
+      return 0;
+    });
+
+  useEffect(() => {
+    async function fetchCollection() {
+      try {
+        setExplorerLoading(true);
+        setExplorerError("");
+
+        const from = explorerPage * EXPLORER_PAGE_SIZE;
+
+        const [nftsResponse, countResponse] = await Promise.all([
+          fetch(
+            `https://api.multiversx.com/collections/${activeCollection.collection}/nfts?from=${from}&size=${EXPLORER_PAGE_SIZE}`,
+          ),
+
+          fetch(`https://api.multiversx.com/collections/${activeCollection.collection}/nfts/count`),
+        ]);
+
+        if (!nftsResponse.ok || !countResponse.ok) {
+          throw new Error("Unable to load collection");
+        }
+
+        const nftData = await nftsResponse.json();
+
+        const totalCount = await countResponse.json();
+        console.log("First Vice NFT:", nftData[0]);
+        console.log("Vice media:", nftData[0]?.media);
+        console.log("Vice URIs:", nftData[0]?.uris);
+
+        setExplorerNfts(nftData);
+        setExplorerTotal(totalCount);
+      } catch (error) {
+        console.error("Explorer lookup failed:", error);
+
+        setExplorerError("The collection could not be loaded.");
+      } finally {
+        setExplorerLoading(false);
+      }
+    }
+
+    fetchCollection();
+  }, [explorerPage, activeCollection.collection]);
+
+  useEffect(() => {
+    setExplorerPage(0);
+
+    setExplorerSearch("");
+    setExplorerBloodline("all");
+    setExplorerType("all");
+
+    setGlobalSearchResult(null);
+    setGlobalSearchError("");
+  }, [explorerCollection]);
+
+  useEffect(() => {
+    async function fetchCollectionTotals() {
+      try {
+        const [originalResponse, viceResponse] = await Promise.all([
+          fetch("https://api.multiversx.com/collections/PITTZ-1a4c2d/nfts/count"),
+          fetch("https://api.multiversx.com/collections/PITTZVICE-c3ec94/nfts/count"),
+        ]);
+
+        if (!originalResponse.ok || !viceResponse.ok) {
+          throw new Error("Unable to load collection totals");
+        }
+
+        const originalCount = await originalResponse.json();
+        const viceCount = await viceResponse.json();
+
+        setOriginalTotal(originalCount);
+        setViceTotal(viceCount);
+      } catch (error) {
+        console.error("Collection totals failed:", error);
+      }
+    }
+
+    fetchCollectionTotals();
+  }, []);
+
+  const explorerSummary = (() => {
+    const bloodlines = {};
+    const types = {};
+
+    explorerNfts.forEach((nft) => {
+      const stats = getPittzStats(nft.attributes);
+
+      if (stats.bloodline) {
+        bloodlines[stats.bloodline] = (bloodlines[stats.bloodline] || 0) + 1;
+      }
+
+      if (stats.type) {
+        types[stats.type] = (types[stats.type] || 0) + 1;
+      }
+    });
+
+    return {
+      bloodlines,
+      types,
+    };
+  })();
+
+  const filteredExplorerNfts = explorerNfts
+    .filter((nft) => {
+      const stats = getPittzStats(nft.attributes);
+
+      const matchesSearch =
+        nft.name?.toLowerCase().includes(explorerSearch.toLowerCase()) ||
+        nft.identifier?.toLowerCase().includes(explorerSearch.toLowerCase());
+
+      const matchesBloodline = explorerBloodline === "all" || stats.bloodline === explorerBloodline;
+
+      const matchesType = explorerType === "all" || stats.type === explorerType;
+
+      return matchesSearch && matchesBloodline && matchesType;
+    })
+    .sort((a, b) => {
+      const aStats = getPittzStats(a.attributes);
+      const bStats = getPittzStats(b.attributes);
+
+      if (explorerSort === "rank") {
+        return Number(aStats.rank || Infinity) - Number(bStats.rank || Infinity);
+      }
+
+      if (explorerSort === "score") {
+        return Number(bStats.score || 0) - Number(aStats.score || 0);
+      }
+
+      if (explorerSort === "name") {
+        return (a.name || "").localeCompare(b.name || "");
+      }
+
+      return 0;
+    });
+
+  const ExplorerPagination = () => {
+    const totalPages = Math.ceil(explorerTotal / EXPLORER_PAGE_SIZE);
+
+    function goToPage(page) {
+      setExplorerPage(page);
+
+      document.getElementById("explorer")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+
+    const pageNumbers = [];
+
+    for (let page = 0; page < totalPages; page++) {
+      const isFirst = page === 0;
+      const isLast = page === totalPages - 1;
+      const isNearCurrent = Math.abs(page - explorerPage) <= 2;
+
+      if (isFirst || isLast || isNearCurrent) {
+        pageNumbers.push(page);
+      }
+    }
+
+    const paginationItems = [];
+
+    pageNumbers.forEach((page, index) => {
+      const previousPage = pageNumbers[index - 1];
+
+      if (index > 0 && page - previousPage > 1) {
+        paginationItems.push(
+          <span key={`ellipsis-${page}`} className="pagination-ellipsis">
+            …
+          </span>,
+        );
+      }
+
+      paginationItems.push(
+        <button
+          className={`page-number ${page === explorerPage ? "active" : ""}`}
+          type="button"
+          key={page}
+          onClick={() => goToPage(page)}
+        >
+          {page + 1}
+        </button>,
+      );
+    });
+
+    return (
+      <div className="explorer-pagination">
+        <button
+          className="btn"
+          type="button"
+          disabled={explorerPage === 0}
+          onClick={() => goToPage(Math.max(0, explorerPage - 1))}
+        >
+          ← Previous
+        </button>
+
+        <div className="pagination-pages">{paginationItems}</div>
+
+        <button
+          className="btn"
+          type="button"
+          disabled={explorerPage === totalPages - 1}
+          onClick={() => goToPage(Math.min(totalPages - 1, explorerPage + 1))}
+        >
+          Next →
+        </button>
+      </div>
+    );
+  };
+
+  return (
+    <>
+      <div className="blob b1"></div>
+      <div className="blob b2"></div>
+      <div className="blob b3"></div>
+
+      <header>
+        <div className="container">
+          <div className="nav">
+            <a className="brand" href="#top" aria-label="CryptoPittz Home">
+              <div className="logo" aria-hidden="true"></div>
+
+              <div>
+                <h1>CryptoPittz</h1>
+                <span className="tag">Neon collectibles • Community • Future utility</span>
+              </div>
+            </a>
+
+            <nav className="nav-links" aria-label="Primary navigation">
+              <div className="nav-item">
+                <div className="nav-btn" role="button" tabIndex="0" aria-haspopup="true">
+                  About <span className="caret" aria-hidden="true"></span>
+                </div>
+                <div className="dropdown" role="menu">
+                  <a href="#gallery">Featured Pittz</a>
+                  <a href="#my-pittz">My Pittz</a>
+                  <a href="#explorer">CryptoPittz Explorer</a>
+                  <a href="#traits">Traits</a>
+                  <a href="#rarity">Rarity</a>
+                </div>
+              </div>
+
+              <div className="nav-item">
+                <div className="nav-btn" role="button" tabIndex="0" aria-haspopup="true">
+                  Gallery <span className="caret" aria-hidden="true"></span>
+                </div>
+
+                <div className="dropdown" role="menu">
+                  <a href="#gallery">Featured</a>
+                  <a href="#traits">Traits (Soon)</a>
+                  <a href="#rarity">Rarity (Soon)</a>
+                </div>
+              </div>
+
+              <div className="nav-item">
+                <div className="nav-btn" role="button" tabIndex="0" aria-haspopup="true">
+                  Ecosystem <span className="caret" aria-hidden="true"></span>
+                </div>
+
+                <div className="dropdown" role="menu">
+                  <a href="#join">CryptoPittz Ecosystem</a>
+
+                  <a href="https://discord.gg/PP8S8DX9t" target="_blank" rel="noreferrer">
+                    Discord ↗
+                  </a>
+
+                  <a
+                    href="https://www.oox.art/marketplace/collections/PITTZ-1a4c2d"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Marketplace ↗
+                  </a>
+
+                  <a
+                    href="https://xexchange.com/trade?firstToken=EGLD&secondToken=BONEZ-ff9a73"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Swap BONEZ ↗
+                  </a>
+
+                  <a
+                    href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxjkVdFCh3ndX6vXYMa7/transactions"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Pittensor / TaoStats ↗
+                  </a>
+
+                  <a
+                    href="https://xportal.app.link/referral?code=xdsu8lsipv"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Get xPortal ↗
+                  </a>
+                </div>
+              </div>
+
+              {account.address ? (
+                <div className="wallet-area">
+                  <div className="wallet-status">
+                    <span className="wallet-dot"></span>
+
+                    <div>
+                      <small>Connected</small>
+
+                      <strong>
+                        {account.address.slice(0, 6)}...
+                        {account.address.slice(-4)}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <button
+                    className="btn"
+                    type="button"
+                    onClick={() => navigator.clipboard.writeText(account.address)}
+                  >
+                    Copy
+                  </button>
+
+                  <button
+                    className="btn wallet-disconnect"
+                    type="button"
+                    onClick={disconnectWallet}
+                  >
+                    Disconnect
+                  </button>
+                </div>
+              ) : (
+                <button className="btn primary" type="button" onClick={connectWallet}>
+                  Connect Wallet
+                </button>
+              )}
+            </nav>
+
+            <button
+              className="hamburger"
+              aria-label="Open menu"
+              aria-expanded={mobileOpen}
+              onClick={() => setMobileOpen((current) => !current)}
+            >
+              <span aria-hidden="true"></span>
+            </button>
+          </div>
+
+          <div
+            className={`mobile-panel ${mobileOpen ? "open" : ""}`}
+            aria-label="Mobile navigation"
+          >
+            <div className={`mobile-group ${mobileGroup === "about" ? "open" : ""}`}>
+              <button
+                className="mobile-toggle"
+                type="button"
+                onClick={() => toggleMobileGroup("about")}
+              >
+                About <span className="caret"></span>
+              </button>
+
+              <div className="mobile-links">
+                <a href="#gallery" onClick={closeMobileMenu}>
+                  Featured Pittz
+                </a>
+
+                <a href="#my-pittz" onClick={closeMobileMenu}>
+                  My Pittz
+                </a>
+
+                <a href="#explorer" onClick={closeMobileMenu}>
+                  CryptoPittz Explorer
+                </a>
+
+                <a href="#traits" onClick={closeMobileMenu}>
+                  Traits
+                </a>
+
+                <a href="#rarity" onClick={closeMobileMenu}>
+                  Rarity
+                </a>
+              </div>
+            </div>
+
+            <div className={`mobile-group ${mobileGroup === "gallery" ? "open" : ""}`}>
+              <button
+                className="mobile-toggle"
+                type="button"
+                onClick={() => toggleMobileGroup("gallery")}
+              >
+                Gallery <span className="caret"></span>
+              </button>
+
+              <div className="mobile-links">
+                <a href="#gallery" onClick={closeMobileMenu}>
+                  Featured
+                </a>
+
+                <a href="#traits" onClick={closeMobileMenu}>
+                  Traits (Soon)
+                </a>
+
+                <a href="#rarity" onClick={closeMobileMenu}>
+                  Rarity (Soon)
+                </a>
+              </div>
+            </div>
+
+            <div className={`mobile-group ${mobileGroup === "ecosystem" ? "open" : ""}`}>
+              <button
+                className="mobile-toggle"
+                type="button"
+                onClick={() => toggleMobileGroup("ecosystem")}
+              >
+                Ecosystem <span className="caret"></span>
+              </button>
+
+              <div className="mobile-links">
+                <a href="#join" onClick={closeMobileMenu}>
+                  CryptoPittz Ecosystem
+                </a>
+
+                <a
+                  href="https://discord.gg/PP8S8DX9t"
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={closeMobileMenu}
+                >
+                  Discord ↗
+                </a>
+
+                <a
+                  href="https://www.oox.art/marketplace/collections/PITTZ-1a4c2d"
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={closeMobileMenu}
+                >
+                  Marketplace ↗
+                </a>
+
+                <a
+                  href="https://xexchange.com/trade?firstToken=EGLD&secondToken=BONEZ-ff9a73"
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={closeMobileMenu}
+                >
+                  Swap BONEZ ↗
+                </a>
+
+                <a
+                  href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxjkVdFCh3ndX6vXYMa7/transactions"
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={closeMobileMenu}
+                >
+                  Pittensor / TaoStats ↗
+                </a>
+
+                <a
+                  href="https://xportal.app.link/referral?code=xdsu8lsipv"
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={closeMobileMenu}
+                >
+                  Get xPortal ↗
+                </a>
+              </div>
+            </div>
+
+            <div className="mobile-links mobile-direct-links">
+              <a href="#contact" onClick={closeMobileMenu}>
+                Contact
+              </a>
+            </div>
+
+            <div style={{ marginTop: "12px" }}>
+              <a
+                className="btn primary"
+                href="#join"
+                style={{ width: "100%" }}
+                onClick={closeMobileMenu}
+              >
+                Get Involved
+              </a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main id="top">
+        <div className="container">
+          <div className="hero">
+            <div className="panel">
+              <div className="inner">
+                <div className="badge">⚡ Welcome to the CryptoPittz universe</div>
+
+                <h2 className="title">CryptoPittz is a neon-charged collectible universe.</h2>
+
+                <p className="subtitle">
+                  Bold colors, unique characters and a growing community. CryptoPittz is being built
+                  with future utility and MultiversX integration in mind.
+                </p>
+
+                <div className="chip-row">
+                  <div className="chip">🎨 Art-first vibe</div>
+                  <div className="chip">🧩 Utility-ready</div>
+                  <div className="chip">🧠 Built to expand</div>
+                  <div className="chip">📱 Mobile-friendly</div>
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "12px",
+                    flexWrap: "wrap",
+                    marginTop: "18px",
+                  }}
+                >
+                  <a className="btn primary" href="#about">
+                    Explore the Project
+                  </a>
+
+                  <a className="btn" href="#gallery">
+                    See the Pittz
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="panel hero-art">
+              <div className="mock" aria-label="CryptoPittz artwork preview">
+                <div className="label">
+                  <span>CryptoPittz</span>
+                  <span style={{ opacity: 0.8 }}>Welcome to the Pack</span>
+                </div>
+
+                <div className="random-pitt-hero">
+                  <div className="random-pitt-icon">🎲</div>
+
+                  <div className="random-pitt-copy">
+                    <span>Feeling Lucky?</span>
+
+                    <strong>Meet a Random Pitt</strong>
+
+                    <p>
+                      Discover one from all{" "}
+                      {explorerTotal ? explorerTotal.toLocaleString() : "5,310"} CryptoPittz.
+                    </p>
+                  </div>
+                  <div className="random-pitt-modes">
+                    <button
+                      type="button"
+                      className={randomPittMode === "original" ? "active" : ""}
+                      onClick={() => setRandomPittMode("original")}
+                    >
+                      Original
+                    </button>
+
+                    <button
+                      type="button"
+                      className={randomPittMode === "vice" ? "active" : ""}
+                      onClick={() => setRandomPittMode("vice")}
+                    >
+                      Vice
+                    </button>
+
+                    <button
+                      type="button"
+                      className={randomPittMode === "surprise" ? "active" : ""}
+                      onClick={() => setRandomPittMode("surprise")}
+                    >
+                      Surprise Me
+                    </button>
+                  </div>
+
+                  <button
+                    className="btn primary random-pitt-button"
+                    type="button"
+                    onClick={showRandomPitt}
+                    disabled={randomPittLoading}
+                  >
+                    {randomPittLoading ? "Finding a Pitt..." : "🎲 Random Pitt"}
+                  </button>
+                </div>
+              </div>
+              {randomPittError && <div className="random-pitt-error">{randomPittError}</div>}
+            </div>
+          </div>
+
+          <div className="grid" aria-label="Highlights">
+            <div className="card">
+              <div className="accent"></div>
+
+              <div className="inner">
+                <h3>Mission</h3>
+                <p>
+                  Build a recognizable collection centered around art, community and future utility.
+                </p>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="accent"></div>
+
+              <div className="inner">
+                <h3>Collection</h3>
+                <p>Explore the growing world of unique CryptoPittz characters and traits.</p>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="accent"></div>
+
+              <div className="inner">
+                <h3>Community</h3>
+                <p>Connect with the pack as CryptoPittz continues to grow.</p>
+              </div>
+            </div>
+          </div>
+
+          <section id="about">
+            <div className="section-title">
+              <h2>About CryptoPittz</h2>
+              <span>Meet the pack.</span>
+            </div>
+
+            <div className="panel">
+              <div className="inner">
+                <p className="subtitle" style={{ maxWidth: "80ch" }}>
+                  CryptoPittz is a stylized NFT project featuring bold neon palettes, heavy outlines
+                  and playful traits. The project is designed to grow into a connected experience
+                  with wallet integration, holder features, collection tools and more.
+                </p>
+
+                <div className="grid" style={{ marginTop: "18px" }}>
+                  <div className="card" style={{ gridColumn: "span 6" }}>
+                    <div className="accent"></div>
+
+                    <div className="inner">
+                      <h3>What makes it different?</h3>
+                      <p>
+                        Distinctive characters, colorful artwork and a visual identity designed to
+                        immediately stand out.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="card" style={{ gridColumn: "span 6" }}>
+                    <div className="accent"></div>
+
+                    <div className="inner">
+                      <h3>Where is it going?</h3>
+                      <p>
+                        Wallet connectivity, NFT ownership features and an expanding CryptoPittz
+                        community experience.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="roadmap">
+            <div className="section-title">
+              <h2>Roadmap</h2>
+              <span>The journey begins.</span>
+            </div>
+
+            <div className="grid">
+              <div className="card" style={{ gridColumn: "span 4" }}>
+                <div className="accent"></div>
+
+                <div className="inner">
+                  <h3>Phase 1</h3>
+                  <p>Website foundation, artwork and community presence.</p>
+                </div>
+              </div>
+
+              <div className="card" style={{ gridColumn: "span 4" }}>
+                <div className="accent"></div>
+
+                <div className="inner">
+                  <h3>Phase 2</h3>
+                  <p>MultiversX wallet integration and holder identification.</p>
+                </div>
+              </div>
+
+              <div className="card" style={{ gridColumn: "span 4" }}>
+                <div className="accent"></div>
+
+                <div className="inner">
+                  <h3>Phase 3</h3>
+                  <p>Expanded utility, NFT tools and future community features.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="my-pittz">
+            <div className="section-title">
+              <h2>My Pittz</h2>
+              <span>Your CryptoPittz collection.</span>
+            </div>
+            <div className="explorer-tabs my-pittz-tabs">
+              <button
+                type="button"
+                className={`explorer-tab ${myPittzCollection === "original" ? "active" : ""}`}
+                onClick={() => setMyPittzCollection("original")}
+              >
+                Original Pittz
+                <span>{ownedOriginalPittz.length}</span>
+              </button>
+
+              <button
+                type="button"
+                className={`explorer-tab ${myPittzCollection === "vice" ? "active" : ""}`}
+                onClick={() => setMyPittzCollection("vice")}
+              >
+                Vice Pittz
+                <span>{ownedVicePittz.length}</span>
+              </button>
+            </div>
+
+            <div className="panel">
+              <div className="inner">
+                {!account.address && (
+                  <p className="subtitle">Connect your wallet to see your NFTs.</p>
+                )}
+
+                {account.address && nftsLoading && (
+                  <p className="subtitle">Searching your wallet...</p>
+                )}
+
+                {account.address && nftsError && <p className="subtitle">{nftsError}</p>}
+
+                {account.address && !nftsLoading && !nftsError && nfts.length === 0 && (
+                  <p className="subtitle">No NFTs were found in this Devnet wallet.</p>
+                )}
+
+                {account.address && !nftsLoading && !nftsError && nfts.length > 0 && (
+                  <>
+                    <p className="subtitle">
+                      You own {nfts.length} CryptoPittz NFT{nfts.length === 1 ? "" : "s"}.
+                    </p>
+
+                    {account.address && !nftsLoading && !nftsError && nfts.length > 0 && (
+                      <div className="wallet-summary">
+                        <div className="wallet-summary-main">
+                          <div className="wallet-summary-card">
+                            <span>CryptoPittz Owned</span>
+                            <strong>{walletSummary.total}</strong>
+                          </div>
+
+                          <div className="wallet-summary-card">
+                            <span>Best Rank</span>
+                            <strong>
+                              {walletSummary.bestRank ? `#${walletSummary.bestRank}` : "—"}
+                            </strong>
+                          </div>
+
+                          <div className="wallet-summary-card">
+                            <span>Highest Score</span>
+                            <strong>{walletSummary.highestScore ?? "—"}</strong>
+                          </div>
+                        </div>
+
+                        <div className="wallet-summary-breakdown">
+                          <div className="summary-group">
+                            <span className="summary-title">Bloodlines</span>
+
+                            <div className="summary-chips">
+                              {Object.entries(walletSummary.bloodlines).map(
+                                ([bloodline, count]) => (
+                                  <div className="summary-chip" key={bloodline}>
+                                    <strong>{bloodline}</strong>
+                                    <span>{count}</span>
+                                  </div>
+                                ),
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="summary-group">
+                            <span className="summary-title">Types</span>
+
+                            <div className="summary-chips">
+                              {Object.entries(walletSummary.types).map(([type, count]) => (
+                                <div className="summary-chip" key={type}>
+                                  <strong>{type}</strong>
+                                  <span>{count}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="pittz-controls">
+                      <input
+                        type="text"
+                        placeholder="Search Pittz..."
+                        value={searchTerm}
+                        onChange={(event) => setSearchTerm(event.target.value)}
+                      />
+
+                      <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
+                        <option value="rank">Best Rank</option>
+                        <option value="score">Highest Score</option>
+                        <option value="name">Name</option>
+                      </select>
+
+                      <select
+                        value={bloodlineFilter}
+                        onChange={(event) => setBloodlineFilter(event.target.value)}
+                      >
+                        <option value="all">All Bloodlines</option>
+
+                        {Object.keys(walletSummary.bloodlines).map((bloodline) => (
+                          <option key={bloodline} value={bloodline}>
+                            {bloodline}
+                          </option>
+                        ))}
+                      </select>
+
+                      <select
+                        value={typeFilter}
+                        onChange={(event) => setTypeFilter(event.target.value)}
+                      >
+                        <option value="all">All Types</option>
+
+                        {Object.keys(walletSummary.types).map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="pittz-results-bar">
+                      <span>
+                        Showing {filteredNfts.length} of {activeOwnedPittz.length}{" "}
+                        {myPittzCollection === "vice" ? "Vice Pittz" : "Original Pittz"}
+                      </span>
+
+                      {(searchTerm ||
+                        bloodlineFilter !== "all" ||
+                        typeFilter !== "all" ||
+                        sortBy !== "rank") && (
+                        <button
+                          className="reset-filters"
+                          type="button"
+                          onClick={() => {
+                            setSearchTerm("");
+                            setSortBy("rank");
+                            setBloodlineFilter("all");
+                            setTypeFilter("all");
+                          }}
+                        >
+                          ↻ Reset Filters
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="wallet-nft-grid">
+                      {filteredNfts.map((nft) => {
+                        const stats = getPittzStats(nft.attributes);
+
+                        return (
+                          <div
+                            className="wallet-nft-card"
+                            key={nft.identifier}
+                            onClick={() => openNftDetails(nft, filteredNfts)}
+                          >
+                            <div className="wallet-nft-image-wrap">
+                              {account.address &&
+                                nfts.some((ownedNft) => ownedNft.identifier === nft.identifier) && (
+                                  <span className="owned-badge">OWNED ✓</span>
+                                )}
+
+                              {getNftImage(nft) && (
+                                <img
+                                  src={getNftImage(nft)}
+                                  alt={nft.name || nft.identifier}
+                                  style={{
+                                    display: "block",
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                    opacity: 1,
+                                    visibility: "visible",
+                                    position: "relative",
+                                    zIndex: 2,
+                                  }}
+                                  onError={(event) => {
+                                    console.error(
+                                      "Explorer image failed:",
+                                      nft.identifier,
+                                      event.currentTarget.src,
+                                    );
+                                  }}
+                                />
+                              )}
+                            </div>
+
+                            <div className="wallet-nft-info">
+                              <strong>{nft.name || nft.identifier}</strong>
+
+                              <small>{nft.identifier}</small>
+
+                              <div className="pittz-stats">
+                                {stats.rank && (
+                                  <div className="pittz-stat rank-stat">
+                                    <span>🏆 Rank</span>
+                                    <strong>#{stats.rank}</strong>
+                                  </div>
+                                )}
+
+                                {stats.score && (
+                                  <div className="pittz-stat">
+                                    <span>⚡ Score</span>
+                                    <strong>{stats.score}</strong>
+                                  </div>
+                                )}
+
+                                {stats.bloodline && (
+                                  <div className="pittz-stat">
+                                    <span>Bloodline</span>
+                                    <strong>{stats.bloodline}</strong>
+                                  </div>
+                                )}
+
+                                {stats.type && (
+                                  <div className="pittz-stat">
+                                    <span>Type</span>
+                                    <strong>{stats.type}</strong>
+                                  </div>
+                                )}
+                              </div>
+
+                              {decodePittzAttributes(nft.attributes).length > 0 && (
+                                <div className="pittz-traits">
+                                  {decodePittzAttributes(nft.attributes).map((item) => (
+                                    <div
+                                      className="pittz-trait"
+                                      key={`${nft.identifier}-${item.trait}`}
+                                    >
+                                      <span>{item.trait}</span>
+                                      <strong>{item.value}</strong>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="wallet-nft-info">
+                              <strong>{nft.name || nft.identifier}</strong>
+
+                              <small>{nft.identifier}</small>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </section>
+
+          <section id="explorer">
+            <div className="section-title">
+              <h2>CryptoPittz Explorer</h2>
+              <span>Browse the collection. No wallet required.</span>
+            </div>
+
+            <div className="explorer-tabs">
+              <button
+                type="button"
+                className={`explorer-tab ${explorerCollection === "original" ? "active" : ""}`}
+                onClick={() => setExplorerCollection("original")}
+              >
+                Original Pittz
+                <span>{originalTotal ? originalTotal.toLocaleString() : "..."}</span>
+              </button>
+
+              <button
+                type="button"
+                className={`explorer-tab ${explorerCollection === "vice" ? "active" : ""}`}
+                onClick={() => setExplorerCollection("vice")}
+              >
+                Vice Pittz
+                <span>{viceTotal ? viceTotal.toLocaleString() : "..."}</span>
+              </button>
+            </div>
+
+            <div className="panel">
+              <div className="inner">
+                {explorerLoading && (
+                  <p className="subtitle">Loading the CryptoPittz collection...</p>
+                )}
+
+                {explorerError && <p className="subtitle">{explorerError}</p>}
+
+                {!explorerLoading && !explorerError && explorerNfts.length > 0 && (
+                  <>
+                    <div className="explorer-header">
+                      <div>
+                        <span>Collection</span>
+                        <strong>
+                          {explorerTotal.toLocaleString()} {activeCollection.name}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>Collection ID</span>
+                        <strong>{activeCollection.collection}</strong>
+                      </div>
+
+                      <div className="explorer-controls">
+                        <input
+                          type="text"
+                          placeholder="Search CryptoPittz name or ID..."
+                          value={explorerSearch}
+                          onChange={(event) => {
+                            setExplorerSearch(event.target.value);
+                            setGlobalSearchResult(null);
+                            setGlobalSearchError("");
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              searchCryptoPittz();
+                            }
+                          }}
+                        />
+
+                        <button
+                          className="btn primary explorer-search-button"
+                          type="button"
+                          onClick={searchCryptoPittz}
+                        >
+                          Search
+                        </button>
+                      </div>
+
+                      <select
+                        value={explorerSort}
+                        onChange={(event) => setExplorerSort(event.target.value)}
+                      >
+                        <option value="rank">Best Rank</option>
+                        <option value="score">Highest Score</option>
+                        <option value="name">Name</option>
+                      </select>
+
+                      <select
+                        value={explorerBloodline}
+                        onChange={(event) => setExplorerBloodline(event.target.value)}
+                      >
+                        <option value="all">All Bloodlines</option>
+
+                        {Object.keys(explorerSummary.bloodlines).map((bloodline) => (
+                          <option key={bloodline} value={bloodline}>
+                            {bloodline}
+                          </option>
+                        ))}
+                      </select>
+
+                      <select
+                        value={explorerType}
+                        onChange={(event) => setExplorerType(event.target.value)}
+                      >
+                        <option value="all">All Types</option>
+
+                        {Object.keys(explorerSummary.types).map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="pittz-results-bar">
+                      <span>
+                        Showing {filteredExplorerNfts.length} of {explorerNfts.length}{" "}
+                        {activeCollection.name}
+                      </span>
+
+                      {(explorerSearch ||
+                        explorerBloodline !== "all" ||
+                        explorerType !== "all" ||
+                        explorerSort !== "rank") && (
+                        <button
+                          className="reset-filters"
+                          type="button"
+                          onClick={() => {
+                            setExplorerSearch("");
+                            setExplorerSort("rank");
+                            setExplorerBloodline("all");
+                            setExplorerType("all");
+                          }}
+                        >
+                          ↻ Reset Filters
+                        </button>
+                      )}
+                    </div>
+
+                    <ExplorerPagination />
+
+                    {globalSearchLoading && <p className="subtitle">Searching CryptoPittz...</p>}
+
+                    {globalSearchError && (
+                      <div className="explorer-search-message">{globalSearchError}</div>
+                    )}
+
+                    {globalSearchResult &&
+                      (() => {
+                        const stats = getPittzStats(globalSearchResult.attributes);
+
+                        return (
+                          <div
+                            className="explorer-search-result"
+                            onClick={() => openNftDetails(globalSearchResult)}
+                          >
+                            {globalSearchResult.media?.[0]?.url && (
+                              <img
+                                src={globalSearchResult.media[0].url}
+                                alt={globalSearchResult.name}
+                              />
+                            )}
+
+                            <div>
+                              <span>Search Result</span>
+
+                              <h3>{globalSearchResult.name}</h3>
+
+                              <small>{globalSearchResult.identifier}</small>
+
+                              <div className="search-result-stats">
+                                {stats.rank && <strong>🏆 #{stats.rank}</strong>}
+                                {stats.score && <strong>⚡ {stats.score}</strong>}
+                                {stats.bloodline && <strong>{stats.bloodline}</strong>}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                    <div className="wallet-nft-grid">
+                      {filteredExplorerNfts.map((nft) => {
+                        const stats = getPittzStats(nft.attributes);
+
+                        return (
+                          <div
+                            className={`wallet-nft-card explorer-card ${
+                              account.address &&
+                              nfts.some((ownedNft) => ownedNft.identifier === nft.identifier)
+                                ? "owned-card"
+                                : ""
+                            }`}
+                            key={nft.identifier}
+                            onClick={() => openNftDetails(nft, filteredExplorerNfts)}
+                          >
+                            <div className="wallet-nft-image-wrap">
+                              {getNftImage(nft) && (
+                                <img
+                                  src={getNftImage(nft)}
+                                  alt={nft.name || nft.identifier}
+                                  onError={(event) => {
+                                    console.error(
+                                      "Explorer image failed:",
+                                      nft.identifier,
+                                      event.currentTarget.src,
+                                    );
+                                  }}
+                                />
+                              )}
+
+                              {account.address &&
+                                nfts.some((ownedNft) => ownedNft.identifier === nft.identifier) && (
+                                  <span className="owned-badge">OWNED ✓</span>
+                                )}
+                            </div>
+
+                            <div className="wallet-nft-info">
+                              <strong>{nft.name || nft.identifier}</strong>
+
+                              <small>{nft.identifier}</small>
+
+                              <div className="pittz-stats">
+                                {stats.rank && (
+                                  <div className="pittz-stat rank-stat">
+                                    <span>🏆 Rank</span>
+                                    <strong>#{stats.rank}</strong>
+                                  </div>
+                                )}
+
+                                {stats.score && (
+                                  <div className="pittz-stat">
+                                    <span>⚡ Score</span>
+                                    <strong>{stats.score}</strong>
+                                  </div>
+                                )}
+
+                                {stats.bloodline && (
+                                  <div className="pittz-stat">
+                                    <span>Bloodline</span>
+                                    <strong>{stats.bloodline}</strong>
+                                  </div>
+                                )}
+
+                                {stats.type && (
+                                  <div className="pittz-stat">
+                                    <span>Type</span>
+                                    <strong>{stats.type}</strong>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <ExplorerPagination />
+                  </>
+                )}
+              </div>
+            </div>
+          </section>
+
+          <section id="gallery">
+            <div className="section-title">
+              <h2>Gallery</h2>
+              <span>Meet some of the CryptoPittz.</span>
+            </div>
+
+            <div className="gallery" aria-label="CryptoPittz Gallery">
+              {galleryItems.map((item, index) => (
+                <div
+                  key={item.src}
+                  className="tile tile-img"
+                  style={{
+                    "--img": `url("${item.src}")`,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => openLightbox(index)}
+                >
+                  <div className="cap">{item.title}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section id="traits">
+            <div className="section-title">
+              <h2>Traits (Soon)</h2>
+              <span>Explore what makes every Pitt unique.</span>
+            </div>
+
+            <div className="panel">
+              <div className="inner">
+                <p className="subtitle">
+                  A future trait explorer can let visitors search CryptoPittz by colors, accessories
+                  and other characteristics.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section id="rarity">
+            <div className="section-title">
+              <h2>Rarity (Soon)</h2>
+              <span>Collection stats are coming later.</span>
+            </div>
+
+            <div className="panel">
+              <div className="inner">
+                <p className="subtitle">
+                  This area can eventually display rarity information using CryptoPittz NFT
+                  metadata.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section id="faq">
+            <div className="section-title">
+              <h2>FAQ</h2>
+              <span>Common questions about CryptoPittz.</span>
+            </div>
+
+            <div className="faq">
+              <details>
+                <summary>When is the mint?</summary>
+                <p>Additional mint information will be added here.</p>
+              </details>
+
+              <details>
+                <summary>What chain is CryptoPittz on?</summary>
+                <p>CryptoPittz is being prepared for integration with the MultiversX ecosystem.</p>
+              </details>
+
+              <details>
+                <summary>What do holders get?</summary>
+                <p>Holder utilities and community features can be added as the project grows.</p>
+              </details>
+
+              <details>
+                <summary>How can I join the community?</summary>
+                <p>
+                  Community and social links will be added to the site as they become available.
+                </p>
+              </details>
+            </div>
+          </section>
+
+          <section id="join">
+            <div className="section-title">
+              <h2>CryptoPittz Ecosystem</h2>
+              <span>Explore the community, marketplace, tokens, and ecosystem</span>
+            </div>
+
+            <div className="panel">
+              <div
+                className="inner"
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "12px",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div style={{ maxWidth: "70ch" }}>
+                  <p className="subtitle" style={{ margin: 0 }}>
+                    Follow the project, connect with the community and watch as the CryptoPittz
+                    universe continues to grow.
+                  </p>
+                </div>
+
+                <div className="ecosystem-grid">
+                  <div className="ecosystem-card">
+                    <div className="ecosystem-icon">💬</div>
+
+                    <h3>Join the Pack</h3>
+
+                    <p>
+                      Connect with the CryptoPittz community, talk with holders, and stay up to date
+                      on the project.
+                    </p>
+
+                    <a
+                      className="btn primary"
+                      href="https://discord.gg/PP8S8DX9t"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Join Discord ↗
+                    </a>
+                  </div>
+
+                  <div className="ecosystem-card">
+                    <div className="ecosystem-icon">🛒</div>
+
+                    <h3>Marketplace</h3>
+
+                    <p>
+                      Browse, buy, and explore both CryptoPittz collections on the OOX marketplace.
+                    </p>
+
+                    <div className="ecosystem-actions">
+                      <a
+                        className="btn primary"
+                        href="https://www.oox.art/marketplace/collections/PITTZ-1a4c2d"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Original Pittz ↗
+                      </a>
+
+                      <a
+                        className="btn"
+                        href="https://www.oox.art/marketplace/collections/PITTZVICE-c3ec94"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Vice Pittz ↗
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="ecosystem-card">
+                    <div className="ecosystem-icon">🦴</div>
+
+                    <h3>BONEZ</h3>
+
+                    <p>
+                      Swap EGLD for BONEZ on xExchange and access the token used within the
+                      CryptoPittz ecosystem.
+                    </p>
+
+                    <a
+                      className="btn primary"
+                      href="https://xexchange.com/trade?firstToken=EGLD&secondToken=BONEZ-ff9a73"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Swap BONEZ ↗
+                    </a>
+                  </div>
+
+                  <div className="ecosystem-card">
+                    <div className="ecosystem-icon">🧠</div>
+
+                    <h3>Pittensor</h3>
+
+                    <p>View the Pittensor account and its activity through TaoStats.</p>
+
+                    <a
+                      className="btn primary"
+                      href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxjkVdFCh3ndX6vXYMa7/transactions"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      View TaoStats ↗
+                    </a>
+                  </div>
+                  <div className="ecosystem-card">
+                    <div className="ecosystem-icon">📱</div>
+
+                    <h3>xPortal</h3>
+
+                    <p>
+                      Get the xPortal app and join the MultiversX ecosystem using the CryptoPittz
+                      referral link.
+                    </p>
+
+                    <a
+                      className="btn primary"
+                      href="https://xportal.app.link/referral?code=xdsu8lsipv"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Get xPortal ↗
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="contact" style={{ marginTop: "18px" }}>
+            <div className="section-title">
+              <h2>Contact</h2>
+              <span>CryptoPittz</span>
+            </div>
+
+            <div className="panel">
+              <div className="inner">
+                <p className="subtitle">Official contact information will be added here.</p>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <footer>
+        <div
+          className="container"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: "14px",
+            flexWrap: "wrap",
+          }}
+        >
+          <div>© {new Date().getFullYear()} CryptoPittz • All vibes reserved 🐾</div>
+
+          <div style={{ opacity: 0.9 }}>Built for the CryptoPittz community</div>
+        </div>
+      </footer>
+
+      {lightboxOpen && (
+        <div className="lightbox open" aria-hidden="false">
+          <div className="lb-backdrop" onClick={closeLightbox}></div>
+
+          <div
+            className="lb-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Gallery image viewer"
+          >
+            <button
+              className="lb-close"
+              type="button"
+              aria-label="Close viewer"
+              onClick={closeLightbox}
+            >
+              ✕
+            </button>
+
+            <button
+              className="lb-nav lb-prev"
+              type="button"
+              aria-label="Previous image"
+              onClick={showPrevious}
+            >
+              ‹
+            </button>
+
+            <button
+              className="lb-nav lb-next"
+              type="button"
+              aria-label="Next image"
+              onClick={showNext}
+            >
+              ›
+            </button>
+
+            <figure className="lb-figure">
+              <img src={galleryItems[lightboxIndex].src} alt={galleryItems[lightboxIndex].title} />
+
+              <figcaption className="lb-cap">
+                <span>{galleryItems[lightboxIndex].title}</span>
+
+                <span>
+                  {lightboxIndex + 1} / {galleryItems.length}
+                </span>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      )}
+      {selectedNft &&
+        (() => {
+          const stats = getPittzStats(selectedNft.attributes);
+          const traits = decodePittzAttributes(selectedNft.attributes);
+
+          return (
+            <div className="nft-detail-modal">
+              <div className="nft-detail-backdrop" onClick={closeNftDetails}></div>
+
+              <div
+                className="nft-detail-panel"
+                role="dialog"
+                aria-modal="true"
+                aria-label="CryptoPittz NFT details"
+              >
+                <button className="nft-detail-close" type="button" onClick={closeNftDetails}>
+                  ✕
+                </button>
+
+                <div className="nft-detail-art">
+                  {modalNfts.length > 1 && (
+                    <>
+                      <button
+                        className="nft-detail-nav nft-detail-prev"
+                        type="button"
+                        aria-label="Previous CryptoPittz"
+                        onClick={showPreviousNft}
+                      >
+                        ‹
+                      </button>
+
+                      <button
+                        className="nft-detail-nav nft-detail-next"
+                        type="button"
+                        aria-label="Next CryptoPittz"
+                        onClick={showNextNft}
+                      >
+                        ›
+                      </button>
+                    </>
+                  )}
+
+                  {getNftImage(selectedNft) && (
+                    <img
+                      src={getNftImage(selectedNft)}
+                      alt={selectedNft.name || selectedNft.identifier}
+                      onError={(event) => {
+                        event.currentTarget.style.display = "none";
+                      }}
+                    />
+                  )}
+
+                  {account.address &&
+                    nfts.some((ownedNft) => ownedNft.identifier === selectedNft?.identifier) && (
+                      <span className="owned-badge">OWNED ✓</span>
+                    )}
+                </div>
+
+                <div className="nft-detail-content">
+                  <div className="nft-detail-heading">
+                    <div>
+                      <div className="nft-detail-topline">
+                        <span className="nft-detail-eyebrow">CryptoPittz Collection</span>
+
+                        <span
+                          className={`collection-badge ${
+                            getCollectionBadge(selectedNft).className
+                          }`}
+                        >
+                          {getCollectionBadge(selectedNft).label}
+                        </span>
+                      </div>
+
+                      <h2>{selectedNft.name || selectedNft.identifier}</h2>
+
+                      <small>{selectedNft.identifier}</small>
+                    </div>
+                  </div>
+                  <div className="nft-detail-actions">
+                    <a
+                      className="btn primary"
+                      href={getNftMarketplace(selectedNft)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      🛒 View on OOX Marketplace ↗
+                    </a>
+                  </div>
+
+                  <div className="nft-detail-stats">
+                    {stats.rank && (
+                      <div className="nft-detail-stat rank-stat">
+                        <span>🏆 Rank</span>
+                        <strong>#{stats.rank}</strong>
+                      </div>
+                    )}
+
+                    {stats.score && (
+                      <div className="nft-detail-stat">
+                        <span>⚡ Score</span>
+                        <strong>{stats.score}</strong>
+                      </div>
+                    )}
+
+                    {stats.bloodline && (
+                      <div className="nft-detail-stat">
+                        <span>Bloodline</span>
+                        <strong>{stats.bloodline}</strong>
+                      </div>
+                    )}
+
+                    {stats.type && (
+                      <div className="nft-detail-stat">
+                        <span>Type</span>
+                        <strong>{stats.type}</strong>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="nft-detail-traits">
+                    {traits.map((item) => (
+                      <div
+                        className="nft-detail-trait"
+                        key={`${selectedNft.identifier}-${item.trait}`}
+                      >
+                        <span>{item.trait}</span>
+                        <strong>{item.value}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+    </>
+  );
+}
+
+export default App;
