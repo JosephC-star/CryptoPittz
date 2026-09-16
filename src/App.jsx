@@ -583,29 +583,25 @@ function App() {
         setNftsLoading(true);
         setNftsError("");
 
+        const collections = ["PITTZ-1a4c2d", "PITTZVICE-c3ec94"].join(",");
+
         const response = await fetch(
-          `https://api.multiversx.com/accounts/${account.address}/nfts?size=100`,
+          `https://api.multiversx.com/accounts/${account.address}/nfts?collections=${collections}&size=1000`,
         );
 
         if (!response.ok) {
-          throw new Error("Unable to load NFTs");
+          throw new Error("Unable to load CryptoPittz NFTs");
         }
 
         const data = await response.json();
 
-        const pittzOnly = data.filter(
-          (nft) => nft.collection === "PITTZ-1a4c2d" || nft.collection === "PITTZVICE-c3ec94",
-        );
+        console.log("CryptoPittz NFTs:", data);
 
-        console.log("CryptoPittz NFTs:", pittzOnly);
-
-        setNfts(pittzOnly);
-
-        console.log("Wallet NFTs:", data);
+        setNfts(data);
       } catch (error) {
         console.error("NFT lookup failed:", error);
-
         setNftsError("We couldn't load NFTs from this wallet.");
+        setNfts([]);
       } finally {
         setNftsLoading(false);
       }
@@ -1682,7 +1678,7 @@ function App() {
                 {account.address && nftsError && <p className="subtitle">{nftsError}</p>}
 
                 {account.address && !nftsLoading && !nftsError && nfts.length === 0 && (
-                  <p className="subtitle">No NFTs were found in this Devnet wallet.</p>
+                  <p className="subtitle">No NFTs were found in this wallet.</p>
                 )}
 
                 {account.address && !nftsLoading && !nftsError && nfts.length > 0 && (
@@ -1690,59 +1686,54 @@ function App() {
                     <p className="subtitle">
                       You own {nfts.length} CryptoPittz NFT{nfts.length === 1 ? "" : "s"}.
                     </p>
+                    <div className="wallet-summary">
+                      <div className="wallet-summary-main">
+                        <div className="wallet-summary-card">
+                          <span>CryptoPittz Owned</span>
+                          <strong>{walletSummary.total}</strong>
+                        </div>
 
-                    {account.address && !nftsLoading && !nftsError && nfts.length > 0 && (
-                      <div className="wallet-summary">
-                        <div className="wallet-summary-main">
-                          <div className="wallet-summary-card">
-                            <span>CryptoPittz Owned</span>
-                            <strong>{walletSummary.total}</strong>
-                          </div>
+                        <div className="wallet-summary-card">
+                          <span>Best Rank</span>
+                          <strong>
+                            {walletSummary.bestRank ? `#${walletSummary.bestRank}` : "—"}
+                          </strong>
+                        </div>
 
-                          <div className="wallet-summary-card">
-                            <span>Best Rank</span>
-                            <strong>
-                              {walletSummary.bestRank ? `#${walletSummary.bestRank}` : "—"}
-                            </strong>
-                          </div>
+                        <div className="wallet-summary-card">
+                          <span>Highest Score</span>
+                          <strong>{walletSummary.highestScore ?? "—"}</strong>
+                        </div>
+                      </div>
 
-                          <div className="wallet-summary-card">
-                            <span>Highest Score</span>
-                            <strong>{walletSummary.highestScore ?? "—"}</strong>
+                      <div className="wallet-summary-breakdown">
+                        <div className="summary-group">
+                          <span className="summary-title">Bloodlines</span>
+
+                          <div className="summary-chips">
+                            {Object.entries(walletSummary.bloodlines).map(([bloodline, count]) => (
+                              <div className="summary-chip" key={bloodline}>
+                                <strong>{bloodline}</strong>
+                                <span>{count}</span>
+                              </div>
+                            ))}
                           </div>
                         </div>
 
-                        <div className="wallet-summary-breakdown">
-                          <div className="summary-group">
-                            <span className="summary-title">Bloodlines</span>
+                        <div className="summary-group">
+                          <span className="summary-title">Types</span>
 
-                            <div className="summary-chips">
-                              {Object.entries(walletSummary.bloodlines).map(
-                                ([bloodline, count]) => (
-                                  <div className="summary-chip" key={bloodline}>
-                                    <strong>{bloodline}</strong>
-                                    <span>{count}</span>
-                                  </div>
-                                ),
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="summary-group">
-                            <span className="summary-title">Types</span>
-
-                            <div className="summary-chips">
-                              {Object.entries(walletSummary.types).map(([type, count]) => (
-                                <div className="summary-chip" key={type}>
-                                  <strong>{type}</strong>
-                                  <span>{count}</span>
-                                </div>
-                              ))}
-                            </div>
+                          <div className="summary-chips">
+                            {Object.entries(walletSummary.types).map(([type, count]) => (
+                              <div className="summary-chip" key={type}>
+                                <strong>{type}</strong>
+                                <span>{count}</span>
+                              </div>
+                            ))}
                           </div>
                         </div>
                       </div>
-                    )}
+                    </div>
 
                     {account.address && !nftsLoading && !nftsError && nfts.length > 0 && (
                       <div className="bonez-wallet-total">
@@ -1784,7 +1775,6 @@ function App() {
                         </div>
                       </div>
                     )}
-
                     <div className="pittz-controls">
                       <input
                         type="text"
@@ -1825,7 +1815,6 @@ function App() {
                         ))}
                       </select>
                     </div>
-
                     <div className="pittz-results-bar">
                       <span>
                         Showing {filteredNfts.length} of {activeOwnedPittz.length}{" "}
@@ -1850,7 +1839,6 @@ function App() {
                         </button>
                       )}
                     </div>
-
                     <div className="wallet-nft-grid">
                       {filteredNfts.map((nft) => {
                         const stats = getPittzStats(nft.attributes);
