@@ -165,9 +165,20 @@ function App() {
   const [explorerSort, setExplorerSort] = useState("rank");
   const [explorerBloodline, setExplorerBloodline] = useState("all");
   const [explorerType, setExplorerType] = useState("all");
+  const [explorerAllNfts, setExplorerAllNfts] = useState([]);
+  const [explorerAllLoading, setExplorerAllLoading] = useState(false);
+  const [explorerLoadProgress, setExplorerLoadProgress] = useState({
+    loaded: 0,
+    total: 0,
+  });
   const [explorerTotal, setExplorerTotal] = useState(0);
   const [explorerPage, setExplorerPage] = useState(0);
+  const [explorerCache, setExplorerCache] = useState({
+    original: null,
+    vice: null,
+  });
   const [globalSearchResult, setGlobalSearchResult] = useState(null);
+  const [explorerIndexReady, setExplorerIndexReady] = useState(false);
   const [globalSearchLoading, setGlobalSearchLoading] = useState(false);
   const [globalSearchError, setGlobalSearchError] = useState("");
   const [randomPittLoading, setRandomPittLoading] = useState(false);
@@ -198,6 +209,81 @@ function App() {
 
   const ownedVicePittz = nfts.filter((nft) => nft.collection === "PITTZVICE-c3ec94");
   const activeOwnedPittz = myPittzCollection === "vice" ? ownedVicePittz : ownedOriginalPittz;
+  const BONEZ_RATES = {
+    original: {
+      "Secret Rare": { daily: 51.59, weekly: 367.33 },
+      Holoz: { daily: 25.85, weekly: 257.35 },
+      Lego: { daily: 12.92, weekly: 90.44 },
+      Platinum: { daily: 6.2, weekly: 43.4 },
+      Gold: { daily: 3.1, weekly: 21.7 },
+      Silver: { daily: 1.55, weekly: 10.85 },
+      Bronze: { daily: 0.52, weekly: 3.64 },
+    },
+
+    vice: {
+      "Secret Rare": { daily: 62.03, weekly: 434.21 },
+      Holoz: { daily: 21.02, weekly: 217.14 },
+      Lego: { daily: 15.51, weekly: 108.57 },
+      Platinum: { daily: 7.44, weekly: 52.08 },
+      Gold: { daily: 3.72, weekly: 38.04 },
+      Silver: { daily: 1.86, weekly: 13.02 },
+      Bronze: { daily: 0.62, weekly: 4.34 },
+    },
+  };
+
+  function getBonezTier(nft) {
+    const stats = getPittzStats(nft.attributes);
+    const rank = Number(stats.rank);
+
+    if (!rank) return null;
+
+    const isVice = nft.collection === "PITTZVICE-c3ec94";
+
+    if (!isVice) {
+      if (rank === 1) return "Secret Rare";
+      if (rank === 2) return "Holoz";
+      if (rank === 3) return "Lego";
+      if (rank >= 4 && rank <= 451) return "Platinum";
+      if (rank >= 452 && rank <= 1245) return "Gold";
+      if (rank >= 1246 && rank <= 3195) return "Silver";
+      if (rank >= 3196 && rank <= 6999) return "Bronze";
+
+      return null;
+    }
+
+    if (rank === 1) return "Secret Rare";
+    if (rank === 2) return "Holoz";
+    if (rank === 3) return "Lego";
+    if (rank >= 4 && rank <= 104) return "Platinum";
+    if (rank >= 105 && rank <= 288) return "Gold";
+    if (rank >= 289 && rank <= 701) return "Silver";
+    if (rank >= 702 && rank <= 1337) return "Bronze";
+
+    return null;
+  }
+
+  function getBonezGeneration(nft) {
+    const tier = getBonezTier(nft);
+
+    if (!tier) {
+      return null;
+    }
+
+    const collectionType = nft.collection === "PITTZVICE-c3ec94" ? "vice" : "original";
+
+    const rates = BONEZ_RATES[collectionType][tier];
+
+    if (!rates) {
+      return null;
+    }
+
+    return {
+      tier,
+      daily: rates.daily,
+      weekly: rates.weekly,
+      monthly: rates.daily * 30,
+    };
+  }
 
   function closeMobileMenu() {
     setMobileOpen(false);
@@ -670,6 +756,105 @@ function App() {
   }, [explorerPage, activeCollection.collection]);
 
   useEffect(() => {
+    let cancelled = false;
+
+    async function fetchAllCollectionNfts() {
+      const cacheKey = activeCollection.collection === "PITTZVICE-c3ec94" ? "vice" : "original";
+
+      const cachedCollection = explorerCache[cacheKey];
+
+      if (cachedCollection) {
+        setExplorerAllNfts(cachedCollection);
+        setExplorerAllLoading(false);
+
+        setExplorerLoadProgress({
+          loaded: cachedCollection.length,
+          total: cachedCollection.length,
+        });
+
+        return;
+      }
+
+      try {
+        setExplorerAllLoading(true);
+        setExplorerAllNfts([]);
+        setExplorerIndexReady(false);
+
+        setExplorerLoadProgress({
+          loaded: 0,
+          total: 0,
+        });
+
+        const countResponse = await fetch(
+          `https://api.multiversx.com/collections/${activeCollection.collection}/nfts/count`,
+        );
+
+        if (!countResponse.ok) {
+          throw new Error("Unable to load collection count");
+        }
+
+        const totalCount = await countResponse.json();
+
+        if (!cancelled) {
+          setExplorerLoadProgress({
+            loaded: 0,
+            total: totalCount,
+          });
+        }
+
+        const allNfts = [];
+
+        for (let from = 0; from < totalCount; from += EXPLORER_PAGE_SIZE) {
+          const response = await fetch(
+            `https://api.multiversx.com/collections/${activeCollection.collection}/nfts?from=${from}&size=${EXPLORER_PAGE_SIZE}`,
+          );
+
+          if (!response.ok) {
+            throw new Error(`Unable to load collection page starting at ${from}`);
+          }
+
+          const pageData = await response.json();
+
+          allNfts.push(...pageData);
+
+          if (!cancelled) {
+            setExplorerLoadProgress({
+              loaded: allNfts.length,
+              total: totalCount,
+            });
+          }
+        }
+
+        if (!cancelled) {
+          setExplorerAllNfts(allNfts);
+
+          setExplorerCache((current) => ({
+            ...current,
+            [cacheKey]: allNfts,
+          }));
+          setExplorerIndexReady(true);
+
+          setTimeout(() => {
+            setExplorerIndexReady(false);
+          }, 1800);
+        }
+      } catch (error) {
+        console.error("Global Explorer dataset failed:", error);
+      } finally {
+        if (!cancelled) {
+          setExplorerAllLoading(false);
+        }
+      }
+    }
+
+    fetchAllCollectionNfts();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeCollection.collection]);
+
+  useEffect(() => {
     setExplorerPage(0);
 
     setExplorerSearch("");
@@ -679,6 +864,10 @@ function App() {
     setGlobalSearchResult(null);
     setGlobalSearchError("");
   }, [explorerCollection]);
+
+  useEffect(() => {
+    setExplorerPage(0);
+  }, [explorerBloodline, explorerType, explorerSort]);
 
   useEffect(() => {
     async function fetchCollectionTotals() {
@@ -705,6 +894,27 @@ function App() {
     fetchCollectionTotals();
   }, []);
 
+  const bonezWalletTotals = nfts.reduce(
+    (totals, nft) => {
+      const bonez = getBonezGeneration(nft);
+
+      if (!bonez) return totals;
+
+      totals.daily += bonez.daily;
+      totals.weekly += bonez.weekly;
+      totals.monthly += bonez.monthly;
+      totals.pittz += 1;
+
+      return totals;
+    },
+    {
+      daily: 0,
+      weekly: 0,
+      monthly: 0,
+      pittz: 0,
+    },
+  );
+
   const explorerSummary = (() => {
     const bloodlines = {};
     const types = {};
@@ -727,7 +937,7 @@ function App() {
     };
   })();
 
-  const filteredExplorerNfts = explorerNfts
+  const filteredExplorerNfts = explorerAllNfts
     .filter((nft) => {
       const stats = getPittzStats(nft.attributes);
 
@@ -760,8 +970,15 @@ function App() {
       return 0;
     });
 
+  const explorerFilteredTotal = filteredExplorerNfts.length;
+
+  const explorerPageNfts = filteredExplorerNfts.slice(
+    explorerPage * EXPLORER_PAGE_SIZE,
+    explorerPage * EXPLORER_PAGE_SIZE + EXPLORER_PAGE_SIZE,
+  );
+
   const ExplorerPagination = () => {
-    const totalPages = Math.ceil(explorerTotal / EXPLORER_PAGE_SIZE);
+    const totalPages = Math.ceil(explorerFilteredTotal / EXPLORER_PAGE_SIZE);
 
     function goToPage(page) {
       setExplorerPage(page);
@@ -1174,8 +1391,17 @@ function App() {
                 <h2 className="title">CryptoPittz is a neon-charged collectible universe.</h2>
 
                 <p className="subtitle">
-                  Bold colors, unique characters and a growing community. CryptoPittz is being built
-                  with future utility and MultiversX integration in mind.
+                  CryptoPittz is an NFT collection on MultiversX, featuring raw, high-quality
+                  pitbull artwork. the collection has two drops: the original Pittz consisting of
+                  5310 art pieces released in to wild back in 2021 and the 2nd collection, Vice
+                  Pittz, consisting of only 1395 retro themed nfts. Both collections feature
+                  references from pop culture, and possess a free-spirited, gritty, degen vibe. Hold
+                  your Pittz in your wallet and earn $BONEZ automatically every Sunday. No staking,
+                  just pure passive accumulation. Every month the team uses 75% of the profits from
+                  the Pittensor fund, on Bittensor, to buy back and burn the $BONEZ. the remaining
+                  25% gets compounded back into the Pettensor fund, crushing supply and building
+                  long-term value. You Earn, We Burn! We are a tight crew of degens who love art,
+                  the memes, and the culture. Merch and pet products on the horizon. Woof Woof!
                 </p>
 
                 <div className="chip-row">
@@ -1259,6 +1485,50 @@ function App() {
                     {randomPittLoading ? "Finding a Pitt..." : "🎲 Random Pitt"}
                   </button>
                 </div>
+              </div>
+              <div className="pittz-network">
+                <div className="pittz-network-header">
+                  <div>
+                    <span className="pittz-network-eyebrow">Network Status</span>
+                    <h3>PITTZ NETWORK</h3>
+                  </div>
+
+                  <div className="pittz-network-live">
+                    <span className="pittz-network-dot" />
+                    Online
+                  </div>
+                </div>
+
+                <div className="pittz-network-grid">
+                  <div className="pittz-network-stat cyan">
+                    <span>Original Pittz</span>
+                    <strong>{originalTotal?.toLocaleString() || "5,310"}</strong>
+                  </div>
+
+                  <div className="pittz-network-stat magenta">
+                    <span>Vice Pittz</span>
+                    <strong>{viceTotal?.toLocaleString() || "1,395"}</strong>
+                  </div>
+                </div>
+
+                <div className="pittz-network-status">
+                  <div>
+                    <span>Explorer Index</span>
+                    <strong>READY</strong>
+                  </div>
+
+                  <div>
+                    <span>BONEZ Utility</span>
+                    <strong>ACTIVE</strong>
+                  </div>
+
+                  <div>
+                    <span>Randomizer</span>
+                    <strong>ONLINE</strong>
+                  </div>
+                </div>
+
+                <div className="pittz-network-scan" />
               </div>
               {randomPittError && <div className="random-pitt-error">{randomPittError}</div>}
             </div>
@@ -1474,6 +1744,47 @@ function App() {
                       </div>
                     )}
 
+                    {account.address && !nftsLoading && !nftsError && nfts.length > 0 && (
+                      <div className="bonez-wallet-total">
+                        <div className="bonez-wallet-total-heading">
+                          <div>
+                            <span className="bonez-wallet-eyebrow">🦴 Wallet Utility</span>
+
+                            <h3>Potential BONEZ Generation</h3>
+
+                            <p>
+                              Estimated potential based on your owned Pittz and their tier rates.
+                            </p>
+                          </div>
+
+                          <div className="bonez-wallet-count">
+                            <strong>{bonezWalletTotals.pittz}</strong>
+                            <span>Pittz</span>
+                          </div>
+                        </div>
+
+                        <div className="bonez-wallet-total-grid">
+                          <div className="bonez-wallet-total-stat">
+                            <span>Daily</span>
+                            <strong>{bonezWalletTotals.daily.toFixed(2)}</strong>
+                            <small>BONEZ</small>
+                          </div>
+
+                          <div className="bonez-wallet-total-stat">
+                            <span>Weekly</span>
+                            <strong>{bonezWalletTotals.weekly.toFixed(2)}</strong>
+                            <small>BONEZ</small>
+                          </div>
+
+                          <div className="bonez-wallet-total-stat">
+                            <span>Estimated 30 Days</span>
+                            <strong>{bonezWalletTotals.monthly.toFixed(2)}</strong>
+                            <small>BONEZ</small>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="pittz-controls">
                       <input
                         type="text"
@@ -1543,6 +1854,7 @@ function App() {
                     <div className="wallet-nft-grid">
                       {filteredNfts.map((nft) => {
                         const stats = getPittzStats(nft.attributes);
+                        const bonez = getBonezGeneration(nft);
 
                         return (
                           <div
@@ -1615,6 +1927,32 @@ function App() {
                                   </div>
                                 )}
                               </div>
+
+                              {bonez && (
+                                <div className="bonez-generation">
+                                  <div className="bonez-generation-header">
+                                    <span>🦴 Potential BONEZ</span>
+                                    <strong>{bonez.tier} Tier</strong>
+                                  </div>
+
+                                  <div className="bonez-generation-grid">
+                                    <div>
+                                      <span>Daily</span>
+                                      <strong>{bonez.daily.toFixed(2)}</strong>
+                                    </div>
+
+                                    <div>
+                                      <span>Weekly</span>
+                                      <strong>{bonez.weekly.toFixed(2)}</strong>
+                                    </div>
+
+                                    <div>
+                                      <span>30 Days</span>
+                                      <strong>{bonez.monthly.toFixed(2)}</strong>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
 
                               {decodePittzAttributes(nft.attributes).length > 0 && (
                                 <div className="pittz-traits">
@@ -1695,6 +2033,52 @@ function App() {
                         <strong>{activeCollection.collection}</strong>
                       </div>
 
+                      {explorerAllLoading && (
+                        <div className="explorer-index-status">
+                          <div className="explorer-index-status-top">
+                            <span>Building Explorer Index</span>
+
+                            <strong>
+                              {explorerLoadProgress.loaded.toLocaleString()} /{" "}
+                              {explorerLoadProgress.total.toLocaleString()}
+                            </strong>
+                          </div>
+
+                          <div className="explorer-index-progress">
+                            <div
+                              className="explorer-index-progress-bar"
+                              style={{
+                                width:
+                                  explorerLoadProgress.total > 0
+                                    ? `${Math.min(
+                                        100,
+                                        (explorerLoadProgress.loaded / explorerLoadProgress.total) *
+                                          100,
+                                      )}%`
+                                    : "0%",
+                              }}
+                            />
+                          </div>
+
+                          <small>
+                            Preparing collection-wide rank, score, bloodline, and type filters.
+                          </small>
+                        </div>
+                      )}
+
+                      {explorerIndexReady && (
+                        <div className="explorer-index-ready">
+                          <span>✓</span>
+
+                          <div>
+                            <strong>Explorer Index Ready</strong>
+                            <small>
+                              {explorerLoadProgress.total.toLocaleString()} Pittz indexed
+                            </small>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="explorer-controls">
                         <input
                           type="text"
@@ -1748,12 +2132,10 @@ function App() {
                         onChange={(event) => setExplorerType(event.target.value)}
                       >
                         <option value="all">All Types</option>
-
-                        {Object.keys(explorerSummary.types).map((type) => (
-                          <option key={type} value={type}>
-                            {type}
-                          </option>
-                        ))}
+                        <option value="Core">Core</option>
+                        <option value="Secret">Secret</option>
+                        <option value="Holo">Holo</option>
+                        <option value="Legendary">Legendary</option>
                       </select>
                     </div>
 
@@ -1824,7 +2206,7 @@ function App() {
                       })()}
 
                     <div className="wallet-nft-grid">
-                      {filteredExplorerNfts.map((nft) => {
+                      {explorerPageNfts.map((nft) => {
                         const stats = getPittzStats(nft.attributes);
 
                         return (
@@ -2343,6 +2725,25 @@ function App() {
             </div>
           );
         })()}
+      {walletOverlayOpen && (
+        <button
+          className="walletconnect-close"
+          type="button"
+          aria-label="Close wallet connection"
+          onClick={() => {
+            if (walletConnectAnchorRef.current) {
+              walletConnectAnchorRef.current.replaceChildren();
+            }
+
+            setWalletOverlayOpen(false);
+            setMobileWalletConnecting(false);
+          }}
+        >
+          ✕
+        </button>
+      )}
+
+      <div ref={walletConnectAnchorRef} className="walletconnect-anchor" />
 
       <div ref={walletConnectAnchorRef} className="walletconnect-anchor" />
     </>
