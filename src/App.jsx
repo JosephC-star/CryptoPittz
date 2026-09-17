@@ -1057,10 +1057,16 @@ function App() {
         <div className="container">
           <div className="nav">
             <a className="brand" href="#top" aria-label="CryptoPittz Home">
-              <div className="logo" aria-hidden="true"></div>
+              <div className="logo logo-image" aria-hidden="true">
+                <img src="/images/cryptopittz-bonez.jpg" alt="" />
+              </div>
 
               <div>
-                <h1>CryptoPittz</h1>
+                <img
+                  className="random-pitt-wordmark"
+                  src="/images/cryptopittz-wordmark.png"
+                  alt="CryptoPittz"
+                />
                 <span className="tag">Neon collectibles • Community • Future utility</span>
               </div>
             </a>
@@ -1380,8 +1386,11 @@ function App() {
       <main id="top">
         <div className="container">
           <div className="hero">
-            <div className="panel">
+            <div className="panel hero-copy-panel">
               <div className="inner">
+                <div className="hero-pitbull" aria-hidden="true">
+                  <img src="/images/neon-pitbull-hero.png" alt="" />
+                </div>
                 <div className="badge">⚡ Welcome to the CryptoPittz universe</div>
 
                 <h2 className="title">CryptoPittz is a neon-charged collectible universe.</h2>
@@ -1429,7 +1438,11 @@ function App() {
             <div className="panel hero-art">
               <div className="mock" aria-label="CryptoPittz artwork preview">
                 <div className="label">
-                  <span>CryptoPittz</span>
+                  <img
+                    className="random-pitt-wordmark"
+                    src="/images/cryptopittz-wordmark.png"
+                    alt="CryptoPittz"
+                  />
                   <span style={{ opacity: 0.8 }}>Welcome to the Pack</span>
                 </div>
 
