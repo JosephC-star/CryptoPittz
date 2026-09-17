@@ -107,6 +107,62 @@ const EXPLORER_COLLECTIONS = {
   },
 };
 
+const BONEZ_TOKEN_ID = "BONEZ-ff9a73";
+
+const BONEZ_PAIR_ADDRESS = "erd1qqqqqqqqqqqqqpgqxjc80qdqjnwnr6q0z9z75m7sgasjxfln2jpsp67kpt";
+
+const BONEZ_DEXSCREENER_URL = `https://api.dexscreener.com/latest/dex/pairs/multiversx/${BONEZ_PAIR_ADDRESS}`;
+
+function buildBonezChart(data) {
+  if (!data?.length) {
+    return null;
+  }
+
+  const width = 800;
+  const height = 220;
+  const paddingX = 18;
+  const paddingY = 22;
+
+  const values = data.map((item) => Number(item.value));
+
+  const minValue = Math.min(...values);
+  const maxValue = Math.max(...values);
+
+  const range = maxValue - minValue;
+
+  const safeRange = range === 0 ? Math.max(maxValue * 0.02, 0.00000001) : range;
+
+  const paddedMin = minValue - safeRange * 0.18;
+  const paddedMax = maxValue + safeRange * 0.18;
+
+  const chartRange = paddedMax - paddedMin;
+
+  const points = data.map((item, index) => {
+    const x = paddingX + (index / Math.max(data.length - 1, 1)) * (width - paddingX * 2);
+
+    const y =
+      height - paddingY - ((Number(item.value) - paddedMin) / chartRange) * (height - paddingY * 2);
+
+    return {
+      x,
+      y,
+      value: Number(item.value),
+      timestamp: item.timestamp,
+    };
+  });
+
+  return {
+    width,
+    height,
+    points,
+    polyline: points.map((point) => `${point.x},${point.y}`).join(" "),
+    min: minValue,
+    max: maxValue,
+    first: points[0],
+    last: points[points.length - 1],
+  };
+}
+
 function getNftMarketplace(nft) {
   if (!nft?.identifier || !nft?.collection) {
     return EXPLORER_COLLECTIONS.original.marketplace;
@@ -198,6 +254,15 @@ function App() {
 
   const lightboxOpen = lightboxIndex !== null;
   const account = useGetAccount();
+  const [bonezMarket, setBonezMarket] = useState(null);
+  const [bonezMarketLoading, setBonezMarketLoading] = useState(true);
+  const [bonezMarketError, setBonezMarketError] = useState("");
+  const [bonezMarketUpdated, setBonezMarketUpdated] = useState(null);
+  const [bonezPriceHistory, setBonezPriceHistory] = useState([]);
+  const [bonezChartLoading, setBonezChartLoading] = useState(true);
+  const [bonezChartError, setBonezChartError] = useState("");
+  const [bonezDailyHistory, setBonezDailyHistory] = useState([]);
+  const [bonezChartRange, setBonezChartRange] = useState("24h");
 
   const unlockPanelManager = UnlockPanelManager.init({
     loginHandler: () => {
@@ -545,6 +610,62 @@ function App() {
     }
   }
 
+  function formatBonezUsd(value) {
+    const number = Number(value);
+
+    if (!Number.isFinite(number)) return "—";
+
+    return number.toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: number < 0.01 ? 7 : 2,
+      maximumFractionDigits: number < 0.01 ? 7 : 2,
+    });
+  }
+
+  function formatMarketNumber(value) {
+    const number = Number(value);
+
+    if (!Number.isFinite(number)) return "—";
+
+    return number.toLocaleString("en-US", {
+      maximumFractionDigits: 2,
+    });
+  }
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchBonezDailyHistory() {
+      try {
+        const response = await fetch(
+          `https://api.multiversx.com/mex/tokens/prices/daily/${BONEZ_TOKEN_ID}`,
+        );
+
+        if (!response.ok) {
+          throw new Error("Unable to load BONEZ daily history");
+        }
+
+        const data = await response.json();
+
+        if (!cancelled) {
+          setBonezDailyHistory(data);
+        }
+      } catch (error) {
+        console.error("BONEZ daily history failed:", error);
+      }
+    }
+
+    fetchBonezDailyHistory();
+
+    const interval = setInterval(fetchBonezDailyHistory, 1_800_000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
   useEffect(() => {
     function handleKeyDown(event) {
       if (!lightboxOpen) return;
@@ -890,6 +1011,96 @@ function App() {
     fetchCollectionTotals();
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchBonezMarket() {
+      try {
+        setBonezMarketError("");
+
+        const response = await fetch(BONEZ_DEXSCREENER_URL);
+
+        if (!response.ok) {
+          throw new Error("Unable to load BONEZ market data");
+        }
+
+        const data = await response.json();
+        const pair = data.pair || data.pairs?.[0];
+
+        if (!pair) {
+          throw new Error("BONEZ market pair was not found");
+        }
+
+        if (!cancelled) {
+          setBonezMarket(pair);
+          setBonezMarketUpdated(new Date());
+        }
+      } catch (error) {
+        console.error("BONEZ market lookup failed:", error);
+
+        if (!cancelled) {
+          setBonezMarketError("Live BONEZ market data is temporarily unavailable.");
+        }
+      } finally {
+        if (!cancelled) {
+          setBonezMarketLoading(false);
+        }
+      }
+    }
+
+    fetchBonezMarket();
+
+    const interval = setInterval(fetchBonezMarket, 60_000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchBonezPriceHistory() {
+      try {
+        setBonezChartError("");
+
+        const response = await fetch(
+          `https://api.multiversx.com/mex/tokens/prices/hourly/${BONEZ_TOKEN_ID}`,
+        );
+
+        if (!response.ok) {
+          throw new Error("Unable to load BONEZ price history");
+        }
+
+        const data = await response.json();
+
+        if (!cancelled) {
+          setBonezPriceHistory(data);
+        }
+      } catch (error) {
+        console.error("BONEZ price history failed:", error);
+
+        if (!cancelled) {
+          setBonezChartError("BONEZ chart data is temporarily unavailable.");
+        }
+      } finally {
+        if (!cancelled) {
+          setBonezChartLoading(false);
+        }
+      }
+    }
+
+    fetchBonezPriceHistory();
+
+    const interval = setInterval(fetchBonezPriceHistory, 300_000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
   const bonezWalletTotals = nfts.reduce(
     (totals, nft) => {
       const bonez = getBonezGeneration(nft);
@@ -910,6 +1121,20 @@ function App() {
       pittz: 0,
     },
   );
+
+  const activeBonezHistory =
+    bonezChartRange === "24h"
+      ? bonezPriceHistory.slice(-24)
+      : bonezChartRange === "7d"
+        ? bonezDailyHistory.slice(-7)
+        : bonezDailyHistory.slice(-30);
+
+  const bonezChart = buildBonezChart(activeBonezHistory);
+
+  const bonezChartChange =
+    bonezChart?.first?.value && bonezChart?.last?.value
+      ? ((bonezChart.last.value - bonezChart.first.value) / bonezChart.first.value) * 100
+      : null;
 
   const explorerSummary = (() => {
     const bloodlines = {};
@@ -932,6 +1157,20 @@ function App() {
       types,
     };
   })();
+
+  const bonezLiveUsdPrice = Number(bonezMarket?.priceUsd);
+
+  const bonezWalletUsdValues = {
+    daily: Number.isFinite(bonezLiveUsdPrice) ? bonezWalletTotals.daily * bonezLiveUsdPrice : null,
+
+    weekly: Number.isFinite(bonezLiveUsdPrice)
+      ? bonezWalletTotals.weekly * bonezLiveUsdPrice
+      : null,
+
+    monthly: Number.isFinite(bonezLiveUsdPrice)
+      ? bonezWalletTotals.monthly * bonezLiveUsdPrice
+      : null,
+  };
 
   const filteredExplorerNfts = explorerAllNfts
     .filter((nft) => {
@@ -1387,10 +1626,15 @@ function App() {
         <div className="container">
           <div className="hero">
             <div className="panel hero-copy-panel">
+              <div className="hero-cosmic-bg" aria-hidden="true" />
+
+              <div className="hero-cosmic-nebula" aria-hidden="true" />
+
+              <div className="hero-pitbull-wrap" aria-hidden="true">
+                <img src="/images/neon-pitbull-hero.png" alt="" className="hero-pitbull-art" />
+              </div>
+
               <div className="inner">
-                <div className="hero-pitbull" aria-hidden="true">
-                  <img src="/images/neon-pitbull-hero.png" alt="" />
-                </div>
                 <div className="badge">⚡ Welcome to the CryptoPittz universe</div>
 
                 <h2 className="title">CryptoPittz is a neon-charged collectible universe.</h2>
@@ -1417,6 +1661,7 @@ function App() {
                 </div>
 
                 <div
+                  className="hero-actions"
                   style={{
                     display: "flex",
                     gap: "12px",
@@ -1653,6 +1898,268 @@ function App() {
             </div>
           </section>
 
+          <div className="section-title">
+            <span>🦴 Live Utility</span>
+            <h2>BONEZ Market</h2>
+            <p>Live market data for the token powering the CryptoPittz ecosystem.</p>
+          </div>
+
+          <div className="bonez-market">
+            <div className="bonez-market-header">
+              <div>
+                <span className="bonez-market-eyebrow">🦴 Live Market</span>
+
+                <h3>BONEZ MARKET</h3>
+
+                <p>BONEZ / EGLD • xExchange</p>
+              </div>
+
+              <div className={`bonez-market-status ${bonezMarket ? "online" : ""}`}>
+                <span className="bonez-market-dot" />
+                {bonezMarketLoading ? "Loading" : bonezMarket ? "Live" : "Offline"}
+              </div>
+            </div>
+
+            {bonezMarketLoading && !bonezMarket && (
+              <div className="bonez-market-loading">Connecting to BONEZ market data...</div>
+            )}
+
+            {bonezMarketError && !bonezMarket && (
+              <div className="bonez-market-error">{bonezMarketError}</div>
+            )}
+
+            {bonezMarket && (
+              <>
+                <div className="bonez-market-price">
+                  <span>Current BONEZ Price</span>
+
+                  <strong>{formatBonezUsd(bonezMarket.priceUsd)}</strong>
+
+                  <small>
+                    1 BONEZ ={" "}
+                    {Number(bonezMarket.priceNative).toLocaleString("en-US", {
+                      minimumFractionDigits: 8,
+                      maximumFractionDigits: 8,
+                    })}{" "}
+                    EGLD
+                  </small>
+                </div>
+
+                <div className="bonez-chart">
+                  <div className="bonez-chart-header">
+                    <div>
+                      <span>Price History</span>
+
+                      <strong>
+                        {bonezChartRange === "24h"
+                          ? "24H BONEZ / USD"
+                          : bonezChartRange === "7d"
+                            ? "7D BONEZ / USD"
+                            : "30D BONEZ / USD"}
+                      </strong>
+                    </div>
+
+                    <div className="bonez-chart-ranges">
+                      <button
+                        type="button"
+                        className={bonezChartRange === "24h" ? "active" : ""}
+                        onClick={() => setBonezChartRange("24h")}
+                      >
+                        24H
+                      </button>
+
+                      <button
+                        type="button"
+                        className={bonezChartRange === "7d" ? "active" : ""}
+                        onClick={() => setBonezChartRange("7d")}
+                      >
+                        7D
+                      </button>
+
+                      <button
+                        type="button"
+                        className={bonezChartRange === "30d" ? "active" : ""}
+                        onClick={() => setBonezChartRange("30d")}
+                      >
+                        30D
+                      </button>
+                    </div>
+
+                    <div
+                      className={`bonez-chart-change ${
+                        bonezChartChange > 0 ? "positive" : bonezChartChange < 0 ? "negative" : ""
+                      }`}
+                    >
+                      {bonezChartChange !== null
+                        ? `${bonezChartChange >= 0 ? "+" : ""}${bonezChartChange.toFixed(2)}%`
+                        : "—"}
+                    </div>
+                  </div>
+
+                  {bonezChartLoading && !bonezChart && (
+                    <div className="bonez-chart-placeholder">Loading BONEZ price history...</div>
+                  )}
+
+                  {bonezChartError && !bonezChart && (
+                    <div className="bonez-chart-placeholder">{bonezChartError}</div>
+                  )}
+
+                  {bonezChart && (
+                    <>
+                      <div className="bonez-chart-stage">
+                        <svg
+                          viewBox={`0 0 ${bonezChart.width} ${bonezChart.height}`}
+                          role="img"
+                          aria-label="BONEZ 24 hour price chart"
+                        >
+                          <defs>
+                            <linearGradient id="bonezChartGradient" x1="0" y1="0" x2="1" y2="0">
+                              <stop offset="0%" stopColor="#ff3df7" />
+                              <stop offset="50%" stopColor="#ffd86b" />
+                              <stop offset="100%" stopColor="#00e5ff" />
+                            </linearGradient>
+
+                            <filter id="bonezChartGlow">
+                              <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+
+                              <feMerge>
+                                <feMergeNode in="coloredBlur" />
+                                <feMergeNode in="SourceGraphic" />
+                              </feMerge>
+                            </filter>
+                          </defs>
+
+                          <line x1="18" x2="782" y1="55" y2="55" className="bonez-chart-gridline" />
+
+                          <line
+                            x1="18"
+                            x2="782"
+                            y1="110"
+                            y2="110"
+                            className="bonez-chart-gridline"
+                          />
+
+                          <line
+                            x1="18"
+                            x2="782"
+                            y1="165"
+                            y2="165"
+                            className="bonez-chart-gridline"
+                          />
+
+                          <polyline
+                            points={bonezChart.polyline}
+                            fill="none"
+                            stroke="url(#bonezChartGradient)"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            filter="url(#bonezChartGlow)"
+                          />
+
+                          <circle
+                            cx={bonezChart.last.x}
+                            cy={bonezChart.last.y}
+                            r="6"
+                            className="bonez-chart-current-dot"
+                          />
+                        </svg>
+                      </div>
+
+                      <div className="bonez-chart-footer">
+                        <span>
+                          Low <strong>${bonezChart.min.toFixed(7)}</strong>
+                        </span>
+
+                        <span>
+                          High <strong>${bonezChart.max.toFixed(7)}</strong>
+                        </span>
+
+                        <span>
+                          Current <strong>${bonezChart.last.value.toFixed(7)}</strong>
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className="bonez-market-grid">
+                  <div className="bonez-market-stat">
+                    <span>24H Change</span>
+
+                    <strong>
+                      {bonezMarket.priceChange?.h24 !== undefined
+                        ? `${Number(bonezMarket.priceChange.h24).toFixed(2)}%`
+                        : "—"}
+                    </strong>
+                  </div>
+
+                  <div className="bonez-market-stat">
+                    <span>24H Volume</span>
+
+                    <strong>{formatBonezUsd(bonezMarket.volume?.h24)}</strong>
+                  </div>
+
+                  <div className="bonez-market-stat">
+                    <span>Liquidity</span>
+
+                    <strong>{formatBonezUsd(bonezMarket.liquidity?.usd)}</strong>
+                  </div>
+
+                  <div className="bonez-market-stat">
+                    <span>Market Cap</span>
+
+                    <strong>{formatBonezUsd(bonezMarket.marketCap)}</strong>
+                  </div>
+                </div>
+
+                <div className="bonez-market-activity">
+                  <div>
+                    <span>24H Buys</span>
+                    <strong>{formatMarketNumber(bonezMarket.txns?.h24?.buys)}</strong>
+                  </div>
+
+                  <div>
+                    <span>24H Sells</span>
+                    <strong>{formatMarketNumber(bonezMarket.txns?.h24?.sells)}</strong>
+                  </div>
+
+                  <div>
+                    <span>Pair</span>
+                    <strong>BONEZ / EGLD</strong>
+                  </div>
+                </div>
+
+                <div className="bonez-market-footer">
+                  <div>
+                    <span>Last updated</span>
+
+                    <strong>
+                      {bonezMarketUpdated
+                        ? bonezMarketUpdated.toLocaleTimeString([], {
+                            hour: "numeric",
+                            minute: "2-digit",
+                            second: "2-digit",
+                          })
+                        : "—"}
+                    </strong>
+                  </div>
+
+                  {bonezMarket.url && (
+                    <a
+                      className="btn bonez-market-link"
+                      href={bonezMarket.url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      View Live Market ↗
+                    </a>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
           <section id="my-pittz">
             <div className="section-title">
               <h2>My Pittz</h2>
@@ -1770,20 +2277,44 @@ function App() {
                         <div className="bonez-wallet-total-grid">
                           <div className="bonez-wallet-total-stat">
                             <span>Daily</span>
+
                             <strong>{bonezWalletTotals.daily.toFixed(2)}</strong>
+
                             <small>BONEZ</small>
+
+                            <small>
+                              {bonezWalletUsdValues.daily !== null
+                                ? `≈ ${formatBonezUsd(bonezWalletUsdValues.daily)}`
+                                : "Live price unavailable"}
+                            </small>
                           </div>
 
                           <div className="bonez-wallet-total-stat">
                             <span>Weekly</span>
+
                             <strong>{bonezWalletTotals.weekly.toFixed(2)}</strong>
+
                             <small>BONEZ</small>
+
+                            <small>
+                              {bonezWalletUsdValues.weekly !== null
+                                ? `≈ ${formatBonezUsd(bonezWalletUsdValues.weekly)}`
+                                : "Live price unavailable"}
+                            </small>
                           </div>
 
                           <div className="bonez-wallet-total-stat">
                             <span>Estimated 30 Days</span>
+
                             <strong>{bonezWalletTotals.monthly.toFixed(2)}</strong>
+
                             <small>BONEZ</small>
+
+                            <small>
+                              {bonezWalletUsdValues.monthly !== null
+                                ? `≈ ${formatBonezUsd(bonezWalletUsdValues.monthly)}`
+                                : "Live price unavailable"}
+                            </small>
                           </div>
                         </div>
                       </div>
@@ -2142,8 +2673,8 @@ function App() {
 
                     <div className="pittz-results-bar">
                       <span>
-                        Showing {filteredExplorerNfts.length} of {explorerNfts.length}{" "}
-                        {activeCollection.name}
+                        Showing {explorerPageNfts.length} of{" "}
+                        {filteredExplorerNfts.length.toLocaleString()} {activeCollection.name}
                       </span>
 
                       {(explorerSearch ||
