@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import "./App.css";
 
 import { UnlockPanelManager } from "@multiversx/sdk-dapp/out/managers/UnlockPanelManager";
@@ -13,12 +13,11 @@ import ExplorerControls from "./components/explorer/ExplorerControls";
 import ExplorerPagination from "./components/explorer/ExplorerPagination";
 import NftCard from "./components/nft/NftCard";
 import NftDetailModal from "./components/nft/NftDetailModal";
-import { BONEZ_DEXSCREENER_URL, BONEZ_TOKEN_ID } from "./config/collections";
+import BonezMarketSection from "./features/bonez-market/BonezMarketSection";
+import useBonezMarket from "./features/bonez-market/useBonezMarket";
 import useExplorerData from "./features/explorer/useExplorerData";
 import MyPittzSection from "./features/my-pittz/MyPittzSection";
 import useWalletPittz from "./features/my-pittz/useWalletPittz";
-import { buildBonezChart } from "./utils/chartUtils";
-import { formatBonezUsd, formatMarketNumber } from "./utils/formatters";
 import { getPittzStats } from "./utils/nftUtils";
 
 function App() {
@@ -66,15 +65,18 @@ function App() {
 
   const account = useGetAccount();
   const { nfts, loading: nftsLoading, error: nftsError } = useWalletPittz(account.address);
-  const [bonezMarket, setBonezMarket] = useState(null);
-  const [bonezMarketLoading, setBonezMarketLoading] = useState(true);
-  const [bonezMarketError, setBonezMarketError] = useState("");
-  const [bonezMarketUpdated, setBonezMarketUpdated] = useState(null);
-  const [bonezPriceHistory, setBonezPriceHistory] = useState([]);
-  const [bonezChartLoading, setBonezChartLoading] = useState(true);
-  const [bonezChartError, setBonezChartError] = useState("");
-  const [bonezDailyHistory, setBonezDailyHistory] = useState([]);
-  const [bonezChartRange, setBonezChartRange] = useState("24h");
+  const {
+    market: bonezMarket,
+    marketLoading: bonezMarketLoading,
+    marketError: bonezMarketError,
+    marketUpdated: bonezMarketUpdated,
+    chart: bonezChart,
+    chartLoading: bonezChartLoading,
+    chartError: bonezChartError,
+    chartRange: bonezChartRange,
+    chartChange: bonezChartChange,
+    setChartRange: setBonezChartRange,
+  } = useBonezMarket();
 
   UnlockPanelManager.init({
     loginHandler: () => {
@@ -234,143 +236,6 @@ function App() {
       setRandomPittLoading(false);
     }
   }
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchBonezDailyHistory() {
-      try {
-        const response = await fetch(
-          `https://api.multiversx.com/mex/tokens/prices/daily/${BONEZ_TOKEN_ID}`,
-        );
-
-        if (!response.ok) {
-          throw new Error("Unable to load BONEZ daily history");
-        }
-
-        const data = await response.json();
-
-        if (!cancelled) {
-          setBonezDailyHistory(data);
-        }
-      } catch (error) {
-        console.error("BONEZ daily history failed:", error);
-      }
-    }
-
-    fetchBonezDailyHistory();
-
-    const interval = setInterval(fetchBonezDailyHistory, 1_800_000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchBonezMarket() {
-      try {
-        setBonezMarketError("");
-
-        const response = await fetch(BONEZ_DEXSCREENER_URL);
-
-        if (!response.ok) {
-          throw new Error("Unable to load BONEZ market data");
-        }
-
-        const data = await response.json();
-        const pair = data.pair || data.pairs?.[0];
-
-        if (!pair) {
-          throw new Error("BONEZ market pair was not found");
-        }
-
-        if (!cancelled) {
-          setBonezMarket(pair);
-          setBonezMarketUpdated(new Date());
-        }
-      } catch (error) {
-        console.error("BONEZ market lookup failed:", error);
-
-        if (!cancelled) {
-          setBonezMarketError("Live BONEZ market data is temporarily unavailable.");
-        }
-      } finally {
-        if (!cancelled) {
-          setBonezMarketLoading(false);
-        }
-      }
-    }
-
-    fetchBonezMarket();
-
-    const interval = setInterval(fetchBonezMarket, 60_000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchBonezPriceHistory() {
-      try {
-        setBonezChartError("");
-
-        const response = await fetch(
-          `https://api.multiversx.com/mex/tokens/prices/hourly/${BONEZ_TOKEN_ID}`,
-        );
-
-        if (!response.ok) {
-          throw new Error("Unable to load BONEZ price history");
-        }
-
-        const data = await response.json();
-
-        if (!cancelled) {
-          setBonezPriceHistory(data);
-        }
-      } catch (error) {
-        console.error("BONEZ price history failed:", error);
-
-        if (!cancelled) {
-          setBonezChartError("BONEZ chart data is temporarily unavailable.");
-        }
-      } finally {
-        if (!cancelled) {
-          setBonezChartLoading(false);
-        }
-      }
-    }
-
-    fetchBonezPriceHistory();
-
-    const interval = setInterval(fetchBonezPriceHistory, 300_000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, []);
-
-  const activeBonezHistory =
-    bonezChartRange === "24h"
-      ? bonezPriceHistory.slice(-24)
-      : bonezChartRange === "7d"
-        ? bonezDailyHistory.slice(-7)
-        : bonezDailyHistory.slice(-30);
-
-  const bonezChart = buildBonezChart(activeBonezHistory);
-
-  const bonezChartChange =
-    bonezChart?.first?.value && bonezChart?.last?.value
-      ? ((bonezChart.last.value - bonezChart.first.value) / bonezChart.first.value) * 100
-      : null;
 
   const explorerSummary = (() => {
     const bloodlines = {};
@@ -1046,268 +911,18 @@ function App() {
             </div>
           </section>
 
-          <div className="section-title">
-            <span>🦴 Live Utility</span>
-            <h2>BONEZ Market</h2>
-            <p>Live market data for the token powering the CryptoPittz ecosystem.</p>
-          </div>
-
-          <div className="bonez-market">
-            <div className="bonez-market-header">
-              <div>
-                <span className="bonez-market-eyebrow">🦴 Live Market</span>
-
-                <h3>BONEZ MARKET</h3>
-
-                <p>BONEZ / EGLD • xExchange</p>
-              </div>
-
-              <div className={`bonez-market-status ${bonezMarket ? "online" : ""}`}>
-                <span className="bonez-market-dot" />
-                {bonezMarketLoading ? "Loading" : bonezMarket ? "Live" : "Offline"}
-              </div>
-            </div>
-
-            {bonezMarketLoading && !bonezMarket && (
-              <div className="bonez-market-loading">Connecting to BONEZ market data...</div>
-            )}
-
-            {bonezMarketError && !bonezMarket && (
-              <div className="bonez-market-error">{bonezMarketError}</div>
-            )}
-
-            {bonezMarket && (
-              <>
-                <div className="bonez-market-price">
-                  <span>Current BONEZ Price</span>
-
-                  <strong>{formatBonezUsd(bonezMarket.priceUsd)}</strong>
-
-                  <small>
-                    1 BONEZ ={" "}
-                    {Number(bonezMarket.priceNative).toLocaleString("en-US", {
-                      minimumFractionDigits: 8,
-                      maximumFractionDigits: 8,
-                    })}{" "}
-                    EGLD
-                  </small>
-                </div>
-
-                <div className="bonez-chart">
-                  <div className="bonez-chart-header">
-                    <div>
-                      <span>Price History</span>
-
-                      <strong>
-                        {bonezChartRange === "24h"
-                          ? "24H BONEZ / USD"
-                          : bonezChartRange === "7d"
-                            ? "7D BONEZ / USD"
-                            : "30D BONEZ / USD"}
-                      </strong>
-                    </div>
-
-                    <div className="bonez-chart-ranges">
-                      <button
-                        type="button"
-                        className={bonezChartRange === "24h" ? "active" : ""}
-                        onClick={() => setBonezChartRange("24h")}
-                      >
-                        24H
-                      </button>
-
-                      <button
-                        type="button"
-                        className={bonezChartRange === "7d" ? "active" : ""}
-                        onClick={() => setBonezChartRange("7d")}
-                      >
-                        7D
-                      </button>
-
-                      <button
-                        type="button"
-                        className={bonezChartRange === "30d" ? "active" : ""}
-                        onClick={() => setBonezChartRange("30d")}
-                      >
-                        30D
-                      </button>
-                    </div>
-
-                    <div
-                      className={`bonez-chart-change ${
-                        bonezChartChange > 0 ? "positive" : bonezChartChange < 0 ? "negative" : ""
-                      }`}
-                    >
-                      {bonezChartChange !== null
-                        ? `${bonezChartChange >= 0 ? "+" : ""}${bonezChartChange.toFixed(2)}%`
-                        : "—"}
-                    </div>
-                  </div>
-
-                  {bonezChartLoading && !bonezChart && (
-                    <div className="bonez-chart-placeholder">Loading BONEZ price history...</div>
-                  )}
-
-                  {bonezChartError && !bonezChart && (
-                    <div className="bonez-chart-placeholder">{bonezChartError}</div>
-                  )}
-
-                  {bonezChart && (
-                    <>
-                      <div className="bonez-chart-stage">
-                        <svg
-                          viewBox={`0 0 ${bonezChart.width} ${bonezChart.height}`}
-                          role="img"
-                          aria-label="BONEZ 24 hour price chart"
-                        >
-                          <defs>
-                            <linearGradient id="bonezChartGradient" x1="0" y1="0" x2="1" y2="0">
-                              <stop offset="0%" stopColor="#ff3df7" />
-                              <stop offset="50%" stopColor="#ffd86b" />
-                              <stop offset="100%" stopColor="#00e5ff" />
-                            </linearGradient>
-
-                            <filter id="bonezChartGlow">
-                              <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-
-                              <feMerge>
-                                <feMergeNode in="coloredBlur" />
-                                <feMergeNode in="SourceGraphic" />
-                              </feMerge>
-                            </filter>
-                          </defs>
-
-                          <line x1="18" x2="782" y1="55" y2="55" className="bonez-chart-gridline" />
-
-                          <line
-                            x1="18"
-                            x2="782"
-                            y1="110"
-                            y2="110"
-                            className="bonez-chart-gridline"
-                          />
-
-                          <line
-                            x1="18"
-                            x2="782"
-                            y1="165"
-                            y2="165"
-                            className="bonez-chart-gridline"
-                          />
-
-                          <polyline
-                            points={bonezChart.polyline}
-                            fill="none"
-                            stroke="url(#bonezChartGradient)"
-                            strokeWidth="4"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            filter="url(#bonezChartGlow)"
-                          />
-
-                          <circle
-                            cx={bonezChart.last.x}
-                            cy={bonezChart.last.y}
-                            r="6"
-                            className="bonez-chart-current-dot"
-                          />
-                        </svg>
-                      </div>
-
-                      <div className="bonez-chart-footer">
-                        <span>
-                          Low <strong>${bonezChart.min.toFixed(7)}</strong>
-                        </span>
-
-                        <span>
-                          High <strong>${bonezChart.max.toFixed(7)}</strong>
-                        </span>
-
-                        <span>
-                          Current <strong>${bonezChart.last.value.toFixed(7)}</strong>
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                <div className="bonez-market-grid">
-                  <div className="bonez-market-stat">
-                    <span>24H Change</span>
-
-                    <strong>
-                      {bonezMarket.priceChange?.h24 !== undefined
-                        ? `${Number(bonezMarket.priceChange.h24).toFixed(2)}%`
-                        : "—"}
-                    </strong>
-                  </div>
-
-                  <div className="bonez-market-stat">
-                    <span>24H Volume</span>
-
-                    <strong>{formatBonezUsd(bonezMarket.volume?.h24)}</strong>
-                  </div>
-
-                  <div className="bonez-market-stat">
-                    <span>Liquidity</span>
-
-                    <strong>{formatBonezUsd(bonezMarket.liquidity?.usd)}</strong>
-                  </div>
-
-                  <div className="bonez-market-stat">
-                    <span>Market Cap</span>
-
-                    <strong>{formatBonezUsd(bonezMarket.marketCap)}</strong>
-                  </div>
-                </div>
-
-                <div className="bonez-market-activity">
-                  <div>
-                    <span>24H Buys</span>
-                    <strong>{formatMarketNumber(bonezMarket.txns?.h24?.buys)}</strong>
-                  </div>
-
-                  <div>
-                    <span>24H Sells</span>
-                    <strong>{formatMarketNumber(bonezMarket.txns?.h24?.sells)}</strong>
-                  </div>
-
-                  <div>
-                    <span>Pair</span>
-                    <strong>BONEZ / EGLD</strong>
-                  </div>
-                </div>
-
-                <div className="bonez-market-footer">
-                  <div>
-                    <span>Last updated</span>
-
-                    <strong>
-                      {bonezMarketUpdated
-                        ? bonezMarketUpdated.toLocaleTimeString([], {
-                            hour: "numeric",
-                            minute: "2-digit",
-                            second: "2-digit",
-                          })
-                        : "—"}
-                    </strong>
-                  </div>
-
-                  {bonezMarket.url && (
-                    <a
-                      className="btn bonez-market-link"
-                      href={bonezMarket.url}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      View Live Market ↗
-                    </a>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-
+          <BonezMarketSection
+            market={bonezMarket}
+            marketLoading={bonezMarketLoading}
+            marketError={bonezMarketError}
+            marketUpdated={bonezMarketUpdated}
+            chart={bonezChart}
+            chartLoading={bonezChartLoading}
+            chartError={bonezChartError}
+            chartRange={bonezChartRange}
+            chartChange={bonezChartChange}
+            onChartRangeChange={setBonezChartRange}
+          />
           <MyPittzSection
             address={account.address}
             nfts={nfts}
