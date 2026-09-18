@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useRef, useState } from "react";
 import "./App.css";
 
 import { UnlockPanelManager } from "@multiversx/sdk-dapp/out/managers/UnlockPanelManager";
@@ -8,242 +8,31 @@ import { getAccountProvider } from "@multiversx/sdk-dapp/out/providers/helpers/a
 import { ProviderFactory } from "@multiversx/sdk-dapp/out/providers/ProviderFactory";
 import { ProviderTypeEnum } from "@multiversx/sdk-dapp/out/providers/types/providerFactory.types";
 
-const galleryItems = [
-  { src: "/images/pittz-01.jpg", title: "CryptoPittz #0001" },
-  { src: "/images/pittz-02.jpg", title: "CryptoPittz #0002" },
-  { src: "/images/pittz-03.jpg", title: "CryptoPittz #0003" },
-  { src: "/images/pittz-04.jpg", title: "CryptoPittz #0004" },
-  { src: "/images/pittz-05.jpg", title: "CryptoPittz #0005" },
-  { src: "/images/pittz-06.jpg", title: "CryptoPittz #0006" },
-  { src: "/images/pittz-07.jpg", title: "CryptoPittz #0007" },
-  { src: "/images/pittz-08.jpg", title: "CryptoPittz #0008" },
-];
+import ExplorerControls from "./components/explorer/ExplorerControls";
+import ExplorerPagination from "./components/explorer/ExplorerPagination";
+import NftCard from "./components/nft/NftCard";
+import NftDetailModal from "./components/nft/NftDetailModal";
+import BonezMarketSection from "./features/bonez-market/BonezMarketSection";
+import useBonezMarket from "./features/bonez-market/useBonezMarket";
+import useExplorerData from "./features/explorer/useExplorerData";
+import MyPittzSection from "./features/my-pittz/MyPittzSection";
+import useWalletPittz from "./features/my-pittz/useWalletPittz";
+import { getPittzStats } from "./utils/nftUtils";
 
-function decodePittzAttributes(encodedAttributes) {
-  if (!encodedAttributes) return [];
-
-  try {
-    const decoded = atob(encodedAttributes);
-
-    return decoded
-      .split(";")
-      .filter((item) => item.includes(":"))
-      .map((item) => {
-        const [trait, ...valueParts] = item.split(":");
-
-        return {
-          trait: trait.trim(),
-          value: valueParts.join(":").trim(),
-        };
-      })
-      .filter((item) => item.trait !== "metadata" && item.trait !== "tags");
-  } catch (error) {
-    console.error("Unable to decode NFT attributes:", error);
-    return [];
-  }
-}
-
-function getPittzStats(encodedAttributes) {
-  if (!encodedAttributes) {
-    return {
-      type: "",
-      bloodline: "",
-      score: "",
-      rank: "",
-    };
-  }
-
-  try {
-    const decoded = atob(encodedAttributes);
-
-    const tagsSection = decoded.split(";").find((item) => item.startsWith("tags:"));
-
-    if (!tagsSection) {
-      return {
-        type: "",
-        bloodline: "",
-        score: "",
-        rank: "",
-      };
-    }
-
-    const tags = tagsSection.replace("tags:", "").split(",");
-
-    const getTagValue = (prefix) => {
-      const tag = tags.find((item) => item.startsWith(prefix));
-
-      return tag ? tag.replace(prefix, "") : "";
-    };
-
-    return {
-      type: getTagValue("Type-"),
-      bloodline: getTagValue("Bloodline-"),
-      score: getTagValue("PointScore-"),
-      rank: getTagValue("Rank-"),
-    };
-  } catch (error) {
-    console.error("Unable to decode CryptoPittz stats:", error);
-
-    return {
-      type: "",
-      bloodline: "",
-      score: "",
-      rank: "",
-    };
-  }
-}
-
-const EXPLORER_COLLECTIONS = {
-  original: {
-    name: "Original Pittz",
-    collection: "PITTZ-1a4c2d",
-    marketplace: "https://www.oox.art/marketplace/collections/PITTZ-1a4c2d",
-  },
-
-  vice: {
-    name: "Vice Pittz",
-    collection: "PITTZVICE-c3ec94",
-    marketplace: "https://www.oox.art/marketplace/collections/PITTZVICE-c3ec94",
-  },
-};
-
-const BONEZ_TOKEN_ID = "BONEZ-ff9a73";
-
-const BONEZ_PAIR_ADDRESS = "erd1qqqqqqqqqqqqqpgqxjc80qdqjnwnr6q0z9z75m7sgasjxfln2jpsp67kpt";
-
-const BONEZ_DEXSCREENER_URL = `https://api.dexscreener.com/latest/dex/pairs/multiversx/${BONEZ_PAIR_ADDRESS}`;
-
-function buildBonezChart(data) {
-  if (!data?.length) {
-    return null;
-  }
-
-  const width = 800;
-  const height = 220;
-  const paddingX = 18;
-  const paddingY = 22;
-
-  const values = data.map((item) => Number(item.value));
-
-  const minValue = Math.min(...values);
-  const maxValue = Math.max(...values);
-
-  const range = maxValue - minValue;
-
-  const safeRange = range === 0 ? Math.max(maxValue * 0.02, 0.00000001) : range;
-
-  const paddedMin = minValue - safeRange * 0.18;
-  const paddedMax = maxValue + safeRange * 0.18;
-
-  const chartRange = paddedMax - paddedMin;
-
-  const points = data.map((item, index) => {
-    const x = paddingX + (index / Math.max(data.length - 1, 1)) * (width - paddingX * 2);
-
-    const y =
-      height - paddingY - ((Number(item.value) - paddedMin) / chartRange) * (height - paddingY * 2);
-
-    return {
-      x,
-      y,
-      value: Number(item.value),
-      timestamp: item.timestamp,
-    };
-  });
-
-  return {
-    width,
-    height,
-    points,
-    polyline: points.map((point) => `${point.x},${point.y}`).join(" "),
-    min: minValue,
-    max: maxValue,
-    first: points[0],
-    last: points[points.length - 1],
-  };
-}
-
-function getNftMarketplace(nft) {
-  if (!nft?.identifier || !nft?.collection) {
-    return EXPLORER_COLLECTIONS.original.marketplace;
-  }
-
-  const collectionUrl =
-    nft.collection === "PITTZVICE-c3ec94"
-      ? EXPLORER_COLLECTIONS.vice.marketplace
-      : EXPLORER_COLLECTIONS.original.marketplace;
-
-  return `${collectionUrl}?nftId=${encodeURIComponent(nft.identifier)}`;
-}
-
-function getNftImage(nft) {
-  return (
-    nft?.media?.[0]?.thumbnailUrl ||
-    nft?.media?.[0]?.url ||
-    nft?.url ||
-    nft?.media?.[0]?.originalUrl ||
-    nft?.metadata?.image ||
-    ""
-  );
-}
-
-function getCollectionBadge(nft) {
-  if (nft?.collection === "PITTZVICE-c3ec94") {
-    return {
-      label: "VICE PITTZ",
-      className: "vice-badge",
-    };
-  }
-
-  return {
-    label: "ORIGINAL PITTZ",
-    className: "original-badge",
-  };
-}
+const BonezRush = lazy(() => import("./features/bonez-rush/BonezRush"));
 
 function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileGroup, setMobileGroup] = useState(null);
-  const [lightboxIndex, setLightboxIndex] = useState(null);
-  const [nfts, setNfts] = useState([]);
-  const [nftsLoading, setNftsLoading] = useState(false);
-  const [nftsError, setNftsError] = useState("");
   const [selectedNft, setSelectedNft] = useState(null);
   const [modalNfts, setModalNfts] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("rank");
-  const [bloodlineFilter, setBloodlineFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("all");
-  const [explorerNfts, setExplorerNfts] = useState([]);
-  const [explorerLoading, setExplorerLoading] = useState(true);
-  const [explorerError, setExplorerError] = useState("");
   const [explorerSearch, setExplorerSearch] = useState("");
   const [explorerSort, setExplorerSort] = useState("rank");
   const [explorerBloodline, setExplorerBloodline] = useState("all");
   const [explorerType, setExplorerType] = useState("all");
-  const [explorerAllNfts, setExplorerAllNfts] = useState([]);
-  const [explorerAllLoading, setExplorerAllLoading] = useState(false);
-  const [explorerLoadProgress, setExplorerLoadProgress] = useState({
-    loaded: 0,
-    total: 0,
-  });
-  const [explorerTotal, setExplorerTotal] = useState(0);
-  const [explorerPage, setExplorerPage] = useState(0);
-  const [explorerCache, setExplorerCache] = useState({
-    original: null,
-    vice: null,
-  });
-  const [globalSearchResult, setGlobalSearchResult] = useState(null);
-  const [explorerIndexReady, setExplorerIndexReady] = useState(false);
-  const [globalSearchLoading, setGlobalSearchLoading] = useState(false);
-  const [globalSearchError, setGlobalSearchError] = useState("");
   const [randomPittLoading, setRandomPittLoading] = useState(false);
   const [randomPittError, setRandomPittError] = useState("");
-  const [explorerCollection, setExplorerCollection] = useState("original");
-  const [originalTotal, setOriginalTotal] = useState(0);
-  const [viceTotal, setViceTotal] = useState(0);
   const [randomPittMode, setRandomPittMode] = useState("surprise");
-  const [myPittzCollection, setMyPittzCollection] = useState("original");
   const walletConnectAnchorRef = useRef(null);
   const [walletOverlayOpen, setWalletOverlayOpen] = useState(false);
 
@@ -252,104 +41,49 @@ function App() {
 
   const EXPLORER_PAGE_SIZE = 100;
 
-  const lightboxOpen = lightboxIndex !== null;
-  const account = useGetAccount();
-  const [bonezMarket, setBonezMarket] = useState(null);
-  const [bonezMarketLoading, setBonezMarketLoading] = useState(true);
-  const [bonezMarketError, setBonezMarketError] = useState("");
-  const [bonezMarketUpdated, setBonezMarketUpdated] = useState(null);
-  const [bonezPriceHistory, setBonezPriceHistory] = useState([]);
-  const [bonezChartLoading, setBonezChartLoading] = useState(true);
-  const [bonezChartError, setBonezChartError] = useState("");
-  const [bonezDailyHistory, setBonezDailyHistory] = useState([]);
-  const [bonezChartRange, setBonezChartRange] = useState("24h");
+  const {
+    activeCollection,
+    allNfts: explorerAllNfts,
+    clearSearch: clearGlobalSearch,
+    collection: explorerCollection,
+    collectionTotal: explorerTotal,
+    indexLoading: explorerAllLoading,
+    indexReady: explorerIndexReady,
+    loadProgress: explorerLoadProgress,
+    originalTotal,
+    page: explorerPage,
+    pageError: explorerError,
+    pageLoading: explorerLoading,
+    pageNfts: explorerNfts,
+    searchCryptoPittz,
+    searchError: globalSearchError,
+    searchLoading: globalSearchLoading,
+    searchResult: globalSearchResult,
+    setCollection: setExplorerCollection,
+    setPage: setExplorerPage,
+    viceTotal,
+  } = useExplorerData(EXPLORER_PAGE_SIZE);
 
-  const unlockPanelManager = UnlockPanelManager.init({
+  const account = useGetAccount();
+  const { nfts, loading: nftsLoading, error: nftsError } = useWalletPittz(account.address);
+  const {
+    market: bonezMarket,
+    marketLoading: bonezMarketLoading,
+    marketError: bonezMarketError,
+    marketUpdated: bonezMarketUpdated,
+    chart: bonezChart,
+    chartLoading: bonezChartLoading,
+    chartError: bonezChartError,
+    chartRange: bonezChartRange,
+    chartChange: bonezChartChange,
+    setChartRange: setBonezChartRange,
+  } = useBonezMarket();
+
+  UnlockPanelManager.init({
     loginHandler: () => {
       console.log("Wallet connected!");
     },
   });
-  const activeCollection = EXPLORER_COLLECTIONS[explorerCollection];
-  const ownedOriginalPittz = nfts.filter((nft) => nft.collection === "PITTZ-1a4c2d");
-
-  const ownedVicePittz = nfts.filter((nft) => nft.collection === "PITTZVICE-c3ec94");
-  const activeOwnedPittz = myPittzCollection === "vice" ? ownedVicePittz : ownedOriginalPittz;
-  const BONEZ_RATES = {
-    original: {
-      "Secret Rare": { daily: 51.59, weekly: 367.33 },
-      Holoz: { daily: 25.85, weekly: 257.35 },
-      Lego: { daily: 12.92, weekly: 90.44 },
-      Platinum: { daily: 6.2, weekly: 43.4 },
-      Gold: { daily: 3.1, weekly: 21.7 },
-      Silver: { daily: 1.55, weekly: 10.85 },
-      Bronze: { daily: 0.52, weekly: 3.64 },
-    },
-
-    vice: {
-      "Secret Rare": { daily: 62.03, weekly: 434.21 },
-      Holoz: { daily: 21.02, weekly: 217.14 },
-      Lego: { daily: 15.51, weekly: 108.57 },
-      Platinum: { daily: 7.44, weekly: 52.08 },
-      Gold: { daily: 3.72, weekly: 38.04 },
-      Silver: { daily: 1.86, weekly: 13.02 },
-      Bronze: { daily: 0.62, weekly: 4.34 },
-    },
-  };
-
-  function getBonezTier(nft) {
-    const stats = getPittzStats(nft.attributes);
-    const rank = Number(stats.rank);
-
-    if (!rank) return null;
-
-    const isVice = nft.collection === "PITTZVICE-c3ec94";
-
-    if (!isVice) {
-      if (rank === 1) return "Secret Rare";
-      if (rank === 2) return "Holoz";
-      if (rank === 3) return "Lego";
-      if (rank >= 4 && rank <= 451) return "Platinum";
-      if (rank >= 452 && rank <= 1245) return "Gold";
-      if (rank >= 1246 && rank <= 3195) return "Silver";
-      if (rank >= 3196 && rank <= 6999) return "Bronze";
-
-      return null;
-    }
-
-    if (rank === 1) return "Secret Rare";
-    if (rank === 2) return "Holoz";
-    if (rank === 3) return "Lego";
-    if (rank >= 4 && rank <= 104) return "Platinum";
-    if (rank >= 105 && rank <= 288) return "Gold";
-    if (rank >= 289 && rank <= 701) return "Silver";
-    if (rank >= 702 && rank <= 1337) return "Bronze";
-
-    return null;
-  }
-
-  function getBonezGeneration(nft) {
-    const tier = getBonezTier(nft);
-
-    if (!tier) {
-      return null;
-    }
-
-    const collectionType = nft.collection === "PITTZVICE-c3ec94" ? "vice" : "original";
-
-    const rates = BONEZ_RATES[collectionType][tier];
-
-    if (!rates) {
-      return null;
-    }
-
-    return {
-      tier,
-      daily: rates.daily,
-      weekly: rates.weekly,
-      monthly: rates.daily * 30,
-    };
-  }
-
   function closeMobileMenu() {
     setMobileOpen(false);
   }
@@ -357,24 +91,23 @@ function App() {
   function toggleMobileGroup(group) {
     setMobileGroup((current) => (current === group ? null : group));
   }
+
+  function resetExplorerFilters() {
+    setExplorerSearch("");
+    setExplorerSort("rank");
+    setExplorerBloodline("all");
+    setExplorerType("all");
+    setExplorerPage(0);
+    clearGlobalSearch();
+  }
+
+  function changeExplorerCollection(collection) {
+    setExplorerCollection(collection);
+    resetExplorerFilters();
+  }
+
   function isMobileDevice() {
     return window.matchMedia("(max-width: 700px)").matches;
-  }
-
-  function openLightbox(index) {
-    setLightboxIndex(index);
-  }
-
-  function closeLightbox() {
-    setLightboxIndex(null);
-  }
-
-  function showPrevious() {
-    setLightboxIndex((current) => (current === 0 ? galleryItems.length - 1 : current - 1));
-  }
-
-  function showNext() {
-    setLightboxIndex((current) => (current === galleryItems.length - 1 ? 0 : current + 1));
   }
 
   async function connectWallet() {
@@ -505,637 +238,6 @@ function App() {
     }
   }
 
-  async function searchCryptoPittz() {
-    const search = explorerSearch.trim();
-
-    if (!search) {
-      setGlobalSearchResult(null);
-      setGlobalSearchError("");
-      return;
-    }
-
-    try {
-      setGlobalSearchLoading(true);
-      setGlobalSearchError("");
-      setGlobalSearchResult(null);
-
-      /*
-      Use whichever Explorer collection tab is currently active.
-      Original:
-        PITTZ-1a4c2d
-
-      Vice:
-        PITTZVICE-c3ec94
-    */
-      const collectionId = activeCollection.collection;
-
-      const normalizedSearch = search.toLowerCase();
-
-      /*
-      If somebody pasted the complete NFT identifier,
-      use MultiversX's direct NFT endpoint.
-    */
-      const looksLikeFullIdentifier =
-        normalizedSearch.startsWith("pittz-") || normalizedSearch.startsWith("pittzvice-");
-
-      if (looksLikeFullIdentifier) {
-        const response = await fetch(
-          `https://api.multiversx.com/nfts/${encodeURIComponent(search)}`,
-        );
-
-        if (!response.ok) {
-          throw new Error("NFT not found");
-        }
-
-        const nft = await response.json();
-
-        if (nft.collection !== collectionId) {
-          setGlobalSearchError(`That Pitt belongs to a different CryptoPittz collection.`);
-          return;
-        }
-
-        setGlobalSearchResult(nft);
-        return;
-      }
-
-      /*
-      Pull the visible Pitt number out of searches such as:
-
-      4809
-      #4809
-      Pittz #4809
-      CryptoPittz #4809
-    */
-      const pittNumber = search.match(/\d+/)?.[0];
-
-      let searchName = search;
-
-      if (pittNumber) {
-        searchName =
-          explorerCollection === "vice"
-            ? `CryptoPittz VICE #${pittNumber}`
-            : `CryptoPittz #${pittNumber}`;
-      }
-
-      const response = await fetch(
-        `https://api.multiversx.com/collections/${collectionId}/nfts?name=${encodeURIComponent(
-          searchName,
-        )}&size=10`,
-      );
-
-      if (!response.ok) {
-        throw new Error("Unable to search CryptoPittz");
-      }
-
-      const data = await response.json();
-
-      if (!data.length) {
-        setGlobalSearchError(`No ${activeCollection.name} matching that search was found.`);
-        return;
-      }
-
-      /*
-      Prefer the exact displayed number/name when possible.
-    */
-      const exactMatch =
-        data.find((nft) => (nft.name || "").toLowerCase() === searchName.toLowerCase()) || data[0];
-
-      setGlobalSearchResult(exactMatch);
-    } catch (error) {
-      console.error("CryptoPittz search failed:", error);
-
-      setGlobalSearchError("The collection search could not be completed.");
-    } finally {
-      setGlobalSearchLoading(false);
-    }
-  }
-
-  function formatBonezUsd(value) {
-    const number = Number(value);
-
-    if (!Number.isFinite(number)) return "—";
-
-    return number.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: number < 0.01 ? 7 : 2,
-      maximumFractionDigits: number < 0.01 ? 7 : 2,
-    });
-  }
-
-  function formatMarketNumber(value) {
-    const number = Number(value);
-
-    if (!Number.isFinite(number)) return "—";
-
-    return number.toLocaleString("en-US", {
-      maximumFractionDigits: 2,
-    });
-  }
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchBonezDailyHistory() {
-      try {
-        const response = await fetch(
-          `https://api.multiversx.com/mex/tokens/prices/daily/${BONEZ_TOKEN_ID}`,
-        );
-
-        if (!response.ok) {
-          throw new Error("Unable to load BONEZ daily history");
-        }
-
-        const data = await response.json();
-
-        if (!cancelled) {
-          setBonezDailyHistory(data);
-        }
-      } catch (error) {
-        console.error("BONEZ daily history failed:", error);
-      }
-    }
-
-    fetchBonezDailyHistory();
-
-    const interval = setInterval(fetchBonezDailyHistory, 1_800_000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, []);
-
-  useEffect(() => {
-    function handleKeyDown(event) {
-      if (!lightboxOpen) return;
-
-      if (event.key === "Escape") {
-        closeLightbox();
-      }
-
-      if (event.key === "ArrowLeft") {
-        showPrevious();
-      }
-
-      if (event.key === "ArrowRight") {
-        showNext();
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    document.body.style.overflow = lightboxOpen ? "hidden" : "";
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
-    };
-  }, [lightboxOpen]);
-
-  useEffect(() => {
-    async function fetchWalletNfts() {
-      if (!account.address) {
-        setNfts([]);
-        return;
-      }
-
-      try {
-        setNftsLoading(true);
-        setNftsError("");
-
-        const collections = ["PITTZ-1a4c2d", "PITTZVICE-c3ec94"].join(",");
-
-        const response = await fetch(
-          `https://api.multiversx.com/accounts/${account.address}/nfts?collections=${collections}&size=1000`,
-        );
-
-        if (!response.ok) {
-          throw new Error("Unable to load CryptoPittz NFTs");
-        }
-
-        const data = await response.json();
-
-        console.log("CryptoPittz NFTs:", data);
-
-        setNfts(data);
-      } catch (error) {
-        console.error("NFT lookup failed:", error);
-        setNftsError("We couldn't load NFTs from this wallet.");
-        setNfts([]);
-      } finally {
-        setNftsLoading(false);
-      }
-    }
-
-    fetchWalletNfts();
-  }, [account.address]);
-
-  useEffect(() => {
-    function handleNftDetailKeys(event) {
-      if (!selectedNft) return;
-
-      if (event.key === "Escape") {
-        closeNftDetails();
-      }
-
-      if (event.key === "ArrowLeft") {
-        showPreviousOwnedNft();
-      }
-
-      if (event.key === "ArrowRight") {
-        showNextOwnedNft();
-      }
-    }
-
-    window.addEventListener("keydown", handleNftDetailKeys);
-
-    return () => {
-      window.removeEventListener("keydown", handleNftDetailKeys);
-    };
-  }, [selectedNft, nfts]);
-
-  const walletSummary = (() => {
-    if (!nfts.length) {
-      return {
-        total: 0,
-        bestRank: null,
-        highestScore: null,
-        bloodlines: {},
-        types: {},
-      };
-    }
-
-    const summaries = nfts.map((nft) => getPittzStats(nft.attributes));
-
-    const ranks = summaries
-      .map((item) => Number(item.rank))
-      .filter((value) => Number.isFinite(value) && value > 0);
-
-    const scores = summaries
-      .map((item) => Number(item.score))
-      .filter((value) => Number.isFinite(value));
-
-    const bloodlines = {};
-    const types = {};
-
-    summaries.forEach((item) => {
-      if (item.bloodline) {
-        bloodlines[item.bloodline] = (bloodlines[item.bloodline] || 0) + 1;
-      }
-
-      if (item.type) {
-        types[item.type] = (types[item.type] || 0) + 1;
-      }
-    });
-
-    return {
-      total: nfts.length,
-      bestRank: ranks.length ? Math.min(...ranks) : null,
-      highestScore: scores.length ? Math.max(...scores) : null,
-      bloodlines,
-      types,
-    };
-  })();
-
-  const filteredNfts = activeOwnedPittz
-    .filter((nft) => {
-      const stats = getPittzStats(nft.attributes);
-
-      const matchesSearch =
-        nft.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        nft.identifier?.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesBloodline = bloodlineFilter === "all" || stats.bloodline === bloodlineFilter;
-
-      const matchesType = typeFilter === "all" || stats.type === typeFilter;
-
-      return matchesSearch && matchesBloodline && matchesType;
-    })
-    .sort((a, b) => {
-      const aStats = getPittzStats(a.attributes);
-      const bStats = getPittzStats(b.attributes);
-
-      if (sortBy === "rank") {
-        return Number(aStats.rank || Infinity) - Number(bStats.rank || Infinity);
-      }
-
-      if (sortBy === "score") {
-        return Number(bStats.score || 0) - Number(aStats.score || 0);
-      }
-
-      if (sortBy === "name") {
-        return (a.name || "").localeCompare(b.name || "");
-      }
-
-      return 0;
-    });
-
-  useEffect(() => {
-    async function fetchCollection() {
-      try {
-        setExplorerLoading(true);
-        setExplorerError("");
-
-        const from = explorerPage * EXPLORER_PAGE_SIZE;
-
-        const [nftsResponse, countResponse] = await Promise.all([
-          fetch(
-            `https://api.multiversx.com/collections/${activeCollection.collection}/nfts?from=${from}&size=${EXPLORER_PAGE_SIZE}`,
-          ),
-
-          fetch(`https://api.multiversx.com/collections/${activeCollection.collection}/nfts/count`),
-        ]);
-
-        if (!nftsResponse.ok || !countResponse.ok) {
-          throw new Error("Unable to load collection");
-        }
-
-        const nftData = await nftsResponse.json();
-
-        const totalCount = await countResponse.json();
-        console.log("First Vice NFT:", nftData[0]);
-        console.log("Vice media:", nftData[0]?.media);
-        console.log("Vice URIs:", nftData[0]?.uris);
-
-        setExplorerNfts(nftData);
-        setExplorerTotal(totalCount);
-      } catch (error) {
-        console.error("Explorer lookup failed:", error);
-
-        setExplorerError("The collection could not be loaded.");
-      } finally {
-        setExplorerLoading(false);
-      }
-    }
-
-    fetchCollection();
-  }, [explorerPage, activeCollection.collection]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchAllCollectionNfts() {
-      const cacheKey = activeCollection.collection === "PITTZVICE-c3ec94" ? "vice" : "original";
-
-      const cachedCollection = explorerCache[cacheKey];
-
-      if (cachedCollection) {
-        setExplorerAllNfts(cachedCollection);
-        setExplorerAllLoading(false);
-
-        setExplorerLoadProgress({
-          loaded: cachedCollection.length,
-          total: cachedCollection.length,
-        });
-
-        return;
-      }
-
-      try {
-        setExplorerAllLoading(true);
-        setExplorerAllNfts([]);
-        setExplorerIndexReady(false);
-
-        setExplorerLoadProgress({
-          loaded: 0,
-          total: 0,
-        });
-
-        const countResponse = await fetch(
-          `https://api.multiversx.com/collections/${activeCollection.collection}/nfts/count`,
-        );
-
-        if (!countResponse.ok) {
-          throw new Error("Unable to load collection count");
-        }
-
-        const totalCount = await countResponse.json();
-
-        if (!cancelled) {
-          setExplorerLoadProgress({
-            loaded: 0,
-            total: totalCount,
-          });
-        }
-
-        const allNfts = [];
-
-        for (let from = 0; from < totalCount; from += EXPLORER_PAGE_SIZE) {
-          const response = await fetch(
-            `https://api.multiversx.com/collections/${activeCollection.collection}/nfts?from=${from}&size=${EXPLORER_PAGE_SIZE}`,
-          );
-
-          if (!response.ok) {
-            throw new Error(`Unable to load collection page starting at ${from}`);
-          }
-
-          const pageData = await response.json();
-
-          allNfts.push(...pageData);
-
-          if (!cancelled) {
-            setExplorerLoadProgress({
-              loaded: allNfts.length,
-              total: totalCount,
-            });
-          }
-        }
-
-        if (!cancelled) {
-          setExplorerAllNfts(allNfts);
-
-          setExplorerCache((current) => ({
-            ...current,
-            [cacheKey]: allNfts,
-          }));
-          setExplorerIndexReady(true);
-
-          setTimeout(() => {
-            setExplorerIndexReady(false);
-          }, 1800);
-        }
-      } catch (error) {
-        console.error("Global Explorer dataset failed:", error);
-      } finally {
-        if (!cancelled) {
-          setExplorerAllLoading(false);
-        }
-      }
-    }
-
-    fetchAllCollectionNfts();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activeCollection.collection]);
-
-  useEffect(() => {
-    setExplorerPage(0);
-
-    setExplorerSearch("");
-    setExplorerBloodline("all");
-    setExplorerType("all");
-
-    setGlobalSearchResult(null);
-    setGlobalSearchError("");
-  }, [explorerCollection]);
-
-  useEffect(() => {
-    setExplorerPage(0);
-  }, [explorerBloodline, explorerType, explorerSort]);
-
-  useEffect(() => {
-    async function fetchCollectionTotals() {
-      try {
-        const [originalResponse, viceResponse] = await Promise.all([
-          fetch("https://api.multiversx.com/collections/PITTZ-1a4c2d/nfts/count"),
-          fetch("https://api.multiversx.com/collections/PITTZVICE-c3ec94/nfts/count"),
-        ]);
-
-        if (!originalResponse.ok || !viceResponse.ok) {
-          throw new Error("Unable to load collection totals");
-        }
-
-        const originalCount = await originalResponse.json();
-        const viceCount = await viceResponse.json();
-
-        setOriginalTotal(originalCount);
-        setViceTotal(viceCount);
-      } catch (error) {
-        console.error("Collection totals failed:", error);
-      }
-    }
-
-    fetchCollectionTotals();
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchBonezMarket() {
-      try {
-        setBonezMarketError("");
-
-        const response = await fetch(BONEZ_DEXSCREENER_URL);
-
-        if (!response.ok) {
-          throw new Error("Unable to load BONEZ market data");
-        }
-
-        const data = await response.json();
-        const pair = data.pair || data.pairs?.[0];
-
-        if (!pair) {
-          throw new Error("BONEZ market pair was not found");
-        }
-
-        if (!cancelled) {
-          setBonezMarket(pair);
-          setBonezMarketUpdated(new Date());
-        }
-      } catch (error) {
-        console.error("BONEZ market lookup failed:", error);
-
-        if (!cancelled) {
-          setBonezMarketError("Live BONEZ market data is temporarily unavailable.");
-        }
-      } finally {
-        if (!cancelled) {
-          setBonezMarketLoading(false);
-        }
-      }
-    }
-
-    fetchBonezMarket();
-
-    const interval = setInterval(fetchBonezMarket, 60_000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchBonezPriceHistory() {
-      try {
-        setBonezChartError("");
-
-        const response = await fetch(
-          `https://api.multiversx.com/mex/tokens/prices/hourly/${BONEZ_TOKEN_ID}`,
-        );
-
-        if (!response.ok) {
-          throw new Error("Unable to load BONEZ price history");
-        }
-
-        const data = await response.json();
-
-        if (!cancelled) {
-          setBonezPriceHistory(data);
-        }
-      } catch (error) {
-        console.error("BONEZ price history failed:", error);
-
-        if (!cancelled) {
-          setBonezChartError("BONEZ chart data is temporarily unavailable.");
-        }
-      } finally {
-        if (!cancelled) {
-          setBonezChartLoading(false);
-        }
-      }
-    }
-
-    fetchBonezPriceHistory();
-
-    const interval = setInterval(fetchBonezPriceHistory, 300_000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, []);
-
-  const bonezWalletTotals = nfts.reduce(
-    (totals, nft) => {
-      const bonez = getBonezGeneration(nft);
-
-      if (!bonez) return totals;
-
-      totals.daily += bonez.daily;
-      totals.weekly += bonez.weekly;
-      totals.monthly += bonez.monthly;
-      totals.pittz += 1;
-
-      return totals;
-    },
-    {
-      daily: 0,
-      weekly: 0,
-      monthly: 0,
-      pittz: 0,
-    },
-  );
-
-  const activeBonezHistory =
-    bonezChartRange === "24h"
-      ? bonezPriceHistory.slice(-24)
-      : bonezChartRange === "7d"
-        ? bonezDailyHistory.slice(-7)
-        : bonezDailyHistory.slice(-30);
-
-  const bonezChart = buildBonezChart(activeBonezHistory);
-
-  const bonezChartChange =
-    bonezChart?.first?.value && bonezChart?.last?.value
-      ? ((bonezChart.last.value - bonezChart.first.value) / bonezChart.first.value) * 100
-      : null;
-
   const explorerSummary = (() => {
     const bloodlines = {};
     const types = {};
@@ -1157,20 +259,6 @@ function App() {
       types,
     };
   })();
-
-  const bonezLiveUsdPrice = Number(bonezMarket?.priceUsd);
-
-  const bonezWalletUsdValues = {
-    daily: Number.isFinite(bonezLiveUsdPrice) ? bonezWalletTotals.daily * bonezLiveUsdPrice : null,
-
-    weekly: Number.isFinite(bonezLiveUsdPrice)
-      ? bonezWalletTotals.weekly * bonezLiveUsdPrice
-      : null,
-
-    monthly: Number.isFinite(bonezLiveUsdPrice)
-      ? bonezWalletTotals.monthly * bonezLiveUsdPrice
-      : null,
-  };
 
   const filteredExplorerNfts = explorerAllNfts
     .filter((nft) => {
@@ -1212,80 +300,6 @@ function App() {
     explorerPage * EXPLORER_PAGE_SIZE + EXPLORER_PAGE_SIZE,
   );
 
-  const ExplorerPagination = () => {
-    const totalPages = Math.ceil(explorerFilteredTotal / EXPLORER_PAGE_SIZE);
-
-    function goToPage(page) {
-      setExplorerPage(page);
-
-      document.getElementById("explorer")?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }
-
-    const pageNumbers = [];
-
-    for (let page = 0; page < totalPages; page++) {
-      const isFirst = page === 0;
-      const isLast = page === totalPages - 1;
-      const isNearCurrent = Math.abs(page - explorerPage) <= 2;
-
-      if (isFirst || isLast || isNearCurrent) {
-        pageNumbers.push(page);
-      }
-    }
-
-    const paginationItems = [];
-
-    pageNumbers.forEach((page, index) => {
-      const previousPage = pageNumbers[index - 1];
-
-      if (index > 0 && page - previousPage > 1) {
-        paginationItems.push(
-          <span key={`ellipsis-${page}`} className="pagination-ellipsis">
-            …
-          </span>,
-        );
-      }
-
-      paginationItems.push(
-        <button
-          className={`page-number ${page === explorerPage ? "active" : ""}`}
-          type="button"
-          key={page}
-          onClick={() => goToPage(page)}
-        >
-          {page + 1}
-        </button>,
-      );
-    });
-
-    return (
-      <div className="explorer-pagination">
-        <button
-          className="btn"
-          type="button"
-          disabled={explorerPage === 0}
-          onClick={() => goToPage(Math.max(0, explorerPage - 1))}
-        >
-          ← Previous
-        </button>
-
-        <div className="pagination-pages">{paginationItems}</div>
-
-        <button
-          className="btn"
-          type="button"
-          disabled={explorerPage === totalPages - 1}
-          onClick={() => goToPage(Math.min(totalPages - 1, explorerPage + 1))}
-        >
-          Next →
-        </button>
-      </div>
-    );
-  };
-
   return (
     <>
       <div className="blob b1"></div>
@@ -1313,26 +327,14 @@ function App() {
             <nav className="nav-links" aria-label="Primary navigation">
               <div className="nav-item">
                 <div className="nav-btn" role="button" tabIndex="0" aria-haspopup="true">
-                  About <span className="caret" aria-hidden="true"></span>
+                  Explore <span className="caret" aria-hidden="true"></span>
                 </div>
                 <div className="dropdown" role="menu">
-                  <a href="#gallery">Featured Pittz</a>
+                  <a href="#bonez-rush">BONEZ Rush</a>
                   <a href="#my-pittz">My Pittz</a>
                   <a href="#explorer">CryptoPittz Explorer</a>
                   <a href="#traits">Traits</a>
                   <a href="#rarity">Rarity</a>
-                </div>
-              </div>
-
-              <div className="nav-item">
-                <div className="nav-btn" role="button" tabIndex="0" aria-haspopup="true">
-                  Gallery <span className="caret" aria-hidden="true"></span>
-                </div>
-
-                <div className="dropdown" role="menu">
-                  <a href="#gallery">Featured</a>
-                  <a href="#traits">Traits (Soon)</a>
-                  <a href="#rarity">Rarity (Soon)</a>
                 </div>
               </div>
 
@@ -1439,18 +441,18 @@ function App() {
             className={`mobile-panel ${mobileOpen ? "open" : ""}`}
             aria-label="Mobile navigation"
           >
-            <div className={`mobile-group ${mobileGroup === "about" ? "open" : ""}`}>
+            <div className={`mobile-group ${mobileGroup === "explore" ? "open" : ""}`}>
               <button
                 className="mobile-toggle"
                 type="button"
-                onClick={() => toggleMobileGroup("about")}
+                onClick={() => toggleMobileGroup("explore")}
               >
-                About <span className="caret"></span>
+                Explore <span className="caret"></span>
               </button>
 
               <div className="mobile-links">
-                <a href="#gallery" onClick={closeMobileMenu}>
-                  Featured Pittz
+                <a href="#bonez-rush" onClick={closeMobileMenu}>
+                  BONEZ Rush
                 </a>
 
                 <a href="#my-pittz" onClick={closeMobileMenu}>
@@ -1467,30 +469,6 @@ function App() {
 
                 <a href="#rarity" onClick={closeMobileMenu}>
                   Rarity
-                </a>
-              </div>
-            </div>
-
-            <div className={`mobile-group ${mobileGroup === "gallery" ? "open" : ""}`}>
-              <button
-                className="mobile-toggle"
-                type="button"
-                onClick={() => toggleMobileGroup("gallery")}
-              >
-                Gallery <span className="caret"></span>
-              </button>
-
-              <div className="mobile-links">
-                <a href="#gallery" onClick={closeMobileMenu}>
-                  Featured
-                </a>
-
-                <a href="#traits" onClick={closeMobileMenu}>
-                  Traits (Soon)
-                </a>
-
-                <a href="#rarity" onClick={closeMobileMenu}>
-                  Rarity (Soon)
                 </a>
               </div>
             </div>
@@ -1669,12 +647,12 @@ function App() {
                     marginTop: "18px",
                   }}
                 >
-                  <a className="btn primary" href="#about">
-                    Explore the Project
+                  <a className="btn primary" href="#bonez-rush">
+                    Play BONEZ Rush
                   </a>
 
-                  <a className="btn" href="#gallery">
-                    See the Pittz
+                  <a className="btn" href="#explorer">
+                    Explore the Pittz
                   </a>
                 </div>
               </div>
@@ -1819,49 +797,6 @@ function App() {
             </div>
           </div>
 
-          <section id="about">
-            <div className="section-title">
-              <h2>About CryptoPittz</h2>
-              <span>Meet the pack.</span>
-            </div>
-
-            <div className="panel">
-              <div className="inner">
-                <p className="subtitle" style={{ maxWidth: "80ch" }}>
-                  CryptoPittz is a stylized NFT project featuring bold neon palettes, heavy outlines
-                  and playful traits. The project is designed to grow into a connected experience
-                  with wallet integration, holder features, collection tools and more.
-                </p>
-
-                <div className="grid" style={{ marginTop: "18px" }}>
-                  <div className="card" style={{ gridColumn: "span 6" }}>
-                    <div className="accent"></div>
-
-                    <div className="inner">
-                      <h3>What makes it different?</h3>
-                      <p>
-                        Distinctive characters, colorful artwork and a visual identity designed to
-                        immediately stand out.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="card" style={{ gridColumn: "span 6" }}>
-                    <div className="accent"></div>
-
-                    <div className="inner">
-                      <h3>Where is it going?</h3>
-                      <p>
-                        Wallet connectivity, NFT ownership features and an expanding CryptoPittz
-                        community experience.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
           <section id="roadmap">
             <div className="section-title">
               <h2>Roadmap</h2>
@@ -1898,624 +833,32 @@ function App() {
             </div>
           </section>
 
-          <div className="section-title">
-            <span>🦴 Live Utility</span>
-            <h2>BONEZ Market</h2>
-            <p>Live market data for the token powering the CryptoPittz ecosystem.</p>
-          </div>
-
-          <div className="bonez-market">
-            <div className="bonez-market-header">
-              <div>
-                <span className="bonez-market-eyebrow">🦴 Live Market</span>
-
-                <h3>BONEZ MARKET</h3>
-
-                <p>BONEZ / EGLD • xExchange</p>
-              </div>
-
-              <div className={`bonez-market-status ${bonezMarket ? "online" : ""}`}>
-                <span className="bonez-market-dot" />
-                {bonezMarketLoading ? "Loading" : bonezMarket ? "Live" : "Offline"}
-              </div>
-            </div>
-
-            {bonezMarketLoading && !bonezMarket && (
-              <div className="bonez-market-loading">Connecting to BONEZ market data...</div>
-            )}
-
-            {bonezMarketError && !bonezMarket && (
-              <div className="bonez-market-error">{bonezMarketError}</div>
-            )}
-
-            {bonezMarket && (
-              <>
-                <div className="bonez-market-price">
-                  <span>Current BONEZ Price</span>
-
-                  <strong>{formatBonezUsd(bonezMarket.priceUsd)}</strong>
-
-                  <small>
-                    1 BONEZ ={" "}
-                    {Number(bonezMarket.priceNative).toLocaleString("en-US", {
-                      minimumFractionDigits: 8,
-                      maximumFractionDigits: 8,
-                    })}{" "}
-                    EGLD
-                  </small>
-                </div>
-
-                <div className="bonez-chart">
-                  <div className="bonez-chart-header">
-                    <div>
-                      <span>Price History</span>
-
-                      <strong>
-                        {bonezChartRange === "24h"
-                          ? "24H BONEZ / USD"
-                          : bonezChartRange === "7d"
-                            ? "7D BONEZ / USD"
-                            : "30D BONEZ / USD"}
-                      </strong>
-                    </div>
-
-                    <div className="bonez-chart-ranges">
-                      <button
-                        type="button"
-                        className={bonezChartRange === "24h" ? "active" : ""}
-                        onClick={() => setBonezChartRange("24h")}
-                      >
-                        24H
-                      </button>
-
-                      <button
-                        type="button"
-                        className={bonezChartRange === "7d" ? "active" : ""}
-                        onClick={() => setBonezChartRange("7d")}
-                      >
-                        7D
-                      </button>
-
-                      <button
-                        type="button"
-                        className={bonezChartRange === "30d" ? "active" : ""}
-                        onClick={() => setBonezChartRange("30d")}
-                      >
-                        30D
-                      </button>
-                    </div>
-
-                    <div
-                      className={`bonez-chart-change ${
-                        bonezChartChange > 0 ? "positive" : bonezChartChange < 0 ? "negative" : ""
-                      }`}
-                    >
-                      {bonezChartChange !== null
-                        ? `${bonezChartChange >= 0 ? "+" : ""}${bonezChartChange.toFixed(2)}%`
-                        : "—"}
-                    </div>
-                  </div>
-
-                  {bonezChartLoading && !bonezChart && (
-                    <div className="bonez-chart-placeholder">Loading BONEZ price history...</div>
-                  )}
-
-                  {bonezChartError && !bonezChart && (
-                    <div className="bonez-chart-placeholder">{bonezChartError}</div>
-                  )}
-
-                  {bonezChart && (
-                    <>
-                      <div className="bonez-chart-stage">
-                        <svg
-                          viewBox={`0 0 ${bonezChart.width} ${bonezChart.height}`}
-                          role="img"
-                          aria-label="BONEZ 24 hour price chart"
-                        >
-                          <defs>
-                            <linearGradient id="bonezChartGradient" x1="0" y1="0" x2="1" y2="0">
-                              <stop offset="0%" stopColor="#ff3df7" />
-                              <stop offset="50%" stopColor="#ffd86b" />
-                              <stop offset="100%" stopColor="#00e5ff" />
-                            </linearGradient>
-
-                            <filter id="bonezChartGlow">
-                              <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-
-                              <feMerge>
-                                <feMergeNode in="coloredBlur" />
-                                <feMergeNode in="SourceGraphic" />
-                              </feMerge>
-                            </filter>
-                          </defs>
-
-                          <line x1="18" x2="782" y1="55" y2="55" className="bonez-chart-gridline" />
-
-                          <line
-                            x1="18"
-                            x2="782"
-                            y1="110"
-                            y2="110"
-                            className="bonez-chart-gridline"
-                          />
-
-                          <line
-                            x1="18"
-                            x2="782"
-                            y1="165"
-                            y2="165"
-                            className="bonez-chart-gridline"
-                          />
-
-                          <polyline
-                            points={bonezChart.polyline}
-                            fill="none"
-                            stroke="url(#bonezChartGradient)"
-                            strokeWidth="4"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            filter="url(#bonezChartGlow)"
-                          />
-
-                          <circle
-                            cx={bonezChart.last.x}
-                            cy={bonezChart.last.y}
-                            r="6"
-                            className="bonez-chart-current-dot"
-                          />
-                        </svg>
-                      </div>
-
-                      <div className="bonez-chart-footer">
-                        <span>
-                          Low <strong>${bonezChart.min.toFixed(7)}</strong>
-                        </span>
-
-                        <span>
-                          High <strong>${bonezChart.max.toFixed(7)}</strong>
-                        </span>
-
-                        <span>
-                          Current <strong>${bonezChart.last.value.toFixed(7)}</strong>
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                <div className="bonez-market-grid">
-                  <div className="bonez-market-stat">
-                    <span>24H Change</span>
-
-                    <strong>
-                      {bonezMarket.priceChange?.h24 !== undefined
-                        ? `${Number(bonezMarket.priceChange.h24).toFixed(2)}%`
-                        : "—"}
-                    </strong>
-                  </div>
-
-                  <div className="bonez-market-stat">
-                    <span>24H Volume</span>
-
-                    <strong>{formatBonezUsd(bonezMarket.volume?.h24)}</strong>
-                  </div>
-
-                  <div className="bonez-market-stat">
-                    <span>Liquidity</span>
-
-                    <strong>{formatBonezUsd(bonezMarket.liquidity?.usd)}</strong>
-                  </div>
-
-                  <div className="bonez-market-stat">
-                    <span>Market Cap</span>
-
-                    <strong>{formatBonezUsd(bonezMarket.marketCap)}</strong>
-                  </div>
-                </div>
-
-                <div className="bonez-market-activity">
-                  <div>
-                    <span>24H Buys</span>
-                    <strong>{formatMarketNumber(bonezMarket.txns?.h24?.buys)}</strong>
-                  </div>
-
-                  <div>
-                    <span>24H Sells</span>
-                    <strong>{formatMarketNumber(bonezMarket.txns?.h24?.sells)}</strong>
-                  </div>
-
-                  <div>
-                    <span>Pair</span>
-                    <strong>BONEZ / EGLD</strong>
-                  </div>
-                </div>
-
-                <div className="bonez-market-footer">
-                  <div>
-                    <span>Last updated</span>
-
-                    <strong>
-                      {bonezMarketUpdated
-                        ? bonezMarketUpdated.toLocaleTimeString([], {
-                            hour: "numeric",
-                            minute: "2-digit",
-                            second: "2-digit",
-                          })
-                        : "—"}
-                    </strong>
-                  </div>
-
-                  {bonezMarket.url && (
-                    <a
-                      className="btn bonez-market-link"
-                      href={bonezMarket.url}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      View Live Market ↗
-                    </a>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-
-          <section id="my-pittz">
-            <div className="section-title">
-              <h2>My Pittz</h2>
-              <span>Your CryptoPittz collection.</span>
-            </div>
-            <div className="explorer-tabs my-pittz-tabs">
-              <button
-                type="button"
-                className={`explorer-tab ${myPittzCollection === "original" ? "active" : ""}`}
-                onClick={() => setMyPittzCollection("original")}
-              >
-                Original Pittz
-                <span>{ownedOriginalPittz.length}</span>
-              </button>
-
-              <button
-                type="button"
-                className={`explorer-tab ${myPittzCollection === "vice" ? "active" : ""}`}
-                onClick={() => setMyPittzCollection("vice")}
-              >
-                Vice Pittz
-                <span>{ownedVicePittz.length}</span>
-              </button>
-            </div>
-
-            <div className="panel">
-              <div className="inner">
-                {!account.address && (
-                  <p className="subtitle">Connect your wallet to see your NFTs.</p>
-                )}
-
-                {account.address && nftsLoading && (
-                  <p className="subtitle">Searching your wallet...</p>
-                )}
-
-                {account.address && nftsError && <p className="subtitle">{nftsError}</p>}
-
-                {account.address && !nftsLoading && !nftsError && nfts.length === 0 && (
-                  <p className="subtitle">No NFTs were found in this wallet.</p>
-                )}
-
-                {account.address && !nftsLoading && !nftsError && nfts.length > 0 && (
-                  <>
-                    <p className="subtitle">
-                      You own {nfts.length} CryptoPittz NFT{nfts.length === 1 ? "" : "s"}.
-                    </p>
-                    <div className="wallet-summary">
-                      <div className="wallet-summary-main">
-                        <div className="wallet-summary-card">
-                          <span>CryptoPittz Owned</span>
-                          <strong>{walletSummary.total}</strong>
-                        </div>
-
-                        <div className="wallet-summary-card">
-                          <span>Best Rank</span>
-                          <strong>
-                            {walletSummary.bestRank ? `#${walletSummary.bestRank}` : "—"}
-                          </strong>
-                        </div>
-
-                        <div className="wallet-summary-card">
-                          <span>Highest Score</span>
-                          <strong>{walletSummary.highestScore ?? "—"}</strong>
-                        </div>
-                      </div>
-
-                      <div className="wallet-summary-breakdown">
-                        <div className="summary-group">
-                          <span className="summary-title">Bloodlines</span>
-
-                          <div className="summary-chips">
-                            {Object.entries(walletSummary.bloodlines).map(([bloodline, count]) => (
-                              <div className="summary-chip" key={bloodline}>
-                                <strong>{bloodline}</strong>
-                                <span>{count}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="summary-group">
-                          <span className="summary-title">Types</span>
-
-                          <div className="summary-chips">
-                            {Object.entries(walletSummary.types).map(([type, count]) => (
-                              <div className="summary-chip" key={type}>
-                                <strong>{type}</strong>
-                                <span>{count}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {account.address && !nftsLoading && !nftsError && nfts.length > 0 && (
-                      <div className="bonez-wallet-total">
-                        <div className="bonez-wallet-total-heading">
-                          <div>
-                            <span className="bonez-wallet-eyebrow">🦴 Wallet Utility</span>
-
-                            <h3>Potential BONEZ Generation</h3>
-
-                            <p>
-                              Estimated potential based on your owned Pittz and their tier rates.
-                            </p>
-                          </div>
-
-                          <div className="bonez-wallet-count">
-                            <strong>{bonezWalletTotals.pittz}</strong>
-                            <span>Pittz</span>
-                          </div>
-                        </div>
-
-                        <div className="bonez-wallet-total-grid">
-                          <div className="bonez-wallet-total-stat">
-                            <span>Daily</span>
-
-                            <strong>{bonezWalletTotals.daily.toFixed(2)}</strong>
-
-                            <small>BONEZ</small>
-
-                            <small>
-                              {bonezWalletUsdValues.daily !== null
-                                ? `≈ ${formatBonezUsd(bonezWalletUsdValues.daily)}`
-                                : "Live price unavailable"}
-                            </small>
-                          </div>
-
-                          <div className="bonez-wallet-total-stat">
-                            <span>Weekly</span>
-
-                            <strong>{bonezWalletTotals.weekly.toFixed(2)}</strong>
-
-                            <small>BONEZ</small>
-
-                            <small>
-                              {bonezWalletUsdValues.weekly !== null
-                                ? `≈ ${formatBonezUsd(bonezWalletUsdValues.weekly)}`
-                                : "Live price unavailable"}
-                            </small>
-                          </div>
-
-                          <div className="bonez-wallet-total-stat">
-                            <span>Estimated 30 Days</span>
-
-                            <strong>{bonezWalletTotals.monthly.toFixed(2)}</strong>
-
-                            <small>BONEZ</small>
-
-                            <small>
-                              {bonezWalletUsdValues.monthly !== null
-                                ? `≈ ${formatBonezUsd(bonezWalletUsdValues.monthly)}`
-                                : "Live price unavailable"}
-                            </small>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    <div className="pittz-controls">
-                      <input
-                        type="text"
-                        placeholder="Search Pittz..."
-                        value={searchTerm}
-                        onChange={(event) => setSearchTerm(event.target.value)}
-                      />
-
-                      <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
-                        <option value="rank">Best Rank</option>
-                        <option value="score">Highest Score</option>
-                        <option value="name">Name</option>
-                      </select>
-
-                      <select
-                        value={bloodlineFilter}
-                        onChange={(event) => setBloodlineFilter(event.target.value)}
-                      >
-                        <option value="all">All Bloodlines</option>
-
-                        {Object.keys(walletSummary.bloodlines).map((bloodline) => (
-                          <option key={bloodline} value={bloodline}>
-                            {bloodline}
-                          </option>
-                        ))}
-                      </select>
-
-                      <select
-                        value={typeFilter}
-                        onChange={(event) => setTypeFilter(event.target.value)}
-                      >
-                        <option value="all">All Types</option>
-
-                        {Object.keys(walletSummary.types).map((type) => (
-                          <option key={type} value={type}>
-                            {type}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="pittz-results-bar">
-                      <span>
-                        Showing {filteredNfts.length} of {activeOwnedPittz.length}{" "}
-                        {myPittzCollection === "vice" ? "Vice Pittz" : "Original Pittz"}
-                      </span>
-
-                      {(searchTerm ||
-                        bloodlineFilter !== "all" ||
-                        typeFilter !== "all" ||
-                        sortBy !== "rank") && (
-                        <button
-                          className="reset-filters"
-                          type="button"
-                          onClick={() => {
-                            setSearchTerm("");
-                            setSortBy("rank");
-                            setBloodlineFilter("all");
-                            setTypeFilter("all");
-                          }}
-                        >
-                          ↻ Reset Filters
-                        </button>
-                      )}
-                    </div>
-                    <div className="wallet-nft-grid">
-                      {filteredNfts.map((nft) => {
-                        const stats = getPittzStats(nft.attributes);
-                        const bonez = getBonezGeneration(nft);
-
-                        return (
-                          <div
-                            className="wallet-nft-card"
-                            key={nft.identifier}
-                            onClick={() => openNftDetails(nft, filteredNfts)}
-                          >
-                            <div className="wallet-nft-image-wrap">
-                              {account.address &&
-                                nfts.some((ownedNft) => ownedNft.identifier === nft.identifier) && (
-                                  <span className="owned-badge">OWNED ✓</span>
-                                )}
-
-                              {getNftImage(nft) && (
-                                <img
-                                  src={getNftImage(nft)}
-                                  alt={nft.name || nft.identifier}
-                                  style={{
-                                    display: "block",
-                                    width: "100%",
-                                    height: "100%",
-                                    objectFit: "cover",
-                                    opacity: 1,
-                                    visibility: "visible",
-                                    position: "relative",
-                                    zIndex: 2,
-                                  }}
-                                  onError={(event) => {
-                                    console.error(
-                                      "Explorer image failed:",
-                                      nft.identifier,
-                                      event.currentTarget.src,
-                                    );
-                                  }}
-                                />
-                              )}
-                            </div>
-
-                            <div className="wallet-nft-info">
-                              <strong>{nft.name || nft.identifier}</strong>
-
-                              <small>{nft.identifier}</small>
-
-                              <div className="pittz-stats">
-                                {stats.rank && (
-                                  <div className="pittz-stat rank-stat">
-                                    <span>🏆 Rank</span>
-                                    <strong>#{stats.rank}</strong>
-                                  </div>
-                                )}
-
-                                {stats.score && (
-                                  <div className="pittz-stat">
-                                    <span>⚡ Score</span>
-                                    <strong>{stats.score}</strong>
-                                  </div>
-                                )}
-
-                                {stats.bloodline && (
-                                  <div className="pittz-stat">
-                                    <span>Bloodline</span>
-                                    <strong>{stats.bloodline}</strong>
-                                  </div>
-                                )}
-
-                                {stats.type && (
-                                  <div className="pittz-stat">
-                                    <span>Type</span>
-                                    <strong>{stats.type}</strong>
-                                  </div>
-                                )}
-                              </div>
-
-                              {bonez && (
-                                <div className="bonez-generation">
-                                  <div className="bonez-generation-header">
-                                    <span>🦴 Potential BONEZ</span>
-                                    <strong>{bonez.tier} Tier</strong>
-                                  </div>
-
-                                  <div className="bonez-generation-grid">
-                                    <div>
-                                      <span>Daily</span>
-                                      <strong>{bonez.daily.toFixed(2)}</strong>
-                                    </div>
-
-                                    <div>
-                                      <span>Weekly</span>
-                                      <strong>{bonez.weekly.toFixed(2)}</strong>
-                                    </div>
-
-                                    <div>
-                                      <span>30 Days</span>
-                                      <strong>{bonez.monthly.toFixed(2)}</strong>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-
-                              {decodePittzAttributes(nft.attributes).length > 0 && (
-                                <div className="pittz-traits">
-                                  {decodePittzAttributes(nft.attributes).map((item) => (
-                                    <div
-                                      className="pittz-trait"
-                                      key={`${nft.identifier}-${item.trait}`}
-                                    >
-                                      <span>{item.trait}</span>
-                                      <strong>{item.value}</strong>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="wallet-nft-info">
-                              <strong>{nft.name || nft.identifier}</strong>
-
-                              <small>{nft.identifier}</small>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </section>
-
+          <Suspense
+            fallback={<div className="bonez-market-loading">Loading BONEZ Rush arcade...</div>}
+          >
+            <BonezRush />
+          </Suspense>
+
+          <BonezMarketSection
+            market={bonezMarket}
+            marketLoading={bonezMarketLoading}
+            marketError={bonezMarketError}
+            marketUpdated={bonezMarketUpdated}
+            chart={bonezChart}
+            chartLoading={bonezChartLoading}
+            chartError={bonezChartError}
+            chartRange={bonezChartRange}
+            chartChange={bonezChartChange}
+            onChartRangeChange={setBonezChartRange}
+          />
+          <MyPittzSection
+            address={account.address}
+            nfts={nfts}
+            loading={nftsLoading}
+            error={nftsError}
+            bonezUsdPrice={Number(bonezMarket?.priceUsd)}
+            onOpenNft={openNftDetails}
+          />
           <section id="explorer">
             <div className="section-title">
               <h2>CryptoPittz Explorer</h2>
@@ -2526,7 +869,7 @@ function App() {
               <button
                 type="button"
                 className={`explorer-tab ${explorerCollection === "original" ? "active" : ""}`}
-                onClick={() => setExplorerCollection("original")}
+                onClick={() => changeExplorerCollection("original")}
               >
                 Original Pittz
                 <span>{originalTotal ? originalTotal.toLocaleString() : "..."}</span>
@@ -2535,7 +878,7 @@ function App() {
               <button
                 type="button"
                 className={`explorer-tab ${explorerCollection === "vice" ? "active" : ""}`}
-                onClick={() => setExplorerCollection("vice")}
+                onClick={() => changeExplorerCollection("vice")}
               >
                 Vice Pittz
                 <span>{viceTotal ? viceTotal.toLocaleString() : "..."}</span>
@@ -2552,151 +895,45 @@ function App() {
 
                 {!explorerLoading && !explorerError && explorerNfts.length > 0 && (
                   <>
-                    <div className="explorer-header">
-                      <div>
-                        <span>Collection</span>
-                        <strong>
-                          {explorerTotal.toLocaleString()} {activeCollection.name}
-                        </strong>
-                      </div>
+                    <ExplorerControls
+                      activeCollection={activeCollection}
+                      collectionTotal={explorerTotal}
+                      indexLoading={explorerAllLoading}
+                      indexReady={explorerIndexReady}
+                      loadProgress={explorerLoadProgress}
+                      search={explorerSearch}
+                      onSearchChange={(value) => {
+                        setExplorerSearch(value);
+                        clearGlobalSearch();
+                      }}
+                      onSearch={() => searchCryptoPittz(explorerSearch)}
+                      sort={explorerSort}
+                      onSortChange={(value) => {
+                        setExplorerSort(value);
+                        setExplorerPage(0);
+                      }}
+                      bloodline={explorerBloodline}
+                      bloodlines={Object.keys(explorerSummary.bloodlines)}
+                      onBloodlineChange={(value) => {
+                        setExplorerBloodline(value);
+                        setExplorerPage(0);
+                      }}
+                      type={explorerType}
+                      onTypeChange={(value) => {
+                        setExplorerType(value);
+                        setExplorerPage(0);
+                      }}
+                      shownCount={explorerPageNfts.length}
+                      filteredCount={filteredExplorerNfts.length}
+                      onReset={resetExplorerFilters}
+                    />
 
-                      <div>
-                        <span>Collection ID</span>
-                        <strong>{activeCollection.collection}</strong>
-                      </div>
-
-                      {explorerAllLoading && (
-                        <div className="explorer-index-status">
-                          <div className="explorer-index-status-top">
-                            <span>Building Explorer Index</span>
-
-                            <strong>
-                              {explorerLoadProgress.loaded.toLocaleString()} /{" "}
-                              {explorerLoadProgress.total.toLocaleString()}
-                            </strong>
-                          </div>
-
-                          <div className="explorer-index-progress">
-                            <div
-                              className="explorer-index-progress-bar"
-                              style={{
-                                width:
-                                  explorerLoadProgress.total > 0
-                                    ? `${Math.min(
-                                        100,
-                                        (explorerLoadProgress.loaded / explorerLoadProgress.total) *
-                                          100,
-                                      )}%`
-                                    : "0%",
-                              }}
-                            />
-                          </div>
-
-                          <small>
-                            Preparing collection-wide rank, score, bloodline, and type filters.
-                          </small>
-                        </div>
-                      )}
-
-                      {explorerIndexReady && (
-                        <div className="explorer-index-ready">
-                          <span>✓</span>
-
-                          <div>
-                            <strong>Explorer Index Ready</strong>
-                            <small>
-                              {explorerLoadProgress.total.toLocaleString()} Pittz indexed
-                            </small>
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="explorer-controls">
-                        <input
-                          type="text"
-                          placeholder="Search CryptoPittz name or ID..."
-                          value={explorerSearch}
-                          onChange={(event) => {
-                            setExplorerSearch(event.target.value);
-                            setGlobalSearchResult(null);
-                            setGlobalSearchError("");
-                          }}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter") {
-                              searchCryptoPittz();
-                            }
-                          }}
-                        />
-
-                        <button
-                          className="btn primary explorer-search-button"
-                          type="button"
-                          onClick={searchCryptoPittz}
-                        >
-                          Search
-                        </button>
-                      </div>
-
-                      <select
-                        value={explorerSort}
-                        onChange={(event) => setExplorerSort(event.target.value)}
-                      >
-                        <option value="rank">Best Rank</option>
-                        <option value="score">Highest Score</option>
-                        <option value="name">Name</option>
-                      </select>
-
-                      <select
-                        value={explorerBloodline}
-                        onChange={(event) => setExplorerBloodline(event.target.value)}
-                      >
-                        <option value="all">All Bloodlines</option>
-
-                        {Object.keys(explorerSummary.bloodlines).map((bloodline) => (
-                          <option key={bloodline} value={bloodline}>
-                            {bloodline}
-                          </option>
-                        ))}
-                      </select>
-
-                      <select
-                        value={explorerType}
-                        onChange={(event) => setExplorerType(event.target.value)}
-                      >
-                        <option value="all">All Types</option>
-                        <option value="Core">Core</option>
-                        <option value="Secret">Secret</option>
-                        <option value="Holo">Holo</option>
-                        <option value="Legendary">Legendary</option>
-                      </select>
-                    </div>
-
-                    <div className="pittz-results-bar">
-                      <span>
-                        Showing {explorerPageNfts.length} of{" "}
-                        {filteredExplorerNfts.length.toLocaleString()} {activeCollection.name}
-                      </span>
-
-                      {(explorerSearch ||
-                        explorerBloodline !== "all" ||
-                        explorerType !== "all" ||
-                        explorerSort !== "rank") && (
-                        <button
-                          className="reset-filters"
-                          type="button"
-                          onClick={() => {
-                            setExplorerSearch("");
-                            setExplorerSort("rank");
-                            setExplorerBloodline("all");
-                            setExplorerType("all");
-                          }}
-                        >
-                          ↻ Reset Filters
-                        </button>
-                      )}
-                    </div>
-
-                    <ExplorerPagination />
+                    <ExplorerPagination
+                      currentPage={explorerPage}
+                      totalItems={explorerFilteredTotal}
+                      pageSize={EXPLORER_PAGE_SIZE}
+                      onPageChange={setExplorerPage}
+                    />
 
                     {globalSearchLoading && <p className="subtitle">Searching CryptoPittz...</p>}
 
@@ -2739,106 +976,30 @@ function App() {
 
                     <div className="wallet-nft-grid">
                       {explorerPageNfts.map((nft) => {
-                        const stats = getPittzStats(nft.attributes);
+                        const isOwned =
+                          Boolean(account.address) &&
+                          nfts.some((ownedNft) => ownedNft.identifier === nft.identifier);
 
                         return (
-                          <div
-                            className={`wallet-nft-card explorer-card ${
-                              account.address &&
-                              nfts.some((ownedNft) => ownedNft.identifier === nft.identifier)
-                                ? "owned-card"
-                                : ""
-                            }`}
+                          <NftCard
                             key={nft.identifier}
+                            nft={nft}
+                            isOwned={isOwned}
+                            variant="explorer"
                             onClick={() => openNftDetails(nft, filteredExplorerNfts)}
-                          >
-                            <div className="wallet-nft-image-wrap">
-                              {getNftImage(nft) && (
-                                <img
-                                  src={getNftImage(nft)}
-                                  alt={nft.name || nft.identifier}
-                                  onError={(event) => {
-                                    console.error(
-                                      "Explorer image failed:",
-                                      nft.identifier,
-                                      event.currentTarget.src,
-                                    );
-                                  }}
-                                />
-                              )}
-
-                              {account.address &&
-                                nfts.some((ownedNft) => ownedNft.identifier === nft.identifier) && (
-                                  <span className="owned-badge">OWNED ✓</span>
-                                )}
-                            </div>
-
-                            <div className="wallet-nft-info">
-                              <strong>{nft.name || nft.identifier}</strong>
-
-                              <small>{nft.identifier}</small>
-
-                              <div className="pittz-stats">
-                                {stats.rank && (
-                                  <div className="pittz-stat rank-stat">
-                                    <span>🏆 Rank</span>
-                                    <strong>#{stats.rank}</strong>
-                                  </div>
-                                )}
-
-                                {stats.score && (
-                                  <div className="pittz-stat">
-                                    <span>⚡ Score</span>
-                                    <strong>{stats.score}</strong>
-                                  </div>
-                                )}
-
-                                {stats.bloodline && (
-                                  <div className="pittz-stat">
-                                    <span>Bloodline</span>
-                                    <strong>{stats.bloodline}</strong>
-                                  </div>
-                                )}
-
-                                {stats.type && (
-                                  <div className="pittz-stat">
-                                    <span>Type</span>
-                                    <strong>{stats.type}</strong>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
+                          />
                         );
                       })}
                     </div>
-                    <ExplorerPagination />
+                    <ExplorerPagination
+                      currentPage={explorerPage}
+                      totalItems={explorerFilteredTotal}
+                      pageSize={EXPLORER_PAGE_SIZE}
+                      onPageChange={setExplorerPage}
+                    />
                   </>
                 )}
               </div>
-            </div>
-          </section>
-
-          <section id="gallery">
-            <div className="section-title">
-              <h2>Gallery</h2>
-              <span>Meet some of the CryptoPittz.</span>
-            </div>
-
-            <div className="gallery" aria-label="CryptoPittz Gallery">
-              {galleryItems.map((item, index) => (
-                <div
-                  key={item.src}
-                  className="tile tile-img"
-                  style={{
-                    "--img": `url("${item.src}")`,
-                    cursor: "pointer",
-                  }}
-                  onClick={() => openLightbox(index)}
-                >
-                  <div className="cap">{item.title}</div>
-                </div>
-              ))}
             </div>
           </section>
 
@@ -3071,192 +1232,17 @@ function App() {
         </div>
       </footer>
 
-      {lightboxOpen && (
-        <div className="lightbox open" aria-hidden="false">
-          <div className="lb-backdrop" onClick={closeLightbox}></div>
-
-          <div
-            className="lb-panel"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Gallery image viewer"
-          >
-            <button
-              className="lb-close"
-              type="button"
-              aria-label="Close viewer"
-              onClick={closeLightbox}
-            >
-              ✕
-            </button>
-
-            <button
-              className="lb-nav lb-prev"
-              type="button"
-              aria-label="Previous image"
-              onClick={showPrevious}
-            >
-              ‹
-            </button>
-
-            <button
-              className="lb-nav lb-next"
-              type="button"
-              aria-label="Next image"
-              onClick={showNext}
-            >
-              ›
-            </button>
-
-            <figure className="lb-figure">
-              <img src={galleryItems[lightboxIndex].src} alt={galleryItems[lightboxIndex].title} />
-
-              <figcaption className="lb-cap">
-                <span>{galleryItems[lightboxIndex].title}</span>
-
-                <span>
-                  {lightboxIndex + 1} / {galleryItems.length}
-                </span>
-              </figcaption>
-            </figure>
-          </div>
-        </div>
-      )}
-      {selectedNft &&
-        (() => {
-          const stats = getPittzStats(selectedNft.attributes);
-          const traits = decodePittzAttributes(selectedNft.attributes);
-
-          return (
-            <div className="nft-detail-modal">
-              <div className="nft-detail-backdrop" onClick={closeNftDetails}></div>
-
-              <div
-                className="nft-detail-panel"
-                role="dialog"
-                aria-modal="true"
-                aria-label="CryptoPittz NFT details"
-              >
-                <button className="nft-detail-close" type="button" onClick={closeNftDetails}>
-                  ✕
-                </button>
-
-                <div className="nft-detail-art">
-                  {modalNfts.length > 1 && (
-                    <>
-                      <button
-                        className="nft-detail-nav nft-detail-prev"
-                        type="button"
-                        aria-label="Previous CryptoPittz"
-                        onClick={showPreviousNft}
-                      >
-                        ‹
-                      </button>
-
-                      <button
-                        className="nft-detail-nav nft-detail-next"
-                        type="button"
-                        aria-label="Next CryptoPittz"
-                        onClick={showNextNft}
-                      >
-                        ›
-                      </button>
-                    </>
-                  )}
-
-                  {getNftImage(selectedNft) && (
-                    <img
-                      src={getNftImage(selectedNft)}
-                      alt={selectedNft.name || selectedNft.identifier}
-                      onError={(event) => {
-                        event.currentTarget.style.display = "none";
-                      }}
-                    />
-                  )}
-
-                  {account.address &&
-                    nfts.some((ownedNft) => ownedNft.identifier === selectedNft?.identifier) && (
-                      <span className="owned-badge">OWNED ✓</span>
-                    )}
-                </div>
-
-                <div className="nft-detail-content">
-                  <div className="nft-detail-heading">
-                    <div>
-                      <div className="nft-detail-topline">
-                        <span className="nft-detail-eyebrow">CryptoPittz Collection</span>
-
-                        <span
-                          className={`collection-badge ${
-                            getCollectionBadge(selectedNft).className
-                          }`}
-                        >
-                          {getCollectionBadge(selectedNft).label}
-                        </span>
-                      </div>
-
-                      <h2>{selectedNft.name || selectedNft.identifier}</h2>
-
-                      <small>{selectedNft.identifier}</small>
-                    </div>
-                  </div>
-                  <div className="nft-detail-actions">
-                    <a
-                      className="btn primary"
-                      href={getNftMarketplace(selectedNft)}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      🛒 View on OOX Marketplace ↗
-                    </a>
-                  </div>
-
-                  <div className="nft-detail-stats">
-                    {stats.rank && (
-                      <div className="nft-detail-stat rank-stat">
-                        <span>🏆 Rank</span>
-                        <strong>#{stats.rank}</strong>
-                      </div>
-                    )}
-
-                    {stats.score && (
-                      <div className="nft-detail-stat">
-                        <span>⚡ Score</span>
-                        <strong>{stats.score}</strong>
-                      </div>
-                    )}
-
-                    {stats.bloodline && (
-                      <div className="nft-detail-stat">
-                        <span>Bloodline</span>
-                        <strong>{stats.bloodline}</strong>
-                      </div>
-                    )}
-
-                    {stats.type && (
-                      <div className="nft-detail-stat">
-                        <span>Type</span>
-                        <strong>{stats.type}</strong>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="nft-detail-traits">
-                    {traits.map((item) => (
-                      <div
-                        className="nft-detail-trait"
-                        key={`${selectedNft.identifier}-${item.trait}`}
-                      >
-                        <span>{item.trait}</span>
-                        <strong>{item.value}</strong>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })()}
+      <NftDetailModal
+        nft={selectedNft}
+        hasMultipleNfts={modalNfts.length > 1}
+        isOwned={
+          Boolean(account.address) &&
+          nfts.some((ownedNft) => ownedNft.identifier === selectedNft?.identifier)
+        }
+        onClose={closeNftDetails}
+        onPrevious={showPreviousNft}
+        onNext={showNextNft}
+      />
       {walletOverlayOpen && (
         <button
           className="walletconnect-close"
