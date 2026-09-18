@@ -9,6 +9,7 @@ import { ProviderFactory } from "@multiversx/sdk-dapp/out/providers/ProviderFact
 import { ProviderTypeEnum } from "@multiversx/sdk-dapp/out/providers/types/providerFactory.types";
 
 import GallerySection from "./components/gallery/GallerySection";
+import ExplorerPagination from "./components/explorer/ExplorerPagination";
 import NftCard from "./components/nft/NftCard";
 import NftDetailModal from "./components/nft/NftDetailModal";
 import {
@@ -19,7 +20,7 @@ import {
 import { BONEZ_RATES } from "./config/bonezRates";
 import { buildBonezChart } from "./utils/chartUtils";
 import { formatBonezUsd, formatMarketNumber } from "./utils/formatters";
-import { getNftImage, getPittzStats } from "./utils/nftUtils";
+import { getPittzStats } from "./utils/nftUtils";
 
 function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -917,80 +918,6 @@ function App() {
     explorerPage * EXPLORER_PAGE_SIZE,
     explorerPage * EXPLORER_PAGE_SIZE + EXPLORER_PAGE_SIZE,
   );
-
-  const ExplorerPagination = () => {
-    const totalPages = Math.ceil(explorerFilteredTotal / EXPLORER_PAGE_SIZE);
-
-    function goToPage(page) {
-      setExplorerPage(page);
-
-      document.getElementById("explorer")?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }
-
-    const pageNumbers = [];
-
-    for (let page = 0; page < totalPages; page++) {
-      const isFirst = page === 0;
-      const isLast = page === totalPages - 1;
-      const isNearCurrent = Math.abs(page - explorerPage) <= 2;
-
-      if (isFirst || isLast || isNearCurrent) {
-        pageNumbers.push(page);
-      }
-    }
-
-    const paginationItems = [];
-
-    pageNumbers.forEach((page, index) => {
-      const previousPage = pageNumbers[index - 1];
-
-      if (index > 0 && page - previousPage > 1) {
-        paginationItems.push(
-          <span key={`ellipsis-${page}`} className="pagination-ellipsis">
-            …
-          </span>,
-        );
-      }
-
-      paginationItems.push(
-        <button
-          className={`page-number ${page === explorerPage ? "active" : ""}`}
-          type="button"
-          key={page}
-          onClick={() => goToPage(page)}
-        >
-          {page + 1}
-        </button>,
-      );
-    });
-
-    return (
-      <div className="explorer-pagination">
-        <button
-          className="btn"
-          type="button"
-          disabled={explorerPage === 0}
-          onClick={() => goToPage(Math.max(0, explorerPage - 1))}
-        >
-          ← Previous
-        </button>
-
-        <div className="pagination-pages">{paginationItems}</div>
-
-        <button
-          className="btn"
-          type="button"
-          disabled={explorerPage === totalPages - 1}
-          onClick={() => goToPage(Math.min(totalPages - 1, explorerPage + 1))}
-        >
-          Next →
-        </button>
-      </div>
-    );
-  };
 
   return (
     <>
@@ -2287,7 +2214,12 @@ function App() {
                       )}
                     </div>
 
-                    <ExplorerPagination />
+                    <ExplorerPagination
+                      currentPage={explorerPage}
+                      totalItems={explorerFilteredTotal}
+                      pageSize={EXPLORER_PAGE_SIZE}
+                      onPageChange={setExplorerPage}
+                    />
 
                     {globalSearchLoading && <p className="subtitle">Searching CryptoPittz...</p>}
 
@@ -2345,7 +2277,12 @@ function App() {
                         );
                       })}
                     </div>
-                    <ExplorerPagination />
+                    <ExplorerPagination
+                      currentPage={explorerPage}
+                      totalItems={explorerFilteredTotal}
+                      pageSize={EXPLORER_PAGE_SIZE}
+                      onPageChange={setExplorerPage}
+                    />
                   </>
                 )}
               </div>
