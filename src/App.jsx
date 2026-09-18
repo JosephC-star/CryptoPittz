@@ -8,6 +8,20 @@ import { getAccountProvider } from "@multiversx/sdk-dapp/out/providers/helpers/a
 import { ProviderFactory } from "@multiversx/sdk-dapp/out/providers/ProviderFactory";
 import { ProviderTypeEnum } from "@multiversx/sdk-dapp/out/providers/types/providerFactory.types";
 
+import {
+  BONEZ_DEXSCREENER_URL,
+  BONEZ_TOKEN_ID,
+  EXPLORER_COLLECTIONS,
+} from "./config/collections";
+import { buildBonezChart } from "./utils/chartUtils";
+import {
+  decodePittzAttributes,
+  getCollectionBadge,
+  getNftImage,
+  getNftMarketplace,
+  getPittzStats,
+} from "./utils/nftUtils";
+
 const galleryItems = [
   { src: "/images/pittz-01.jpg", title: "CryptoPittz #0001" },
   { src: "/images/pittz-02.jpg", title: "CryptoPittz #0002" },
@@ -18,188 +32,6 @@ const galleryItems = [
   { src: "/images/pittz-07.jpg", title: "CryptoPittz #0007" },
   { src: "/images/pittz-08.jpg", title: "CryptoPittz #0008" },
 ];
-
-function decodePittzAttributes(encodedAttributes) {
-  if (!encodedAttributes) return [];
-
-  try {
-    const decoded = atob(encodedAttributes);
-
-    return decoded
-      .split(";")
-      .filter((item) => item.includes(":"))
-      .map((item) => {
-        const [trait, ...valueParts] = item.split(":");
-
-        return {
-          trait: trait.trim(),
-          value: valueParts.join(":").trim(),
-        };
-      })
-      .filter((item) => item.trait !== "metadata" && item.trait !== "tags");
-  } catch (error) {
-    console.error("Unable to decode NFT attributes:", error);
-    return [];
-  }
-}
-
-function getPittzStats(encodedAttributes) {
-  if (!encodedAttributes) {
-    return {
-      type: "",
-      bloodline: "",
-      score: "",
-      rank: "",
-    };
-  }
-
-  try {
-    const decoded = atob(encodedAttributes);
-
-    const tagsSection = decoded.split(";").find((item) => item.startsWith("tags:"));
-
-    if (!tagsSection) {
-      return {
-        type: "",
-        bloodline: "",
-        score: "",
-        rank: "",
-      };
-    }
-
-    const tags = tagsSection.replace("tags:", "").split(",");
-
-    const getTagValue = (prefix) => {
-      const tag = tags.find((item) => item.startsWith(prefix));
-
-      return tag ? tag.replace(prefix, "") : "";
-    };
-
-    return {
-      type: getTagValue("Type-"),
-      bloodline: getTagValue("Bloodline-"),
-      score: getTagValue("PointScore-"),
-      rank: getTagValue("Rank-"),
-    };
-  } catch (error) {
-    console.error("Unable to decode CryptoPittz stats:", error);
-
-    return {
-      type: "",
-      bloodline: "",
-      score: "",
-      rank: "",
-    };
-  }
-}
-
-const EXPLORER_COLLECTIONS = {
-  original: {
-    name: "Original Pittz",
-    collection: "PITTZ-1a4c2d",
-    marketplace: "https://www.oox.art/marketplace/collections/PITTZ-1a4c2d",
-  },
-
-  vice: {
-    name: "Vice Pittz",
-    collection: "PITTZVICE-c3ec94",
-    marketplace: "https://www.oox.art/marketplace/collections/PITTZVICE-c3ec94",
-  },
-};
-
-const BONEZ_TOKEN_ID = "BONEZ-ff9a73";
-
-const BONEZ_PAIR_ADDRESS = "erd1qqqqqqqqqqqqqpgqxjc80qdqjnwnr6q0z9z75m7sgasjxfln2jpsp67kpt";
-
-const BONEZ_DEXSCREENER_URL = `https://api.dexscreener.com/latest/dex/pairs/multiversx/${BONEZ_PAIR_ADDRESS}`;
-
-function buildBonezChart(data) {
-  if (!data?.length) {
-    return null;
-  }
-
-  const width = 800;
-  const height = 220;
-  const paddingX = 18;
-  const paddingY = 22;
-
-  const values = data.map((item) => Number(item.value));
-
-  const minValue = Math.min(...values);
-  const maxValue = Math.max(...values);
-
-  const range = maxValue - minValue;
-
-  const safeRange = range === 0 ? Math.max(maxValue * 0.02, 0.00000001) : range;
-
-  const paddedMin = minValue - safeRange * 0.18;
-  const paddedMax = maxValue + safeRange * 0.18;
-
-  const chartRange = paddedMax - paddedMin;
-
-  const points = data.map((item, index) => {
-    const x = paddingX + (index / Math.max(data.length - 1, 1)) * (width - paddingX * 2);
-
-    const y =
-      height - paddingY - ((Number(item.value) - paddedMin) / chartRange) * (height - paddingY * 2);
-
-    return {
-      x,
-      y,
-      value: Number(item.value),
-      timestamp: item.timestamp,
-    };
-  });
-
-  return {
-    width,
-    height,
-    points,
-    polyline: points.map((point) => `${point.x},${point.y}`).join(" "),
-    min: minValue,
-    max: maxValue,
-    first: points[0],
-    last: points[points.length - 1],
-  };
-}
-
-function getNftMarketplace(nft) {
-  if (!nft?.identifier || !nft?.collection) {
-    return EXPLORER_COLLECTIONS.original.marketplace;
-  }
-
-  const collectionUrl =
-    nft.collection === "PITTZVICE-c3ec94"
-      ? EXPLORER_COLLECTIONS.vice.marketplace
-      : EXPLORER_COLLECTIONS.original.marketplace;
-
-  return `${collectionUrl}?nftId=${encodeURIComponent(nft.identifier)}`;
-}
-
-function getNftImage(nft) {
-  return (
-    nft?.media?.[0]?.thumbnailUrl ||
-    nft?.media?.[0]?.url ||
-    nft?.url ||
-    nft?.media?.[0]?.originalUrl ||
-    nft?.metadata?.image ||
-    ""
-  );
-}
-
-function getCollectionBadge(nft) {
-  if (nft?.collection === "PITTZVICE-c3ec94") {
-    return {
-      label: "VICE PITTZ",
-      className: "vice-badge",
-    };
-  }
-
-  return {
-    label: "ORIGINAL PITTZ",
-    className: "original-badge",
-  };
-}
 
 function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
