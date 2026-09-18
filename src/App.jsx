@@ -8,7 +8,6 @@ import { getAccountProvider } from "@multiversx/sdk-dapp/out/providers/helpers/a
 import { ProviderFactory } from "@multiversx/sdk-dapp/out/providers/ProviderFactory";
 import { ProviderTypeEnum } from "@multiversx/sdk-dapp/out/providers/types/providerFactory.types";
 
-import GallerySection from "./components/gallery/GallerySection";
 import ExplorerControls from "./components/explorer/ExplorerControls";
 import ExplorerPagination from "./components/explorer/ExplorerPagination";
 import NftCard from "./components/nft/NftCard";
@@ -328,27 +327,14 @@ function App() {
             <nav className="nav-links" aria-label="Primary navigation">
               <div className="nav-item">
                 <div className="nav-btn" role="button" tabIndex="0" aria-haspopup="true">
-                  About <span className="caret" aria-hidden="true"></span>
+                  Explore <span className="caret" aria-hidden="true"></span>
                 </div>
                 <div className="dropdown" role="menu">
-                  <a href="#gallery">Featured Pittz</a>
                   <a href="#bonez-rush">BONEZ Rush</a>
                   <a href="#my-pittz">My Pittz</a>
                   <a href="#explorer">CryptoPittz Explorer</a>
                   <a href="#traits">Traits</a>
                   <a href="#rarity">Rarity</a>
-                </div>
-              </div>
-
-              <div className="nav-item">
-                <div className="nav-btn" role="button" tabIndex="0" aria-haspopup="true">
-                  Gallery <span className="caret" aria-hidden="true"></span>
-                </div>
-
-                <div className="dropdown" role="menu">
-                  <a href="#gallery">Featured</a>
-                  <a href="#traits">Traits (Soon)</a>
-                  <a href="#rarity">Rarity (Soon)</a>
                 </div>
               </div>
 
@@ -455,20 +441,16 @@ function App() {
             className={`mobile-panel ${mobileOpen ? "open" : ""}`}
             aria-label="Mobile navigation"
           >
-            <div className={`mobile-group ${mobileGroup === "about" ? "open" : ""}`}>
+            <div className={`mobile-group ${mobileGroup === "explore" ? "open" : ""}`}>
               <button
                 className="mobile-toggle"
                 type="button"
-                onClick={() => toggleMobileGroup("about")}
+                onClick={() => toggleMobileGroup("explore")}
               >
-                About <span className="caret"></span>
+                Explore <span className="caret"></span>
               </button>
 
               <div className="mobile-links">
-                <a href="#gallery" onClick={closeMobileMenu}>
-                  Featured Pittz
-                </a>
-
                 <a href="#bonez-rush" onClick={closeMobileMenu}>
                   BONEZ Rush
                 </a>
@@ -487,30 +469,6 @@ function App() {
 
                 <a href="#rarity" onClick={closeMobileMenu}>
                   Rarity
-                </a>
-              </div>
-            </div>
-
-            <div className={`mobile-group ${mobileGroup === "gallery" ? "open" : ""}`}>
-              <button
-                className="mobile-toggle"
-                type="button"
-                onClick={() => toggleMobileGroup("gallery")}
-              >
-                Gallery <span className="caret"></span>
-              </button>
-
-              <div className="mobile-links">
-                <a href="#gallery" onClick={closeMobileMenu}>
-                  Featured
-                </a>
-
-                <a href="#traits" onClick={closeMobileMenu}>
-                  Traits (Soon)
-                </a>
-
-                <a href="#rarity" onClick={closeMobileMenu}>
-                  Rarity (Soon)
                 </a>
               </div>
             </div>
@@ -689,12 +647,12 @@ function App() {
                     marginTop: "18px",
                   }}
                 >
-                  <a className="btn primary" href="#about">
-                    Explore the Project
+                  <a className="btn primary" href="#bonez-rush">
+                    Play BONEZ Rush
                   </a>
 
-                  <a className="btn" href="#gallery">
-                    See the Pittz
+                  <a className="btn" href="#explorer">
+                    Explore the Pittz
                   </a>
                 </div>
               </div>
@@ -838,49 +796,6 @@ function App() {
               </div>
             </div>
           </div>
-
-          <section id="about">
-            <div className="section-title">
-              <h2>About CryptoPittz</h2>
-              <span>Meet the pack.</span>
-            </div>
-
-            <div className="panel">
-              <div className="inner">
-                <p className="subtitle" style={{ maxWidth: "80ch" }}>
-                  CryptoPittz is a stylized NFT project featuring bold neon palettes, heavy outlines
-                  and playful traits. The project is designed to grow into a connected experience
-                  with wallet integration, holder features, collection tools and more.
-                </p>
-
-                <div className="grid" style={{ marginTop: "18px" }}>
-                  <div className="card" style={{ gridColumn: "span 6" }}>
-                    <div className="accent"></div>
-
-                    <div className="inner">
-                      <h3>What makes it different?</h3>
-                      <p>
-                        Distinctive characters, colorful artwork and a visual identity designed to
-                        immediately stand out.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="card" style={{ gridColumn: "span 6" }}>
-                    <div className="accent"></div>
-
-                    <div className="inner">
-                      <h3>Where is it going?</h3>
-                      <p>
-                        Wallet connectivity, NFT ownership features and an expanding CryptoPittz
-                        community experience.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
 
           <section id="roadmap">
             <div className="section-title">
@@ -1087,8 +1002,6 @@ function App() {
               </div>
             </div>
           </section>
-
-          <GallerySection />
 
           <section id="traits">
             <div className="section-title">
