@@ -8,6 +8,7 @@ import { getAccountProvider } from "@multiversx/sdk-dapp/out/providers/helpers/a
 import { ProviderFactory } from "@multiversx/sdk-dapp/out/providers/ProviderFactory";
 import { ProviderTypeEnum } from "@multiversx/sdk-dapp/out/providers/types/providerFactory.types";
 
+import NftCard from "./components/nft/NftCard";
 import NftDetailModal from "./components/nft/NftDetailModal";
 import {
   BONEZ_DEXSCREENER_URL,
@@ -18,11 +19,7 @@ import { BONEZ_RATES } from "./config/bonezRates";
 import { galleryItems } from "./data/galleryItems";
 import { buildBonezChart } from "./utils/chartUtils";
 import { formatBonezUsd, formatMarketNumber } from "./utils/formatters";
-import {
-  decodePittzAttributes,
-  getNftImage,
-  getPittzStats,
-} from "./utils/nftUtils";
+import { getNftImage, getPittzStats } from "./utils/nftUtils";
 
 function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -2138,131 +2135,16 @@ function App() {
                       )}
                     </div>
                     <div className="wallet-nft-grid">
-                      {filteredNfts.map((nft) => {
-                        const stats = getPittzStats(nft.attributes);
-                        const bonez = getBonezGeneration(nft);
-
-                        return (
-                          <div
-                            className="wallet-nft-card"
-                            key={nft.identifier}
-                            onClick={() => openNftDetails(nft, filteredNfts)}
-                          >
-                            <div className="wallet-nft-image-wrap">
-                              {account.address &&
-                                nfts.some((ownedNft) => ownedNft.identifier === nft.identifier) && (
-                                  <span className="owned-badge">OWNED ✓</span>
-                                )}
-
-                              {getNftImage(nft) && (
-                                <img
-                                  src={getNftImage(nft)}
-                                  alt={nft.name || nft.identifier}
-                                  style={{
-                                    display: "block",
-                                    width: "100%",
-                                    height: "100%",
-                                    objectFit: "cover",
-                                    opacity: 1,
-                                    visibility: "visible",
-                                    position: "relative",
-                                    zIndex: 2,
-                                  }}
-                                  onError={(event) => {
-                                    console.error(
-                                      "Explorer image failed:",
-                                      nft.identifier,
-                                      event.currentTarget.src,
-                                    );
-                                  }}
-                                />
-                              )}
-                            </div>
-
-                            <div className="wallet-nft-info">
-                              <strong>{nft.name || nft.identifier}</strong>
-
-                              <small>{nft.identifier}</small>
-
-                              <div className="pittz-stats">
-                                {stats.rank && (
-                                  <div className="pittz-stat rank-stat">
-                                    <span>🏆 Rank</span>
-                                    <strong>#{stats.rank}</strong>
-                                  </div>
-                                )}
-
-                                {stats.score && (
-                                  <div className="pittz-stat">
-                                    <span>⚡ Score</span>
-                                    <strong>{stats.score}</strong>
-                                  </div>
-                                )}
-
-                                {stats.bloodline && (
-                                  <div className="pittz-stat">
-                                    <span>Bloodline</span>
-                                    <strong>{stats.bloodline}</strong>
-                                  </div>
-                                )}
-
-                                {stats.type && (
-                                  <div className="pittz-stat">
-                                    <span>Type</span>
-                                    <strong>{stats.type}</strong>
-                                  </div>
-                                )}
-                              </div>
-
-                              {bonez && (
-                                <div className="bonez-generation">
-                                  <div className="bonez-generation-header">
-                                    <span>🦴 Potential BONEZ</span>
-                                    <strong>{bonez.tier} Tier</strong>
-                                  </div>
-
-                                  <div className="bonez-generation-grid">
-                                    <div>
-                                      <span>Daily</span>
-                                      <strong>{bonez.daily.toFixed(2)}</strong>
-                                    </div>
-
-                                    <div>
-                                      <span>Weekly</span>
-                                      <strong>{bonez.weekly.toFixed(2)}</strong>
-                                    </div>
-
-                                    <div>
-                                      <span>30 Days</span>
-                                      <strong>{bonez.monthly.toFixed(2)}</strong>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-
-                              {decodePittzAttributes(nft.attributes).length > 0 && (
-                                <div className="pittz-traits">
-                                  {decodePittzAttributes(nft.attributes).map((item) => (
-                                    <div
-                                      className="pittz-trait"
-                                      key={`${nft.identifier}-${item.trait}`}
-                                    >
-                                      <span>{item.trait}</span>
-                                      <strong>{item.value}</strong>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="wallet-nft-info">
-                              <strong>{nft.name || nft.identifier}</strong>
-
-                              <small>{nft.identifier}</small>
-                            </div>
-                          </div>
-                        );
-                      })}
+                      {filteredNfts.map((nft) => (
+                        <NftCard
+                          key={nft.identifier}
+                          nft={nft}
+                          bonez={getBonezGeneration(nft)}
+                          isOwned
+                          showTraits
+                          onClick={() => openNftDetails(nft, filteredNfts)}
+                        />
+                      ))}
                     </div>
                   </>
                 )}
@@ -2493,76 +2375,18 @@ function App() {
 
                     <div className="wallet-nft-grid">
                       {explorerPageNfts.map((nft) => {
-                        const stats = getPittzStats(nft.attributes);
+                        const isOwned =
+                          Boolean(account.address) &&
+                          nfts.some((ownedNft) => ownedNft.identifier === nft.identifier);
 
                         return (
-                          <div
-                            className={`wallet-nft-card explorer-card ${
-                              account.address &&
-                              nfts.some((ownedNft) => ownedNft.identifier === nft.identifier)
-                                ? "owned-card"
-                                : ""
-                            }`}
+                          <NftCard
                             key={nft.identifier}
+                            nft={nft}
+                            isOwned={isOwned}
+                            variant="explorer"
                             onClick={() => openNftDetails(nft, filteredExplorerNfts)}
-                          >
-                            <div className="wallet-nft-image-wrap">
-                              {getNftImage(nft) && (
-                                <img
-                                  src={getNftImage(nft)}
-                                  alt={nft.name || nft.identifier}
-                                  onError={(event) => {
-                                    console.error(
-                                      "Explorer image failed:",
-                                      nft.identifier,
-                                      event.currentTarget.src,
-                                    );
-                                  }}
-                                />
-                              )}
-
-                              {account.address &&
-                                nfts.some((ownedNft) => ownedNft.identifier === nft.identifier) && (
-                                  <span className="owned-badge">OWNED ✓</span>
-                                )}
-                            </div>
-
-                            <div className="wallet-nft-info">
-                              <strong>{nft.name || nft.identifier}</strong>
-
-                              <small>{nft.identifier}</small>
-
-                              <div className="pittz-stats">
-                                {stats.rank && (
-                                  <div className="pittz-stat rank-stat">
-                                    <span>🏆 Rank</span>
-                                    <strong>#{stats.rank}</strong>
-                                  </div>
-                                )}
-
-                                {stats.score && (
-                                  <div className="pittz-stat">
-                                    <span>⚡ Score</span>
-                                    <strong>{stats.score}</strong>
-                                  </div>
-                                )}
-
-                                {stats.bloodline && (
-                                  <div className="pittz-stat">
-                                    <span>Bloodline</span>
-                                    <strong>{stats.bloodline}</strong>
-                                  </div>
-                                )}
-
-                                {stats.type && (
-                                  <div className="pittz-stat">
-                                    <span>Type</span>
-                                    <strong>{stats.type}</strong>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
+                          />
                         );
                       })}
                     </div>
