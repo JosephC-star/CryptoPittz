@@ -15,8 +15,8 @@ import NftCard from "./components/nft/NftCard";
 import NftDetailModal from "./components/nft/NftDetailModal";
 import { BONEZ_DEXSCREENER_URL, BONEZ_TOKEN_ID } from "./config/collections";
 import useExplorerData from "./features/explorer/useExplorerData";
+import MyPittzSection from "./features/my-pittz/MyPittzSection";
 import useWalletPittz from "./features/my-pittz/useWalletPittz";
-import { getBonezGeneration, getBonezWalletTotals } from "./utils/bonezUtils";
 import { buildBonezChart } from "./utils/chartUtils";
 import { formatBonezUsd, formatMarketNumber } from "./utils/formatters";
 import { getPittzStats } from "./utils/nftUtils";
@@ -26,10 +26,6 @@ function App() {
   const [mobileGroup, setMobileGroup] = useState(null);
   const [selectedNft, setSelectedNft] = useState(null);
   const [modalNfts, setModalNfts] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("rank");
-  const [bloodlineFilter, setBloodlineFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("all");
   const [explorerSearch, setExplorerSearch] = useState("");
   const [explorerSort, setExplorerSort] = useState("rank");
   const [explorerBloodline, setExplorerBloodline] = useState("all");
@@ -37,7 +33,6 @@ function App() {
   const [randomPittLoading, setRandomPittLoading] = useState(false);
   const [randomPittError, setRandomPittError] = useState("");
   const [randomPittMode, setRandomPittMode] = useState("surprise");
-  const [myPittzCollection, setMyPittzCollection] = useState("original");
   const walletConnectAnchorRef = useRef(null);
   const [walletOverlayOpen, setWalletOverlayOpen] = useState(false);
 
@@ -86,10 +81,6 @@ function App() {
       console.log("Wallet connected!");
     },
   });
-  const ownedOriginalPittz = nfts.filter((nft) => nft.collection === "PITTZ-1a4c2d");
-
-  const ownedVicePittz = nfts.filter((nft) => nft.collection === "PITTZVICE-c3ec94");
-  const activeOwnedPittz = myPittzCollection === "vice" ? ownedVicePittz : ownedOriginalPittz;
   function closeMobileMenu() {
     setMobileOpen(false);
   }
@@ -277,82 +268,6 @@ function App() {
     };
   }, []);
 
-  const walletSummary = (() => {
-    if (!nfts.length) {
-      return {
-        total: 0,
-        bestRank: null,
-        highestScore: null,
-        bloodlines: {},
-        types: {},
-      };
-    }
-
-    const summaries = nfts.map((nft) => getPittzStats(nft.attributes));
-
-    const ranks = summaries
-      .map((item) => Number(item.rank))
-      .filter((value) => Number.isFinite(value) && value > 0);
-
-    const scores = summaries
-      .map((item) => Number(item.score))
-      .filter((value) => Number.isFinite(value));
-
-    const bloodlines = {};
-    const types = {};
-
-    summaries.forEach((item) => {
-      if (item.bloodline) {
-        bloodlines[item.bloodline] = (bloodlines[item.bloodline] || 0) + 1;
-      }
-
-      if (item.type) {
-        types[item.type] = (types[item.type] || 0) + 1;
-      }
-    });
-
-    return {
-      total: nfts.length,
-      bestRank: ranks.length ? Math.min(...ranks) : null,
-      highestScore: scores.length ? Math.max(...scores) : null,
-      bloodlines,
-      types,
-    };
-  })();
-
-  const filteredNfts = activeOwnedPittz
-    .filter((nft) => {
-      const stats = getPittzStats(nft.attributes);
-
-      const matchesSearch =
-        nft.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        nft.identifier?.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesBloodline = bloodlineFilter === "all" || stats.bloodline === bloodlineFilter;
-
-      const matchesType = typeFilter === "all" || stats.type === typeFilter;
-
-      return matchesSearch && matchesBloodline && matchesType;
-    })
-    .sort((a, b) => {
-      const aStats = getPittzStats(a.attributes);
-      const bStats = getPittzStats(b.attributes);
-
-      if (sortBy === "rank") {
-        return Number(aStats.rank || Infinity) - Number(bStats.rank || Infinity);
-      }
-
-      if (sortBy === "score") {
-        return Number(bStats.score || 0) - Number(aStats.score || 0);
-      }
-
-      if (sortBy === "name") {
-        return (a.name || "").localeCompare(b.name || "");
-      }
-
-      return 0;
-    });
-
   useEffect(() => {
     let cancelled = false;
 
@@ -443,8 +358,6 @@ function App() {
     };
   }, []);
 
-  const bonezWalletTotals = getBonezWalletTotals(nfts);
-
   const activeBonezHistory =
     bonezChartRange === "24h"
       ? bonezPriceHistory.slice(-24)
@@ -480,20 +393,6 @@ function App() {
       types,
     };
   })();
-
-  const bonezLiveUsdPrice = Number(bonezMarket?.priceUsd);
-
-  const bonezWalletUsdValues = {
-    daily: Number.isFinite(bonezLiveUsdPrice) ? bonezWalletTotals.daily * bonezLiveUsdPrice : null,
-
-    weekly: Number.isFinite(bonezLiveUsdPrice)
-      ? bonezWalletTotals.weekly * bonezLiveUsdPrice
-      : null,
-
-    monthly: Number.isFinite(bonezLiveUsdPrice)
-      ? bonezWalletTotals.monthly * bonezLiveUsdPrice
-      : null,
-  };
 
   const filteredExplorerNfts = explorerAllNfts
     .filter((nft) => {
@@ -1409,247 +1308,14 @@ function App() {
             )}
           </div>
 
-          <section id="my-pittz">
-            <div className="section-title">
-              <h2>My Pittz</h2>
-              <span>Your CryptoPittz collection.</span>
-            </div>
-            <div className="explorer-tabs my-pittz-tabs">
-              <button
-                type="button"
-                className={`explorer-tab ${myPittzCollection === "original" ? "active" : ""}`}
-                onClick={() => setMyPittzCollection("original")}
-              >
-                Original Pittz
-                <span>{ownedOriginalPittz.length}</span>
-              </button>
-
-              <button
-                type="button"
-                className={`explorer-tab ${myPittzCollection === "vice" ? "active" : ""}`}
-                onClick={() => setMyPittzCollection("vice")}
-              >
-                Vice Pittz
-                <span>{ownedVicePittz.length}</span>
-              </button>
-            </div>
-
-            <div className="panel">
-              <div className="inner">
-                {!account.address && (
-                  <p className="subtitle">Connect your wallet to see your NFTs.</p>
-                )}
-
-                {account.address && nftsLoading && (
-                  <p className="subtitle">Searching your wallet...</p>
-                )}
-
-                {account.address && nftsError && <p className="subtitle">{nftsError}</p>}
-
-                {account.address && !nftsLoading && !nftsError && nfts.length === 0 && (
-                  <p className="subtitle">No NFTs were found in this wallet.</p>
-                )}
-
-                {account.address && !nftsLoading && !nftsError && nfts.length > 0 && (
-                  <>
-                    <p className="subtitle">
-                      You own {nfts.length} CryptoPittz NFT{nfts.length === 1 ? "" : "s"}.
-                    </p>
-                    <div className="wallet-summary">
-                      <div className="wallet-summary-main">
-                        <div className="wallet-summary-card">
-                          <span>CryptoPittz Owned</span>
-                          <strong>{walletSummary.total}</strong>
-                        </div>
-
-                        <div className="wallet-summary-card">
-                          <span>Best Rank</span>
-                          <strong>
-                            {walletSummary.bestRank ? `#${walletSummary.bestRank}` : "—"}
-                          </strong>
-                        </div>
-
-                        <div className="wallet-summary-card">
-                          <span>Highest Score</span>
-                          <strong>{walletSummary.highestScore ?? "—"}</strong>
-                        </div>
-                      </div>
-
-                      <div className="wallet-summary-breakdown">
-                        <div className="summary-group">
-                          <span className="summary-title">Bloodlines</span>
-
-                          <div className="summary-chips">
-                            {Object.entries(walletSummary.bloodlines).map(([bloodline, count]) => (
-                              <div className="summary-chip" key={bloodline}>
-                                <strong>{bloodline}</strong>
-                                <span>{count}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="summary-group">
-                          <span className="summary-title">Types</span>
-
-                          <div className="summary-chips">
-                            {Object.entries(walletSummary.types).map(([type, count]) => (
-                              <div className="summary-chip" key={type}>
-                                <strong>{type}</strong>
-                                <span>{count}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {account.address && !nftsLoading && !nftsError && nfts.length > 0 && (
-                      <div className="bonez-wallet-total">
-                        <div className="bonez-wallet-total-heading">
-                          <div>
-                            <span className="bonez-wallet-eyebrow">🦴 Wallet Utility</span>
-
-                            <h3>Potential BONEZ Generation</h3>
-
-                            <p>
-                              Estimated potential based on your owned Pittz and their tier rates.
-                            </p>
-                          </div>
-
-                          <div className="bonez-wallet-count">
-                            <strong>{bonezWalletTotals.pittz}</strong>
-                            <span>Pittz</span>
-                          </div>
-                        </div>
-
-                        <div className="bonez-wallet-total-grid">
-                          <div className="bonez-wallet-total-stat">
-                            <span>Daily</span>
-
-                            <strong>{bonezWalletTotals.daily.toFixed(2)}</strong>
-
-                            <small>BONEZ</small>
-
-                            <small>
-                              {bonezWalletUsdValues.daily !== null
-                                ? `≈ ${formatBonezUsd(bonezWalletUsdValues.daily)}`
-                                : "Live price unavailable"}
-                            </small>
-                          </div>
-
-                          <div className="bonez-wallet-total-stat">
-                            <span>Weekly</span>
-
-                            <strong>{bonezWalletTotals.weekly.toFixed(2)}</strong>
-
-                            <small>BONEZ</small>
-
-                            <small>
-                              {bonezWalletUsdValues.weekly !== null
-                                ? `≈ ${formatBonezUsd(bonezWalletUsdValues.weekly)}`
-                                : "Live price unavailable"}
-                            </small>
-                          </div>
-
-                          <div className="bonez-wallet-total-stat">
-                            <span>Estimated 30 Days</span>
-
-                            <strong>{bonezWalletTotals.monthly.toFixed(2)}</strong>
-
-                            <small>BONEZ</small>
-
-                            <small>
-                              {bonezWalletUsdValues.monthly !== null
-                                ? `≈ ${formatBonezUsd(bonezWalletUsdValues.monthly)}`
-                                : "Live price unavailable"}
-                            </small>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    <div className="pittz-controls">
-                      <input
-                        type="text"
-                        placeholder="Search Pittz..."
-                        value={searchTerm}
-                        onChange={(event) => setSearchTerm(event.target.value)}
-                      />
-
-                      <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
-                        <option value="rank">Best Rank</option>
-                        <option value="score">Highest Score</option>
-                        <option value="name">Name</option>
-                      </select>
-
-                      <select
-                        value={bloodlineFilter}
-                        onChange={(event) => setBloodlineFilter(event.target.value)}
-                      >
-                        <option value="all">All Bloodlines</option>
-
-                        {Object.keys(walletSummary.bloodlines).map((bloodline) => (
-                          <option key={bloodline} value={bloodline}>
-                            {bloodline}
-                          </option>
-                        ))}
-                      </select>
-
-                      <select
-                        value={typeFilter}
-                        onChange={(event) => setTypeFilter(event.target.value)}
-                      >
-                        <option value="all">All Types</option>
-
-                        {Object.keys(walletSummary.types).map((type) => (
-                          <option key={type} value={type}>
-                            {type}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="pittz-results-bar">
-                      <span>
-                        Showing {filteredNfts.length} of {activeOwnedPittz.length}{" "}
-                        {myPittzCollection === "vice" ? "Vice Pittz" : "Original Pittz"}
-                      </span>
-
-                      {(searchTerm ||
-                        bloodlineFilter !== "all" ||
-                        typeFilter !== "all" ||
-                        sortBy !== "rank") && (
-                        <button
-                          className="reset-filters"
-                          type="button"
-                          onClick={() => {
-                            setSearchTerm("");
-                            setSortBy("rank");
-                            setBloodlineFilter("all");
-                            setTypeFilter("all");
-                          }}
-                        >
-                          ↻ Reset Filters
-                        </button>
-                      )}
-                    </div>
-                    <div className="wallet-nft-grid">
-                      {filteredNfts.map((nft) => (
-                        <NftCard
-                          key={nft.identifier}
-                          nft={nft}
-                          bonez={getBonezGeneration(nft)}
-                          isOwned
-                          showTraits
-                          onClick={() => openNftDetails(nft, filteredNfts)}
-                        />
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </section>
-
+          <MyPittzSection
+            address={account.address}
+            nfts={nfts}
+            loading={nftsLoading}
+            error={nftsError}
+            bonezUsdPrice={Number(bonezMarket?.priceUsd)}
+            onOpenNft={openNftDetails}
+          />
           <section id="explorer">
             <div className="section-title">
               <h2>CryptoPittz Explorer</h2>
