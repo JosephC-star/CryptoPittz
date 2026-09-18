@@ -2,6 +2,14 @@
   scroll-margin-top: 110px;
 }
 
+.bonez-rush-section .section-title {
+  margin-bottom: 10px;
+}
+
+.bonez-rush-section .section-title p {
+  margin: 4px 0 0;
+}
+
 .bonez-rush-title h2 {
   background: linear-gradient(90deg, #ffd86b, #ff3df7, #00e5ff);
   background-clip: text;
@@ -25,7 +33,7 @@
 
 .bonez-rush-scoreboard > div {
   display: grid;
-  min-height: 76px;
+  min-height: 58px;
   place-content: center;
   text-align: center;
   background: rgba(7, 10, 24, 0.9);
@@ -33,7 +41,7 @@
 
 .bonez-rush-scoreboard span {
   color: rgba(255, 255, 255, 0.62);
-  font-size: 0.72rem;
+  font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -41,7 +49,7 @@
 
 .bonez-rush-scoreboard strong {
   color: #fff;
-  font-size: 1.45rem;
+  font-size: 1.18rem;
 }
 
 .bonez-rush-combo strong {
@@ -71,7 +79,8 @@
 
 .bonez-rush-arena {
   position: relative;
-  min-height: 510px;
+  min-height: 340px;
+  --rush-fall-distance: 445px;
   overflow: hidden;
   touch-action: none;
   background:
@@ -132,8 +141,8 @@
   top: -90px;
   left: var(--rush-x);
   z-index: 2;
-  width: 68px;
-  height: 68px;
+  width: 60px;
+  height: 60px;
   padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 50%;
@@ -147,7 +156,7 @@
 
 .rush-item span {
   display: block;
-  font-size: 2.45rem;
+  font-size: 2.15rem;
   filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
   transform: rotate(var(--rush-rotation));
 }
@@ -183,27 +192,27 @@
   z-index: 5;
   display: grid;
   place-content: center;
-  padding: 30px;
+  padding: 22px;
   text-align: center;
   background: radial-gradient(circle, rgba(38, 18, 61, 0.76), rgba(4, 7, 19, 0.94));
   backdrop-filter: blur(5px);
 }
 
 .bonez-rush-logo {
-  font-size: 4.5rem;
+  font-size: 3.25rem;
   filter: drop-shadow(0 0 24px rgba(255, 216, 107, 0.68));
 }
 
 .bonez-rush-overlay h3 {
   margin: 8px 0;
   color: #fff;
-  font-size: clamp(1.8rem, 5vw, 3.4rem);
+  font-size: clamp(1.6rem, 4vw, 2.7rem);
   letter-spacing: 0.04em;
 }
 
 .bonez-rush-overlay p {
   max-width: 560px;
-  margin: 0 auto 24px;
+  margin: 0 auto 17px;
   color: rgba(255, 255, 255, 0.72);
 }
 
@@ -218,7 +227,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 12px 26px;
-  padding: 15px 20px;
+  padding: 11px 18px;
   color: rgba(255, 255, 255, 0.68);
   font-size: 0.84rem;
   font-weight: 800;
@@ -230,7 +239,7 @@
 
 @keyframes bonez-rush-fall {
   from { transform: translate3d(-50%, 0, 0) rotate(0deg); }
-  to { transform: translate3d(calc(-50% + var(--rush-drift)), 650px, 0) rotate(360deg); }
+  to { transform: translate3d(calc(-50% + var(--rush-drift)), var(--rush-fall-distance), 0) rotate(360deg); }
 }
 
 @keyframes musty-pulse {
@@ -253,7 +262,8 @@
   }
 
   .bonez-rush-arena {
-    min-height: 460px;
+    min-height: 360px;
+    --rush-fall-distance: 465px;
   }
 
   .rush-item {

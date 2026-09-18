@@ -5708,7 +5708,7 @@ header::after {
   position: relative;
   overflow: hidden;
 
-  padding: 22px;
+  padding: 16px;
 
   border-radius: 20px;
   border: 1px solid rgba(255, 211, 80, 0.42);
@@ -5730,7 +5730,15 @@ header::after {
   justify-content: space-between;
   gap: 16px;
 
-  margin-bottom: 20px;
+  margin-bottom: 12px;
+}
+
+.bonez-market-primary {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.8fr);
+  gap: 12px;
+  align-items: stretch;
+  margin-bottom: 10px;
 }
 
 .bonez-market-eyebrow {
@@ -5806,9 +5814,10 @@ header::after {
 }
 
 .bonez-market-price {
-  padding: 18px;
-
-  margin-bottom: 14px;
+  display: grid;
+  place-content: center;
+  padding: 14px;
+  margin-bottom: 0;
 
   border-radius: 16px;
 
@@ -5837,7 +5846,7 @@ header::after {
 
   color: #ffd86b;
 
-  font-size: clamp(30px, 5vw, 44px);
+  font-size: clamp(25px, 3.5vw, 36px);
 
   text-shadow:
     0 0 12px rgba(255, 208, 0, 0.3),
@@ -5863,7 +5872,7 @@ header::after {
 }
 
 .bonez-market-stat {
-  padding: 13px;
+  padding: 10px 12px;
 
   border-radius: 12px;
 
@@ -5930,8 +5939,8 @@ header::after {
   justify-content: space-between;
   gap: 14px;
 
-  margin-top: 16px;
-  padding-top: 14px;
+  margin-top: 10px;
+  padding-top: 10px;
 
   border-top: 1px solid rgba(255, 255, 255, 0.07);
 }
@@ -5984,6 +5993,10 @@ header::after {
 }
 
 @media (max-width: 700px) {
+  .bonez-market-primary {
+    grid-template-columns: 1fr;
+  }
+
   .bonez-market-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -5999,8 +6012,8 @@ header::after {
 }
 
 .bonez-chart {
-  margin-bottom: 14px;
-  padding: 16px;
+  margin-bottom: 0;
+  padding: 12px;
 
   border-radius: 16px;
   border: 1px solid rgba(0, 229, 255, 0.12);
@@ -6016,7 +6029,7 @@ header::after {
   justify-content: space-between;
   gap: 14px;
 
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .bonez-chart-header span {
@@ -6083,7 +6096,7 @@ header::after {
   display: block;
 
   width: 100%;
-  height: auto;
+  height: 128px;
 }
 
 .bonez-chart-gridline {
@@ -6106,7 +6119,7 @@ header::after {
   justify-content: space-between;
   gap: 12px;
 
-  margin-top: 10px;
+  margin-top: 7px;
 
   color: rgba(255, 255, 255, 0.38);
 
@@ -6133,6 +6146,10 @@ header::after {
 }
 
 @media (max-width: 700px) {
+  .bonez-chart-stage svg {
+    height: 145px;
+  }
+
   .bonez-chart-footer {
     flex-direction: column;
     gap: 5px;

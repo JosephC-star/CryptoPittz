@@ -40,20 +40,21 @@ function BonezMarketSection({
 
         {market && (
           <>
-            <div className="bonez-market-price">
-              <span>Current BONEZ Price</span>
-              <strong>{formatBonezUsd(market.priceUsd)}</strong>
-              <small>
-                1 BONEZ ={" "}
-                {Number(market.priceNative).toLocaleString("en-US", {
-                  minimumFractionDigits: 8,
-                  maximumFractionDigits: 8,
-                })}{" "}
-                EGLD
-              </small>
-            </div>
+            <div className="bonez-market-primary">
+              <div className="bonez-market-price">
+                <span>Current BONEZ Price</span>
+                <strong>{formatBonezUsd(market.priceUsd)}</strong>
+                <small>
+                  1 BONEZ ={" "}
+                  {Number(market.priceNative).toLocaleString("en-US", {
+                    minimumFractionDigits: 8,
+                    maximumFractionDigits: 8,
+                  })}{" "}
+                  EGLD
+                </small>
+              </div>
 
-            <div className="bonez-chart">
+              <div className="bonez-chart">
               <div className="bonez-chart-header">
                 <div>
                   <span>Price History</span>
@@ -102,6 +103,7 @@ function BonezMarketSection({
                   <div className="bonez-chart-stage">
                     <svg
                       viewBox={`0 0 ${chart.width} ${chart.height}`}
+                      preserveAspectRatio="none"
                       role="img"
                       aria-label={`BONEZ ${chartRange} price chart`}
                     >
@@ -146,6 +148,7 @@ function BonezMarketSection({
                   </div>
                 </>
               )}
+              </div>
             </div>
 
             <div className="bonez-market-grid">
