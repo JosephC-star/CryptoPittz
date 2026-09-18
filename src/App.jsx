@@ -14,8 +14,9 @@ import ExplorerPagination from "./components/explorer/ExplorerPagination";
 import NftCard from "./components/nft/NftCard";
 import NftDetailModal from "./components/nft/NftDetailModal";
 import { BONEZ_DEXSCREENER_URL, BONEZ_TOKEN_ID } from "./config/collections";
-import { BONEZ_RATES } from "./config/bonezRates";
 import useExplorerData from "./features/explorer/useExplorerData";
+import useWalletPittz from "./features/my-pittz/useWalletPittz";
+import { getBonezGeneration, getBonezWalletTotals } from "./utils/bonezUtils";
 import { buildBonezChart } from "./utils/chartUtils";
 import { formatBonezUsd, formatMarketNumber } from "./utils/formatters";
 import { getPittzStats } from "./utils/nftUtils";
@@ -23,9 +24,6 @@ import { getPittzStats } from "./utils/nftUtils";
 function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileGroup, setMobileGroup] = useState(null);
-  const [nfts, setNfts] = useState([]);
-  const [nftsLoading, setNftsLoading] = useState(false);
-  const [nftsError, setNftsError] = useState("");
   const [selectedNft, setSelectedNft] = useState(null);
   const [modalNfts, setModalNfts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -72,6 +70,7 @@ function App() {
   } = useExplorerData(EXPLORER_PAGE_SIZE);
 
   const account = useGetAccount();
+  const { nfts, loading: nftsLoading, error: nftsError } = useWalletPittz(account.address);
   const [bonezMarket, setBonezMarket] = useState(null);
   const [bonezMarketLoading, setBonezMarketLoading] = useState(true);
   const [bonezMarketError, setBonezMarketError] = useState("");
@@ -91,60 +90,6 @@ function App() {
 
   const ownedVicePittz = nfts.filter((nft) => nft.collection === "PITTZVICE-c3ec94");
   const activeOwnedPittz = myPittzCollection === "vice" ? ownedVicePittz : ownedOriginalPittz;
-  function getBonezTier(nft) {
-    const stats = getPittzStats(nft.attributes);
-    const rank = Number(stats.rank);
-
-    if (!rank) return null;
-
-    const isVice = nft.collection === "PITTZVICE-c3ec94";
-
-    if (!isVice) {
-      if (rank === 1) return "Secret Rare";
-      if (rank === 2) return "Holoz";
-      if (rank === 3) return "Lego";
-      if (rank >= 4 && rank <= 451) return "Platinum";
-      if (rank >= 452 && rank <= 1245) return "Gold";
-      if (rank >= 1246 && rank <= 3195) return "Silver";
-      if (rank >= 3196 && rank <= 6999) return "Bronze";
-
-      return null;
-    }
-
-    if (rank === 1) return "Secret Rare";
-    if (rank === 2) return "Holoz";
-    if (rank === 3) return "Lego";
-    if (rank >= 4 && rank <= 104) return "Platinum";
-    if (rank >= 105 && rank <= 288) return "Gold";
-    if (rank >= 289 && rank <= 701) return "Silver";
-    if (rank >= 702 && rank <= 1337) return "Bronze";
-
-    return null;
-  }
-
-  function getBonezGeneration(nft) {
-    const tier = getBonezTier(nft);
-
-    if (!tier) {
-      return null;
-    }
-
-    const collectionType = nft.collection === "PITTZVICE-c3ec94" ? "vice" : "original";
-
-    const rates = BONEZ_RATES[collectionType][tier];
-
-    if (!rates) {
-      return null;
-    }
-
-    return {
-      tier,
-      daily: rates.daily,
-      weekly: rates.weekly,
-      monthly: rates.daily * 30,
-    };
-  }
-
   function closeMobileMenu() {
     setMobileOpen(false);
   }
@@ -332,44 +277,6 @@ function App() {
     };
   }, []);
 
-  useEffect(() => {
-    async function fetchWalletNfts() {
-      if (!account.address) {
-        setNfts([]);
-        return;
-      }
-
-      try {
-        setNftsLoading(true);
-        setNftsError("");
-
-        const collections = ["PITTZ-1a4c2d", "PITTZVICE-c3ec94"].join(",");
-
-        const response = await fetch(
-          `https://api.multiversx.com/accounts/${account.address}/nfts?collections=${collections}&size=1000`,
-        );
-
-        if (!response.ok) {
-          throw new Error("Unable to load CryptoPittz NFTs");
-        }
-
-        const data = await response.json();
-
-        console.log("CryptoPittz NFTs:", data);
-
-        setNfts(data);
-      } catch (error) {
-        console.error("NFT lookup failed:", error);
-        setNftsError("We couldn't load NFTs from this wallet.");
-        setNfts([]);
-      } finally {
-        setNftsLoading(false);
-      }
-    }
-
-    fetchWalletNfts();
-  }, [account.address]);
-
   const walletSummary = (() => {
     if (!nfts.length) {
       return {
@@ -536,26 +443,7 @@ function App() {
     };
   }, []);
 
-  const bonezWalletTotals = nfts.reduce(
-    (totals, nft) => {
-      const bonez = getBonezGeneration(nft);
-
-      if (!bonez) return totals;
-
-      totals.daily += bonez.daily;
-      totals.weekly += bonez.weekly;
-      totals.monthly += bonez.monthly;
-      totals.pittz += 1;
-
-      return totals;
-    },
-    {
-      daily: 0,
-      weekly: 0,
-      monthly: 0,
-      pittz: 0,
-    },
-  );
+  const bonezWalletTotals = getBonezWalletTotals(nfts);
 
   const activeBonezHistory =
     bonezChartRange === "24h"
