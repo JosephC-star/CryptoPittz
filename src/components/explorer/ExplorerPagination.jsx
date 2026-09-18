@@ -1,6 +1,8 @@
 export default function ExplorerPagination({ currentPage, totalItems, pageSize, onPageChange }) {
   const totalPages = Math.ceil(totalItems / pageSize);
 
+  if (totalPages <= 1) return null;
+
   function goToPage(page) {
     onPageChange(page);
 

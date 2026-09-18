@@ -581,6 +581,7 @@ function App() {
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
 
     async function fetchAllCollectionNfts() {
       const cacheKey = activeCollection.collection === "PITTZVICE-c3ec94" ? "vice" : "original";
@@ -611,6 +612,7 @@ function App() {
 
         const countResponse = await fetch(
           `https://api.multiversx.com/collections/${activeCollection.collection}/nfts/count`,
+          { signal: controller.signal },
         );
 
         if (!countResponse.ok) {
@@ -631,6 +633,7 @@ function App() {
         for (let from = 0; from < totalCount; from += EXPLORER_PAGE_SIZE) {
           const response = await fetch(
             `https://api.multiversx.com/collections/${activeCollection.collection}/nfts?from=${from}&size=${EXPLORER_PAGE_SIZE}`,
+            { signal: controller.signal },
           );
 
           if (!response.ok) {
@@ -642,6 +645,8 @@ function App() {
           allNfts.push(...pageData);
 
           if (!cancelled) {
+            setExplorerAllNfts([...allNfts]);
+
             setExplorerLoadProgress({
               loaded: allNfts.length,
               total: totalCount,
@@ -663,7 +668,9 @@ function App() {
           }, 1800);
         }
       } catch (error) {
-        console.error("Global Explorer dataset failed:", error);
+        if (error.name !== "AbortError") {
+          console.error("Global Explorer dataset failed:", error);
+        }
       } finally {
         if (!cancelled) {
           setExplorerAllLoading(false);
@@ -675,6 +682,7 @@ function App() {
 
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, [activeCollection.collection]);
 
