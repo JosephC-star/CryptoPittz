@@ -9,6 +9,7 @@ import { ProviderFactory } from "@multiversx/sdk-dapp/out/providers/ProviderFact
 import { ProviderTypeEnum } from "@multiversx/sdk-dapp/out/providers/types/providerFactory.types";
 
 import GallerySection from "./components/gallery/GallerySection";
+import ExplorerControls from "./components/explorer/ExplorerControls";
 import ExplorerPagination from "./components/explorer/ExplorerPagination";
 import NftCard from "./components/nft/NftCard";
 import NftDetailModal from "./components/nft/NftDetailModal";
@@ -2078,149 +2079,35 @@ function App() {
 
                 {!explorerLoading && !explorerError && explorerNfts.length > 0 && (
                   <>
-                    <div className="explorer-header">
-                      <div>
-                        <span>Collection</span>
-                        <strong>
-                          {explorerTotal.toLocaleString()} {activeCollection.name}
-                        </strong>
-                      </div>
-
-                      <div>
-                        <span>Collection ID</span>
-                        <strong>{activeCollection.collection}</strong>
-                      </div>
-
-                      {explorerAllLoading && (
-                        <div className="explorer-index-status">
-                          <div className="explorer-index-status-top">
-                            <span>Building Explorer Index</span>
-
-                            <strong>
-                              {explorerLoadProgress.loaded.toLocaleString()} /{" "}
-                              {explorerLoadProgress.total.toLocaleString()}
-                            </strong>
-                          </div>
-
-                          <div className="explorer-index-progress">
-                            <div
-                              className="explorer-index-progress-bar"
-                              style={{
-                                width:
-                                  explorerLoadProgress.total > 0
-                                    ? `${Math.min(
-                                        100,
-                                        (explorerLoadProgress.loaded / explorerLoadProgress.total) *
-                                          100,
-                                      )}%`
-                                    : "0%",
-                              }}
-                            />
-                          </div>
-
-                          <small>
-                            Preparing collection-wide rank, score, bloodline, and type filters.
-                          </small>
-                        </div>
-                      )}
-
-                      {explorerIndexReady && (
-                        <div className="explorer-index-ready">
-                          <span>✓</span>
-
-                          <div>
-                            <strong>Explorer Index Ready</strong>
-                            <small>
-                              {explorerLoadProgress.total.toLocaleString()} Pittz indexed
-                            </small>
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="explorer-controls">
-                        <input
-                          type="text"
-                          placeholder="Search CryptoPittz name or ID..."
-                          value={explorerSearch}
-                          onChange={(event) => {
-                            setExplorerSearch(event.target.value);
-                            setGlobalSearchResult(null);
-                            setGlobalSearchError("");
-                          }}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter") {
-                              searchCryptoPittz();
-                            }
-                          }}
-                        />
-
-                        <button
-                          className="btn primary explorer-search-button"
-                          type="button"
-                          onClick={searchCryptoPittz}
-                        >
-                          Search
-                        </button>
-                      </div>
-
-                      <select
-                        value={explorerSort}
-                        onChange={(event) => setExplorerSort(event.target.value)}
-                      >
-                        <option value="rank">Best Rank</option>
-                        <option value="score">Highest Score</option>
-                        <option value="name">Name</option>
-                      </select>
-
-                      <select
-                        value={explorerBloodline}
-                        onChange={(event) => setExplorerBloodline(event.target.value)}
-                      >
-                        <option value="all">All Bloodlines</option>
-
-                        {Object.keys(explorerSummary.bloodlines).map((bloodline) => (
-                          <option key={bloodline} value={bloodline}>
-                            {bloodline}
-                          </option>
-                        ))}
-                      </select>
-
-                      <select
-                        value={explorerType}
-                        onChange={(event) => setExplorerType(event.target.value)}
-                      >
-                        <option value="all">All Types</option>
-                        <option value="Core">Core</option>
-                        <option value="Secret">Secret</option>
-                        <option value="Holo">Holo</option>
-                        <option value="Legendary">Legendary</option>
-                      </select>
-                    </div>
-
-                    <div className="pittz-results-bar">
-                      <span>
-                        Showing {explorerPageNfts.length} of{" "}
-                        {filteredExplorerNfts.length.toLocaleString()} {activeCollection.name}
-                      </span>
-
-                      {(explorerSearch ||
-                        explorerBloodline !== "all" ||
-                        explorerType !== "all" ||
-                        explorerSort !== "rank") && (
-                        <button
-                          className="reset-filters"
-                          type="button"
-                          onClick={() => {
-                            setExplorerSearch("");
-                            setExplorerSort("rank");
-                            setExplorerBloodline("all");
-                            setExplorerType("all");
-                          }}
-                        >
-                          ↻ Reset Filters
-                        </button>
-                      )}
-                    </div>
+                    <ExplorerControls
+                      activeCollection={activeCollection}
+                      collectionTotal={explorerTotal}
+                      indexLoading={explorerAllLoading}
+                      indexReady={explorerIndexReady}
+                      loadProgress={explorerLoadProgress}
+                      search={explorerSearch}
+                      onSearchChange={(value) => {
+                        setExplorerSearch(value);
+                        setGlobalSearchResult(null);
+                        setGlobalSearchError("");
+                      }}
+                      onSearch={searchCryptoPittz}
+                      sort={explorerSort}
+                      onSortChange={setExplorerSort}
+                      bloodline={explorerBloodline}
+                      bloodlines={Object.keys(explorerSummary.bloodlines)}
+                      onBloodlineChange={setExplorerBloodline}
+                      type={explorerType}
+                      onTypeChange={setExplorerType}
+                      shownCount={explorerPageNfts.length}
+                      filteredCount={filteredExplorerNfts.length}
+                      onReset={() => {
+                        setExplorerSearch("");
+                        setExplorerSort("rank");
+                        setExplorerBloodline("all");
+                        setExplorerType("all");
+                      }}
+                    />
 
                     <ExplorerPagination
                       currentPage={explorerPage}
