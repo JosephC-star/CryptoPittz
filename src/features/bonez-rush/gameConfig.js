@@ -10,6 +10,16 @@ export const RUSH_ITEMS = [
   { type: "hazard", symbol: "💀", label: "Bad bone", points: -15, chance: 0.07 },
 ];
 
+export const COMBO_TIERS = [
+  { minimum: 10, multiplier: 3, name: "EXTRA MUSTY!", className: "extra-musty" },
+  { minimum: 5, multiplier: 2, name: "WOOF WOOF!", className: "woof-woof" },
+  { minimum: 0, multiplier: 1, name: "Fresh Trail", className: "fresh-trail" },
+];
+
+export function getComboTier(combo) {
+  return COMBO_TIERS.find((tier) => combo >= tier.minimum) || COMBO_TIERS.at(-1);
+}
+
 export function createRushItem(id) {
   const roll = Math.random();
   let chanceTotal = 0;

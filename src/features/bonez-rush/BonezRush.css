@@ -44,6 +44,21 @@
   font-size: 1.45rem;
 }
 
+.bonez-rush-combo strong {
+  font-size: clamp(0.76rem, 1.5vw, 1.15rem);
+}
+
+.bonez-rush-combo.woof-woof strong {
+  color: #00e5ff;
+  text-shadow: 0 0 16px rgba(0, 229, 255, 0.7);
+}
+
+.bonez-rush-combo.extra-musty strong {
+  color: #ffd86b;
+  text-shadow: 0 0 18px rgba(255, 216, 107, 0.85);
+  animation: musty-pulse 0.7s ease-in-out infinite alternate;
+}
+
 .bonez-rush-lives strong {
   display: flex;
   gap: 4px;
@@ -99,6 +114,17 @@
   font-weight: 900;
   letter-spacing: 0.09em;
   text-shadow: 0 0 18px rgba(255, 216, 107, 0.55);
+}
+
+.bonez-rush-feedback.woof-woof {
+  color: #00e5ff;
+  text-shadow: 0 0 22px rgba(0, 229, 255, 0.8);
+}
+
+.bonez-rush-feedback.extra-musty {
+  color: #ffd86b;
+  font-size: clamp(0.9rem, 2.4vw, 1.25rem);
+  text-shadow: 0 0 26px rgba(255, 216, 107, 0.95);
 }
 
 .rush-item {
@@ -205,6 +231,11 @@
 @keyframes bonez-rush-fall {
   from { transform: translate3d(-50%, 0, 0) rotate(0deg); }
   to { transform: translate3d(calc(-50% + var(--rush-drift)), 650px, 0) rotate(360deg); }
+}
+
+@keyframes musty-pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.07); }
 }
 
 @media (max-width: 700px) {

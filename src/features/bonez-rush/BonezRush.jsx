@@ -6,6 +6,7 @@ import {
   SPAWN_INTERVAL,
   STARTING_LIVES,
   createRushItem,
+  getComboTier,
 } from "./gameConfig";
 import "./BonezRush.css";
 
@@ -30,6 +31,7 @@ function BonezRush() {
   const pointerStarts = useRef(new Map());
 
   const playing = status === "playing";
+  const comboTier = getComboTier(combo);
 
   useEffect(() => {
     if (!playing) return undefined;
@@ -104,10 +106,20 @@ function BonezRush() {
 
     setCombo((current) => {
       const nextCombo = current + 1;
-      const multiplier = Math.min(3, 1 + Math.floor(nextCombo / 5));
-      const earned = item.points * multiplier;
+      const nextTier = getComboTier(nextCombo);
+      const earned = item.points * nextTier.multiplier;
       setScore((currentScore) => currentScore + earned);
-      setFeedback(multiplier > 1 ? `GLORIOUS ${action}! +${earned}` : `${action}! +${earned}`);
+
+      if (nextCombo === 5 || nextCombo === 10) {
+        setFeedback(`${nextTier.name} ${nextTier.multiplier}× • +${earned}`);
+      } else {
+        setFeedback(
+          nextTier.multiplier > 1
+            ? `${nextTier.name} ${action}! +${earned}`
+            : `${action}! +${earned}`,
+        );
+      }
+
       return nextCombo;
     });
   }
@@ -153,13 +165,16 @@ function BonezRush() {
           <div><span>Score</span><strong>{score}</strong></div>
           <div><span>Best</span><strong>{highScore}</strong></div>
           <div><span>Time</span><strong>{timeLeft}s</strong></div>
-          <div><span>Combo</span><strong>{combo}x</strong></div>
+          <div className={`bonez-rush-combo ${comboTier.className}`}>
+            <span>Combo • {combo} streak</span>
+            <strong>{comboTier.name} {comboTier.multiplier}×</strong>
+          </div>
           <div className="bonez-rush-lives"><span>Lives</span><strong>{hearts}</strong></div>
         </div>
 
         <div className="bonez-rush-arena" aria-live="polite">
           <div className="bonez-rush-skyline" aria-hidden="true" />
-          <div className="bonez-rush-feedback">{feedback}</div>
+          <div className={`bonez-rush-feedback ${comboTier.className}`}>{feedback}</div>
 
           {items.map((item) => (
             <button
@@ -190,7 +205,7 @@ function BonezRush() {
               <p>
                 {status === "finished"
                   ? `You crunched ${score} points.`
-                  : "You have 30 seconds and three lives. Every fifth catch boosts your multiplier."}
+                  : "You have 30 seconds and three lives. Reach WOOF WOOF at 5, then go EXTRA MUSTY at 10!"}
               </p>
               <button className="btn primary bonez-rush-start" type="button" onClick={startGame}>
                 {status === "finished" ? "Run It Back" : "Start BONEZ Rush"}
