@@ -13,12 +13,9 @@ import ExplorerControls from "./components/explorer/ExplorerControls";
 import ExplorerPagination from "./components/explorer/ExplorerPagination";
 import NftCard from "./components/nft/NftCard";
 import NftDetailModal from "./components/nft/NftDetailModal";
-import {
-  BONEZ_DEXSCREENER_URL,
-  BONEZ_TOKEN_ID,
-  EXPLORER_COLLECTIONS,
-} from "./config/collections";
+import { BONEZ_DEXSCREENER_URL, BONEZ_TOKEN_ID } from "./config/collections";
 import { BONEZ_RATES } from "./config/bonezRates";
+import useExplorerData from "./features/explorer/useExplorerData";
 import { buildBonezChart } from "./utils/chartUtils";
 import { formatBonezUsd, formatMarketNumber } from "./utils/formatters";
 import { getPittzStats } from "./utils/nftUtils";
@@ -35,34 +32,12 @@ function App() {
   const [sortBy, setSortBy] = useState("rank");
   const [bloodlineFilter, setBloodlineFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [explorerNfts, setExplorerNfts] = useState([]);
-  const [explorerLoading, setExplorerLoading] = useState(true);
-  const [explorerError, setExplorerError] = useState("");
   const [explorerSearch, setExplorerSearch] = useState("");
   const [explorerSort, setExplorerSort] = useState("rank");
   const [explorerBloodline, setExplorerBloodline] = useState("all");
   const [explorerType, setExplorerType] = useState("all");
-  const [explorerAllNfts, setExplorerAllNfts] = useState([]);
-  const [explorerAllLoading, setExplorerAllLoading] = useState(false);
-  const [explorerLoadProgress, setExplorerLoadProgress] = useState({
-    loaded: 0,
-    total: 0,
-  });
-  const [explorerTotal, setExplorerTotal] = useState(0);
-  const [explorerPage, setExplorerPage] = useState(0);
-  const [explorerCache, setExplorerCache] = useState({
-    original: null,
-    vice: null,
-  });
-  const [globalSearchResult, setGlobalSearchResult] = useState(null);
-  const [explorerIndexReady, setExplorerIndexReady] = useState(false);
-  const [globalSearchLoading, setGlobalSearchLoading] = useState(false);
-  const [globalSearchError, setGlobalSearchError] = useState("");
   const [randomPittLoading, setRandomPittLoading] = useState(false);
   const [randomPittError, setRandomPittError] = useState("");
-  const [explorerCollection, setExplorerCollection] = useState("original");
-  const [originalTotal, setOriginalTotal] = useState(0);
-  const [viceTotal, setViceTotal] = useState(0);
   const [randomPittMode, setRandomPittMode] = useState("surprise");
   const [myPittzCollection, setMyPittzCollection] = useState("original");
   const walletConnectAnchorRef = useRef(null);
@@ -72,6 +47,29 @@ function App() {
   const [mobileWalletError, setMobileWalletError] = useState("");
 
   const EXPLORER_PAGE_SIZE = 100;
+
+  const {
+    activeCollection,
+    allNfts: explorerAllNfts,
+    clearSearch: clearGlobalSearch,
+    collection: explorerCollection,
+    collectionTotal: explorerTotal,
+    indexLoading: explorerAllLoading,
+    indexReady: explorerIndexReady,
+    loadProgress: explorerLoadProgress,
+    originalTotal,
+    page: explorerPage,
+    pageError: explorerError,
+    pageLoading: explorerLoading,
+    pageNfts: explorerNfts,
+    searchCryptoPittz,
+    searchError: globalSearchError,
+    searchLoading: globalSearchLoading,
+    searchResult: globalSearchResult,
+    setCollection: setExplorerCollection,
+    setPage: setExplorerPage,
+    viceTotal,
+  } = useExplorerData(EXPLORER_PAGE_SIZE);
 
   const account = useGetAccount();
   const [bonezMarket, setBonezMarket] = useState(null);
@@ -84,12 +82,11 @@ function App() {
   const [bonezDailyHistory, setBonezDailyHistory] = useState([]);
   const [bonezChartRange, setBonezChartRange] = useState("24h");
 
-  const unlockPanelManager = UnlockPanelManager.init({
+  UnlockPanelManager.init({
     loginHandler: () => {
       console.log("Wallet connected!");
     },
   });
-  const activeCollection = EXPLORER_COLLECTIONS[explorerCollection];
   const ownedOriginalPittz = nfts.filter((nft) => nft.collection === "PITTZ-1a4c2d");
 
   const ownedVicePittz = nfts.filter((nft) => nft.collection === "PITTZVICE-c3ec94");
@@ -155,6 +152,21 @@ function App() {
   function toggleMobileGroup(group) {
     setMobileGroup((current) => (current === group ? null : group));
   }
+
+  function resetExplorerFilters() {
+    setExplorerSearch("");
+    setExplorerSort("rank");
+    setExplorerBloodline("all");
+    setExplorerType("all");
+    setExplorerPage(0);
+    clearGlobalSearch();
+  }
+
+  function changeExplorerCollection(collection) {
+    setExplorerCollection(collection);
+    resetExplorerFilters();
+  }
+
   function isMobileDevice() {
     return window.matchMedia("(max-width: 700px)").matches;
   }
@@ -284,111 +296,6 @@ function App() {
       setRandomPittError("Couldn't summon a random Pitt. Try again!");
     } finally {
       setRandomPittLoading(false);
-    }
-  }
-
-  async function searchCryptoPittz() {
-    const search = explorerSearch.trim();
-
-    if (!search) {
-      setGlobalSearchResult(null);
-      setGlobalSearchError("");
-      return;
-    }
-
-    try {
-      setGlobalSearchLoading(true);
-      setGlobalSearchError("");
-      setGlobalSearchResult(null);
-
-      /*
-      Use whichever Explorer collection tab is currently active.
-      Original:
-        PITTZ-1a4c2d
-
-      Vice:
-        PITTZVICE-c3ec94
-    */
-      const collectionId = activeCollection.collection;
-
-      const normalizedSearch = search.toLowerCase();
-
-      /*
-      If somebody pasted the complete NFT identifier,
-      use MultiversX's direct NFT endpoint.
-    */
-      const looksLikeFullIdentifier =
-        normalizedSearch.startsWith("pittz-") || normalizedSearch.startsWith("pittzvice-");
-
-      if (looksLikeFullIdentifier) {
-        const response = await fetch(
-          `https://api.multiversx.com/nfts/${encodeURIComponent(search)}`,
-        );
-
-        if (!response.ok) {
-          throw new Error("NFT not found");
-        }
-
-        const nft = await response.json();
-
-        if (nft.collection !== collectionId) {
-          setGlobalSearchError(`That Pitt belongs to a different CryptoPittz collection.`);
-          return;
-        }
-
-        setGlobalSearchResult(nft);
-        return;
-      }
-
-      /*
-      Pull the visible Pitt number out of searches such as:
-
-      4809
-      #4809
-      Pittz #4809
-      CryptoPittz #4809
-    */
-      const pittNumber = search.match(/\d+/)?.[0];
-
-      let searchName = search;
-
-      if (pittNumber) {
-        searchName =
-          explorerCollection === "vice"
-            ? `CryptoPittz VICE #${pittNumber}`
-            : `CryptoPittz #${pittNumber}`;
-      }
-
-      const response = await fetch(
-        `https://api.multiversx.com/collections/${collectionId}/nfts?name=${encodeURIComponent(
-          searchName,
-        )}&size=10`,
-      );
-
-      if (!response.ok) {
-        throw new Error("Unable to search CryptoPittz");
-      }
-
-      const data = await response.json();
-
-      if (!data.length) {
-        setGlobalSearchError(`No ${activeCollection.name} matching that search was found.`);
-        return;
-      }
-
-      /*
-      Prefer the exact displayed number/name when possible.
-    */
-      const exactMatch =
-        data.find((nft) => (nft.name || "").toLowerCase() === searchName.toLowerCase()) || data[0];
-
-      setGlobalSearchResult(exactMatch);
-    } catch (error) {
-      console.error("CryptoPittz search failed:", error);
-
-      setGlobalSearchError("The collection search could not be completed.");
-    } finally {
-      setGlobalSearchLoading(false);
     }
   }
 
@@ -538,194 +445,6 @@ function App() {
 
       return 0;
     });
-
-  useEffect(() => {
-    async function fetchCollection() {
-      try {
-        setExplorerLoading(true);
-        setExplorerError("");
-
-        const from = explorerPage * EXPLORER_PAGE_SIZE;
-
-        const [nftsResponse, countResponse] = await Promise.all([
-          fetch(
-            `https://api.multiversx.com/collections/${activeCollection.collection}/nfts?from=${from}&size=${EXPLORER_PAGE_SIZE}`,
-          ),
-
-          fetch(`https://api.multiversx.com/collections/${activeCollection.collection}/nfts/count`),
-        ]);
-
-        if (!nftsResponse.ok || !countResponse.ok) {
-          throw new Error("Unable to load collection");
-        }
-
-        const nftData = await nftsResponse.json();
-
-        const totalCount = await countResponse.json();
-        console.log("First Vice NFT:", nftData[0]);
-        console.log("Vice media:", nftData[0]?.media);
-        console.log("Vice URIs:", nftData[0]?.uris);
-
-        setExplorerNfts(nftData);
-        setExplorerTotal(totalCount);
-      } catch (error) {
-        console.error("Explorer lookup failed:", error);
-
-        setExplorerError("The collection could not be loaded.");
-      } finally {
-        setExplorerLoading(false);
-      }
-    }
-
-    fetchCollection();
-  }, [explorerPage, activeCollection.collection]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const controller = new AbortController();
-
-    async function fetchAllCollectionNfts() {
-      const cacheKey = activeCollection.collection === "PITTZVICE-c3ec94" ? "vice" : "original";
-
-      const cachedCollection = explorerCache[cacheKey];
-
-      if (cachedCollection) {
-        setExplorerAllNfts(cachedCollection);
-        setExplorerAllLoading(false);
-
-        setExplorerLoadProgress({
-          loaded: cachedCollection.length,
-          total: cachedCollection.length,
-        });
-
-        return;
-      }
-
-      try {
-        setExplorerAllLoading(true);
-        setExplorerAllNfts([]);
-        setExplorerIndexReady(false);
-
-        setExplorerLoadProgress({
-          loaded: 0,
-          total: 0,
-        });
-
-        const countResponse = await fetch(
-          `https://api.multiversx.com/collections/${activeCollection.collection}/nfts/count`,
-          { signal: controller.signal },
-        );
-
-        if (!countResponse.ok) {
-          throw new Error("Unable to load collection count");
-        }
-
-        const totalCount = await countResponse.json();
-
-        if (!cancelled) {
-          setExplorerLoadProgress({
-            loaded: 0,
-            total: totalCount,
-          });
-        }
-
-        const allNfts = [];
-
-        for (let from = 0; from < totalCount; from += EXPLORER_PAGE_SIZE) {
-          const response = await fetch(
-            `https://api.multiversx.com/collections/${activeCollection.collection}/nfts?from=${from}&size=${EXPLORER_PAGE_SIZE}`,
-            { signal: controller.signal },
-          );
-
-          if (!response.ok) {
-            throw new Error(`Unable to load collection page starting at ${from}`);
-          }
-
-          const pageData = await response.json();
-
-          allNfts.push(...pageData);
-
-          if (!cancelled) {
-            setExplorerAllNfts([...allNfts]);
-
-            setExplorerLoadProgress({
-              loaded: allNfts.length,
-              total: totalCount,
-            });
-          }
-        }
-
-        if (!cancelled) {
-          setExplorerAllNfts(allNfts);
-
-          setExplorerCache((current) => ({
-            ...current,
-            [cacheKey]: allNfts,
-          }));
-          setExplorerIndexReady(true);
-
-          setTimeout(() => {
-            setExplorerIndexReady(false);
-          }, 1800);
-        }
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          console.error("Global Explorer dataset failed:", error);
-        }
-      } finally {
-        if (!cancelled) {
-          setExplorerAllLoading(false);
-        }
-      }
-    }
-
-    fetchAllCollectionNfts();
-
-    return () => {
-      cancelled = true;
-      controller.abort();
-    };
-  }, [activeCollection.collection]);
-
-  useEffect(() => {
-    setExplorerPage(0);
-
-    setExplorerSearch("");
-    setExplorerBloodline("all");
-    setExplorerType("all");
-
-    setGlobalSearchResult(null);
-    setGlobalSearchError("");
-  }, [explorerCollection]);
-
-  useEffect(() => {
-    setExplorerPage(0);
-  }, [explorerBloodline, explorerType, explorerSort]);
-
-  useEffect(() => {
-    async function fetchCollectionTotals() {
-      try {
-        const [originalResponse, viceResponse] = await Promise.all([
-          fetch("https://api.multiversx.com/collections/PITTZ-1a4c2d/nfts/count"),
-          fetch("https://api.multiversx.com/collections/PITTZVICE-c3ec94/nfts/count"),
-        ]);
-
-        if (!originalResponse.ok || !viceResponse.ok) {
-          throw new Error("Unable to load collection totals");
-        }
-
-        const originalCount = await originalResponse.json();
-        const viceCount = await viceResponse.json();
-
-        setOriginalTotal(originalCount);
-        setViceTotal(viceCount);
-      } catch (error) {
-        console.error("Collection totals failed:", error);
-      }
-    }
-
-    fetchCollectionTotals();
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -2053,7 +1772,7 @@ function App() {
               <button
                 type="button"
                 className={`explorer-tab ${explorerCollection === "original" ? "active" : ""}`}
-                onClick={() => setExplorerCollection("original")}
+                onClick={() => changeExplorerCollection("original")}
               >
                 Original Pittz
                 <span>{originalTotal ? originalTotal.toLocaleString() : "..."}</span>
@@ -2062,7 +1781,7 @@ function App() {
               <button
                 type="button"
                 className={`explorer-tab ${explorerCollection === "vice" ? "active" : ""}`}
-                onClick={() => setExplorerCollection("vice")}
+                onClick={() => changeExplorerCollection("vice")}
               >
                 Vice Pittz
                 <span>{viceTotal ? viceTotal.toLocaleString() : "..."}</span>
@@ -2088,25 +1807,28 @@ function App() {
                       search={explorerSearch}
                       onSearchChange={(value) => {
                         setExplorerSearch(value);
-                        setGlobalSearchResult(null);
-                        setGlobalSearchError("");
+                        clearGlobalSearch();
                       }}
-                      onSearch={searchCryptoPittz}
+                      onSearch={() => searchCryptoPittz(explorerSearch)}
                       sort={explorerSort}
-                      onSortChange={setExplorerSort}
+                      onSortChange={(value) => {
+                        setExplorerSort(value);
+                        setExplorerPage(0);
+                      }}
                       bloodline={explorerBloodline}
                       bloodlines={Object.keys(explorerSummary.bloodlines)}
-                      onBloodlineChange={setExplorerBloodline}
+                      onBloodlineChange={(value) => {
+                        setExplorerBloodline(value);
+                        setExplorerPage(0);
+                      }}
                       type={explorerType}
-                      onTypeChange={setExplorerType}
+                      onTypeChange={(value) => {
+                        setExplorerType(value);
+                        setExplorerPage(0);
+                      }}
                       shownCount={explorerPageNfts.length}
                       filteredCount={filteredExplorerNfts.length}
-                      onReset={() => {
-                        setExplorerSearch("");
-                        setExplorerSort("rank");
-                        setExplorerBloodline("all");
-                        setExplorerType("all");
-                      }}
+                      onReset={resetExplorerFilters}
                     />
 
                     <ExplorerPagination
