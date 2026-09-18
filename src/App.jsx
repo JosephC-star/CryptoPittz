@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { lazy, Suspense, useRef, useState } from "react";
 import "./App.css";
 
 import { UnlockPanelManager } from "@multiversx/sdk-dapp/out/managers/UnlockPanelManager";
@@ -19,6 +19,8 @@ import useExplorerData from "./features/explorer/useExplorerData";
 import MyPittzSection from "./features/my-pittz/MyPittzSection";
 import useWalletPittz from "./features/my-pittz/useWalletPittz";
 import { getPittzStats } from "./utils/nftUtils";
+
+const BonezRush = lazy(() => import("./features/bonez-rush/BonezRush"));
 
 function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -330,6 +332,7 @@ function App() {
                 </div>
                 <div className="dropdown" role="menu">
                   <a href="#gallery">Featured Pittz</a>
+                  <a href="#bonez-rush">BONEZ Rush</a>
                   <a href="#my-pittz">My Pittz</a>
                   <a href="#explorer">CryptoPittz Explorer</a>
                   <a href="#traits">Traits</a>
@@ -464,6 +467,10 @@ function App() {
               <div className="mobile-links">
                 <a href="#gallery" onClick={closeMobileMenu}>
                   Featured Pittz
+                </a>
+
+                <a href="#bonez-rush" onClick={closeMobileMenu}>
+                  BONEZ Rush
                 </a>
 
                 <a href="#my-pittz" onClick={closeMobileMenu}>
@@ -910,6 +917,12 @@ function App() {
               </div>
             </div>
           </section>
+
+          <Suspense
+            fallback={<div className="bonez-market-loading">Loading BONEZ Rush arcade...</div>}
+          >
+            <BonezRush />
+          </Suspense>
 
           <BonezMarketSection
             market={bonezMarket}
