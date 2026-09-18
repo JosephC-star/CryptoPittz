@@ -8,6 +8,7 @@ import { getAccountProvider } from "@multiversx/sdk-dapp/out/providers/helpers/a
 import { ProviderFactory } from "@multiversx/sdk-dapp/out/providers/ProviderFactory";
 import { ProviderTypeEnum } from "@multiversx/sdk-dapp/out/providers/types/providerFactory.types";
 
+import NftDetailModal from "./components/nft/NftDetailModal";
 import {
   BONEZ_DEXSCREENER_URL,
   BONEZ_TOKEN_ID,
@@ -19,9 +20,7 @@ import { buildBonezChart } from "./utils/chartUtils";
 import { formatBonezUsd, formatMarketNumber } from "./utils/formatters";
 import {
   decodePittzAttributes,
-  getCollectionBadge,
   getNftImage,
-  getNftMarketplace,
   getPittzStats,
 } from "./utils/nftUtils";
 
@@ -509,30 +508,6 @@ function App() {
 
     fetchWalletNfts();
   }, [account.address]);
-
-  useEffect(() => {
-    function handleNftDetailKeys(event) {
-      if (!selectedNft) return;
-
-      if (event.key === "Escape") {
-        closeNftDetails();
-      }
-
-      if (event.key === "ArrowLeft") {
-        showPreviousOwnedNft();
-      }
-
-      if (event.key === "ArrowRight") {
-        showNextOwnedNft();
-      }
-    }
-
-    window.addEventListener("keydown", handleNftDetailKeys);
-
-    return () => {
-      window.removeEventListener("keydown", handleNftDetailKeys);
-    };
-  }, [selectedNft, nfts]);
 
   const walletSummary = (() => {
     if (!nfts.length) {
@@ -2901,141 +2876,17 @@ function App() {
           </div>
         </div>
       )}
-      {selectedNft &&
-        (() => {
-          const stats = getPittzStats(selectedNft.attributes);
-          const traits = decodePittzAttributes(selectedNft.attributes);
-
-          return (
-            <div className="nft-detail-modal">
-              <div className="nft-detail-backdrop" onClick={closeNftDetails}></div>
-
-              <div
-                className="nft-detail-panel"
-                role="dialog"
-                aria-modal="true"
-                aria-label="CryptoPittz NFT details"
-              >
-                <button className="nft-detail-close" type="button" onClick={closeNftDetails}>
-                  ✕
-                </button>
-
-                <div className="nft-detail-art">
-                  {modalNfts.length > 1 && (
-                    <>
-                      <button
-                        className="nft-detail-nav nft-detail-prev"
-                        type="button"
-                        aria-label="Previous CryptoPittz"
-                        onClick={showPreviousNft}
-                      >
-                        ‹
-                      </button>
-
-                      <button
-                        className="nft-detail-nav nft-detail-next"
-                        type="button"
-                        aria-label="Next CryptoPittz"
-                        onClick={showNextNft}
-                      >
-                        ›
-                      </button>
-                    </>
-                  )}
-
-                  {getNftImage(selectedNft) && (
-                    <img
-                      src={getNftImage(selectedNft)}
-                      alt={selectedNft.name || selectedNft.identifier}
-                      onError={(event) => {
-                        event.currentTarget.style.display = "none";
-                      }}
-                    />
-                  )}
-
-                  {account.address &&
-                    nfts.some((ownedNft) => ownedNft.identifier === selectedNft?.identifier) && (
-                      <span className="owned-badge">OWNED ✓</span>
-                    )}
-                </div>
-
-                <div className="nft-detail-content">
-                  <div className="nft-detail-heading">
-                    <div>
-                      <div className="nft-detail-topline">
-                        <span className="nft-detail-eyebrow">CryptoPittz Collection</span>
-
-                        <span
-                          className={`collection-badge ${
-                            getCollectionBadge(selectedNft).className
-                          }`}
-                        >
-                          {getCollectionBadge(selectedNft).label}
-                        </span>
-                      </div>
-
-                      <h2>{selectedNft.name || selectedNft.identifier}</h2>
-
-                      <small>{selectedNft.identifier}</small>
-                    </div>
-                  </div>
-                  <div className="nft-detail-actions">
-                    <a
-                      className="btn primary"
-                      href={getNftMarketplace(selectedNft)}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      🛒 View on OOX Marketplace ↗
-                    </a>
-                  </div>
-
-                  <div className="nft-detail-stats">
-                    {stats.rank && (
-                      <div className="nft-detail-stat rank-stat">
-                        <span>🏆 Rank</span>
-                        <strong>#{stats.rank}</strong>
-                      </div>
-                    )}
-
-                    {stats.score && (
-                      <div className="nft-detail-stat">
-                        <span>⚡ Score</span>
-                        <strong>{stats.score}</strong>
-                      </div>
-                    )}
-
-                    {stats.bloodline && (
-                      <div className="nft-detail-stat">
-                        <span>Bloodline</span>
-                        <strong>{stats.bloodline}</strong>
-                      </div>
-                    )}
-
-                    {stats.type && (
-                      <div className="nft-detail-stat">
-                        <span>Type</span>
-                        <strong>{stats.type}</strong>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="nft-detail-traits">
-                    {traits.map((item) => (
-                      <div
-                        className="nft-detail-trait"
-                        key={`${selectedNft.identifier}-${item.trait}`}
-                      >
-                        <span>{item.trait}</span>
-                        <strong>{item.value}</strong>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })()}
+      <NftDetailModal
+        nft={selectedNft}
+        hasMultipleNfts={modalNfts.length > 1}
+        isOwned={
+          Boolean(account.address) &&
+          nfts.some((ownedNft) => ownedNft.identifier === selectedNft?.identifier)
+        }
+        onClose={closeNftDetails}
+        onPrevious={showPreviousNft}
+        onNext={showNextNft}
+      />
       {walletOverlayOpen && (
         <button
           className="walletconnect-close"
