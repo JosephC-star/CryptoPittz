@@ -8,6 +8,7 @@ import { getAccountProvider } from "@multiversx/sdk-dapp/out/providers/helpers/a
 import { ProviderFactory } from "@multiversx/sdk-dapp/out/providers/ProviderFactory";
 import { ProviderTypeEnum } from "@multiversx/sdk-dapp/out/providers/types/providerFactory.types";
 
+import GallerySection from "./components/gallery/GallerySection";
 import NftCard from "./components/nft/NftCard";
 import NftDetailModal from "./components/nft/NftDetailModal";
 import {
@@ -16,7 +17,6 @@ import {
   EXPLORER_COLLECTIONS,
 } from "./config/collections";
 import { BONEZ_RATES } from "./config/bonezRates";
-import { galleryItems } from "./data/galleryItems";
 import { buildBonezChart } from "./utils/chartUtils";
 import { formatBonezUsd, formatMarketNumber } from "./utils/formatters";
 import { getNftImage, getPittzStats } from "./utils/nftUtils";
@@ -24,7 +24,6 @@ import { getNftImage, getPittzStats } from "./utils/nftUtils";
 function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileGroup, setMobileGroup] = useState(null);
-  const [lightboxIndex, setLightboxIndex] = useState(null);
   const [nfts, setNfts] = useState([]);
   const [nftsLoading, setNftsLoading] = useState(false);
   const [nftsError, setNftsError] = useState("");
@@ -72,7 +71,6 @@ function App() {
 
   const EXPLORER_PAGE_SIZE = 100;
 
-  const lightboxOpen = lightboxIndex !== null;
   const account = useGetAccount();
   const [bonezMarket, setBonezMarket] = useState(null);
   const [bonezMarketLoading, setBonezMarketLoading] = useState(true);
@@ -157,22 +155,6 @@ function App() {
   }
   function isMobileDevice() {
     return window.matchMedia("(max-width: 700px)").matches;
-  }
-
-  function openLightbox(index) {
-    setLightboxIndex(index);
-  }
-
-  function closeLightbox() {
-    setLightboxIndex(null);
-  }
-
-  function showPrevious() {
-    setLightboxIndex((current) => (current === 0 ? galleryItems.length - 1 : current - 1));
-  }
-
-  function showNext() {
-    setLightboxIndex((current) => (current === galleryItems.length - 1 ? 0 : current + 1));
   }
 
   async function connectWallet() {
@@ -440,33 +422,6 @@ function App() {
       clearInterval(interval);
     };
   }, []);
-
-  useEffect(() => {
-    function handleKeyDown(event) {
-      if (!lightboxOpen) return;
-
-      if (event.key === "Escape") {
-        closeLightbox();
-      }
-
-      if (event.key === "ArrowLeft") {
-        showPrevious();
-      }
-
-      if (event.key === "ArrowRight") {
-        showNext();
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    document.body.style.overflow = lightboxOpen ? "hidden" : "";
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
-    };
-  }, [lightboxOpen]);
 
   useEffect(() => {
     async function fetchWalletNfts() {
@@ -2397,28 +2352,7 @@ function App() {
             </div>
           </section>
 
-          <section id="gallery">
-            <div className="section-title">
-              <h2>Gallery</h2>
-              <span>Meet some of the CryptoPittz.</span>
-            </div>
-
-            <div className="gallery" aria-label="CryptoPittz Gallery">
-              {galleryItems.map((item, index) => (
-                <div
-                  key={item.src}
-                  className="tile tile-img"
-                  style={{
-                    "--img": `url("${item.src}")`,
-                    cursor: "pointer",
-                  }}
-                  onClick={() => openLightbox(index)}
-                >
-                  <div className="cap">{item.title}</div>
-                </div>
-              ))}
-            </div>
-          </section>
+          <GallerySection />
 
           <section id="traits">
             <div className="section-title">
@@ -2649,57 +2583,6 @@ function App() {
         </div>
       </footer>
 
-      {lightboxOpen && (
-        <div className="lightbox open" aria-hidden="false">
-          <div className="lb-backdrop" onClick={closeLightbox}></div>
-
-          <div
-            className="lb-panel"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Gallery image viewer"
-          >
-            <button
-              className="lb-close"
-              type="button"
-              aria-label="Close viewer"
-              onClick={closeLightbox}
-            >
-              ✕
-            </button>
-
-            <button
-              className="lb-nav lb-prev"
-              type="button"
-              aria-label="Previous image"
-              onClick={showPrevious}
-            >
-              ‹
-            </button>
-
-            <button
-              className="lb-nav lb-next"
-              type="button"
-              aria-label="Next image"
-              onClick={showNext}
-            >
-              ›
-            </button>
-
-            <figure className="lb-figure">
-              <img src={galleryItems[lightboxIndex].src} alt={galleryItems[lightboxIndex].title} />
-
-              <figcaption className="lb-cap">
-                <span>{galleryItems[lightboxIndex].title}</span>
-
-                <span>
-                  {lightboxIndex + 1} / {galleryItems.length}
-                </span>
-              </figcaption>
-            </figure>
-          </div>
-        </div>
-      )}
       <NftDetailModal
         nft={selectedNft}
         hasMultipleNfts={modalNfts.length > 1}
