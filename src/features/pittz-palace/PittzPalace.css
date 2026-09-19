@@ -146,6 +146,12 @@
   transition: filter .12s ease, transform .12s ease;
 }
 
+.palace-reel img.fallback-image {
+  object-fit: contain;
+  padding: 12%;
+  background: radial-gradient(circle, #43235b, #080a18 70%);
+}
+
 .palace-hazard-symbol {
   display: grid;
   width: 100%;
@@ -215,6 +221,66 @@
 
 .palace-paytable { position: relative; display: flex; flex-wrap: wrap; justify-content: center; gap: 7px 16px; margin-top: 13px; color: rgba(255,255,255,.58); font-size: .56rem; font-weight: 900; letter-spacing: .06em; }
 .palace-paytable .danger { color: #ff7d9f; }
+.palace-rules,
+.palace-session,
+.palace-history {
+  position: relative;
+  max-width: 820px;
+  margin: 12px auto 0;
+  border: 1px solid rgba(255, 216, 107, .2);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, .24);
+}
+
+.palace-rules summary {
+  padding: 11px 14px;
+  color: #ffd86b;
+  font-size: .68rem;
+  font-weight: 1000;
+  letter-spacing: .05em;
+  cursor: pointer;
+  list-style-position: inside;
+}
+
+.palace-rules[open] summary { border-bottom: 1px solid rgba(255, 216, 107, .14); }
+.palace-rules > div { padding: 4px 16px 13px; color: rgba(255,255,255,.68); font-size: .64rem; line-height: 1.6; }
+.palace-rules p { margin: 8px 0; }
+.palace-rules ul { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 22px; margin: 7px 0; padding-left: 18px; }
+.palace-rules strong { color: #fff; }
+
+.palace-session,
+.palace-history { padding: 11px 13px; }
+.palace-session h4,
+.palace-history h4 { margin: 0 0 8px; color: #ff79f8; font-size: .62rem; letter-spacing: .13em; text-align: center; }
+.palace-session-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.palace-session-grid > div { min-width: 0; padding: 7px 5px; border-radius: 8px; background: rgba(255,255,255,.045); text-align: center; }
+.palace-session-grid span,
+.palace-session-grid strong { display: block; }
+.palace-session-grid span { overflow: hidden; color: rgba(255,255,255,.45); font-size: .46rem; font-weight: 900; letter-spacing: .06em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.palace-session-grid strong { color: #ffd86b; font-size: .8rem; }
+
+.palace-history > div { display: grid; grid-template-columns: minmax(110px, .8fr) minmax(0, 1.8fr) auto; align-items: center; gap: 10px; padding: 6px 8px; border-top: 1px solid rgba(255,255,255,.06); font-size: .58rem; }
+.palace-history > div > span { color: #fff; font-weight: 900; }
+.palace-history small { overflow: hidden; color: rgba(255,255,255,.42); text-overflow: ellipsis; white-space: nowrap; }
+.palace-history strong { color: #78ffab; }
+.palace-history .loss strong { color: #ff7d9f; }
+
+.palace-confetti { position: absolute; inset: 0; z-index: 20; overflow: hidden; pointer-events: none; }
+.palace-confetti i {
+  --drift: calc((var(--confetti) - 14) * 5px);
+  position: absolute;
+  top: -18px;
+  left: calc(var(--confetti) * 3.7%);
+  width: 7px;
+  height: 15px;
+  border-radius: 2px;
+  background: #ffd86b;
+  box-shadow: 0 0 9px currentColor;
+  color: #ffd86b;
+  animation: palace-confetti-fall calc(1.7s + var(--confetti) * .025s) ease-in calc(var(--confetti) * -.045s) infinite;
+}
+.palace-confetti i:nth-child(3n) { background: #ff3df7; color: #ff3df7; }
+.palace-confetti i:nth-child(3n + 1) { background: #00e5ff; color: #00e5ff; }
 .palace-pool-count { position: relative; margin-top: 8px; color: rgba(0,229,255,.58); font-size: .56rem; font-weight: 800; text-align: center; }
 .palace-disclaimer { position: relative; margin: 9px 0 0; color: rgba(255,255,255,.34); font-size: .58rem; text-align: center; }
 
@@ -225,6 +291,9 @@
 @keyframes palace-win-pulse { to { transform: scale(1.08); } }
 @keyframes spin-button-color { to { background-position: 220% 0; } }
 @keyframes palace-jackpot-glow { to { box-shadow: inset 0 0 55px rgba(255,216,107,.18), 0 0 35px rgba(255,61,247,.28); } }
+@keyframes palace-confetti-fall {
+  to { transform: translate3d(var(--drift), 780px, 0) rotate(620deg); }
+}
 
 @media (max-width: 620px) {
   .pittz-palace-machine { padding: 10px; }
@@ -236,11 +305,18 @@
   .palace-reel img { aspect-ratio: 1; }
   .palace-reel > span { font-size: .55rem; }
   .palace-reel > small { font-size: .43rem; }
+  .palace-rules ul { grid-template-columns: 1fr; }
+  .palace-session-grid { grid-template-columns: repeat(3, 1fr); }
+  .palace-history > div { grid-template-columns: 1fr auto; }
+  .palace-history small { grid-column: 1 / -1; grid-row: 2; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .pittz-palace-machine::before,
   .palace-result b,
   .palace-spin,
-  .pittz-palace-machine.big-win { animation: none; }
+  .pittz-palace-machine.big-win,
+  .palace-confetti i { animation: none; }
+
+  .palace-confetti { display: none; }
 }

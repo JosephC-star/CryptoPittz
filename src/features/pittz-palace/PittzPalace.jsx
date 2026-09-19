@@ -28,6 +28,10 @@ function readPittzPoints() {
   }
 }
 
+function createSessionStats() {
+  return { spins: 0, won: 0, lost: 0, biggestPayout: 0, dogCatchers: 0, muzzles: 0 };
+}
+
 function toSymbol(nft) {
   const stats = getPittzStats(nft.attributes);
   return {
@@ -63,6 +67,8 @@ function PittzPalace() {
   const [poolVersion, setPoolVersion] = useState(0);
   const [result, setResult] = useState(null);
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [sessionStats, setSessionStats] = useState(createSessionStats);
   const timers = useRef([]);
   const audioContext = useRef(null);
 
@@ -165,10 +171,29 @@ function PittzPalace() {
     const finishTimer = window.setTimeout(() => {
       window.clearInterval(ticker);
       const spinResult = evaluateSpin(outcome, stake);
+      const netChange = spinResult.payout - stake - spinResult.penalty;
       setReels(outcome);
       setPoints((current) => Math.max(0, current + spinResult.payout - spinResult.penalty));
       setResult(spinResult);
       setSpinning(false);
+      setHistory((current) => [
+        {
+          id: `${Date.now()}-${Math.random()}`,
+          title: spinResult.title,
+          netChange,
+          symbols: outcome.map((symbol) => symbol.name),
+        },
+        ...current,
+      ].slice(0, 5));
+      setSessionStats((current) => ({
+        spins: current.spins + 1,
+        won: current.won + Math.max(0, netChange),
+        lost: current.lost + Math.max(0, -netChange),
+        biggestPayout: Math.max(current.biggestPayout, spinResult.payout),
+        dogCatchers:
+          current.dogCatchers + outcome.filter((symbol) => symbol.special === "dog-catcher").length,
+        muzzles: current.muzzles + outcome.filter((symbol) => symbol.special === "muzzle").length,
+      }));
       if (spinResult.penalty > 0) {
         playTone(85, 0.32);
         navigator.vibrate?.([120, 50, 120]);
@@ -201,6 +226,13 @@ function PittzPalace() {
 
   return (
     <div className={`pittz-palace-machine ${result?.multiplier >= 3 ? "big-win" : ""}`}>
+      {result?.multiplier >= 3 && (
+        <div className="palace-confetti" aria-hidden="true">
+          {Array.from({ length: 28 }, (_, index) => (
+            <i style={{ "--confetti": index }} key={index} />
+          ))}
+        </div>
+      )}
       <div className="palace-marquee">
         <span>♛</span><div><small>WELCOME TO</small><strong>PITTZ PALACE</strong></div><span>♛</span>
       </div>
@@ -228,7 +260,15 @@ function PittzPalace() {
             {reels.map((symbol, index) => (
               <div className={`palace-reel ${stoppedReels[index] ? "stopped" : "spinning"}`} key={index}>
                 {symbol.image ? (
-                  <img src={symbol.image} alt={symbol.name} />
+                  <img
+                    src={symbol.image}
+                    alt={symbol.name}
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = "/images/cryptopittz-bonez.jpg";
+                      event.currentTarget.classList.add("fallback-image");
+                    }}
+                  />
                 ) : (
                   <div className={`palace-hazard-symbol ${symbol.special}`} aria-label={symbol.name}>
                     <b>{symbol.emoji}</b>
@@ -285,6 +325,50 @@ function PittzPalace() {
       <div className="palace-paytable">
         <span>3 MATCH = 10×</span><span>2 + WILD = 8×</span><span>BLOODLINE = 4×</span><span>TYPE = 3×</span><span>PAIR = 2×</span><span className="danger">🚨 DOG CATCHER = −1×</span><span className="danger">🚫 MUZZLE = −½×</span>
       </div>
+
+      <details className="palace-rules">
+        <summary>📜 How to Play &amp; Complete Payout Rules</summary>
+        <div>
+          <p>Choose 10, 25, or 50 Pittz Points, then spin. Your selected amount is removed before the reels start.</p>
+          <ul>
+            <li><strong>Three matching Pittz:</strong> 10× payout</li>
+            <li><strong>Two matching Pittz plus Wild BONEZ:</strong> 8× payout</li>
+            <li><strong>Matching bloodline:</strong> 4× payout</li>
+            <li><strong>Matching type:</strong> 3× payout</li>
+            <li><strong>Two matching Pittz:</strong> 2× payout</li>
+            <li><strong>Same collection:</strong> 1.5× payout</li>
+            <li><strong>Dog Catcher:</strong> loses one additional full stake</li>
+            <li><strong>Muzzle:</strong> loses one additional half stake</li>
+          </ul>
+          <p>Danger cards override every apparent match. Below 10 Pittz Points, the Pack Refill restores 250 free points.</p>
+        </div>
+      </details>
+
+      <div className="palace-session">
+        <h4>SESSION STATS</h4>
+        <div className="palace-session-grid">
+          <div><span>Spins</span><strong>{sessionStats.spins}</strong></div>
+          <div><span>Net Won</span><strong>{sessionStats.won}</strong></div>
+          <div><span>Net Lost</span><strong>{sessionStats.lost}</strong></div>
+          <div><span>Biggest Payout</span><strong>{sessionStats.biggestPayout}</strong></div>
+          <div><span>Dog Catchers</span><strong>{sessionStats.dogCatchers}</strong></div>
+          <div><span>Muzzles</span><strong>{sessionStats.muzzles}</strong></div>
+        </div>
+      </div>
+
+      {history.length > 0 && (
+        <div className="palace-history">
+          <h4>LAST FIVE SPINS</h4>
+          {history.map((spin) => (
+            <div className={spin.netChange >= 0 ? "win" : "loss"} key={spin.id}>
+              <span>{spin.title}</span>
+              <small title={spin.symbols.join(" • ")}>{spin.symbols.join(" • ")}</small>
+              <strong>{spin.netChange >= 0 ? "+" : ""}{spin.netChange} PP</strong>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="palace-pool-count">🎰 Current reel pool: {Math.max(0, symbols.length - 3)} CryptoPittz sampled from across both collections</div>
       <p className="palace-disclaimer">Pittz Points are free arcade points with no cash or token value. No purchase required.</p>
     </div>
