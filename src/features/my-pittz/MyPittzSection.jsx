@@ -250,7 +250,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                 )}
               </div>
 
-              <div className="wallet-nft-grid">
+              <div className="wallet-nft-grid owned-nft-grid">
                 {filteredNfts.map((nft) => (
                   <NftCard
                     key={nft.identifier}

@@ -4780,6 +4780,64 @@ header::after {
   }
 }
 
+@media (max-width: 700px) {
+  .explorer-nft-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .explorer-nft-grid .explorer-card {
+    min-width: 0;
+    border-radius: 13px;
+  }
+
+  .explorer-nft-grid .wallet-nft-info {
+    gap: 3px;
+    padding: 8px;
+  }
+
+  .explorer-nft-grid .wallet-nft-info > strong {
+    overflow: hidden;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .explorer-nft-grid .wallet-nft-info > small {
+    font-size: 8px;
+  }
+
+  .explorer-nft-grid .pittz-stats {
+    gap: 5px;
+    margin-top: 7px;
+  }
+
+  .explorer-nft-grid .pittz-stat {
+    min-width: 0;
+    padding: 6px;
+    border-radius: 8px;
+  }
+
+  .explorer-nft-grid .pittz-stat span {
+    margin-bottom: 2px;
+    font-size: 7px;
+  }
+
+  .explorer-nft-grid .pittz-stat strong {
+    overflow: hidden;
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .explorer-nft-grid .owned-badge {
+    top: 6px;
+    right: 6px;
+    padding: 4px 6px;
+    font-size: 8px;
+  }
+}
+
 @keyframes randomPittGlow {
   0%,
   100% {
@@ -6515,4 +6573,108 @@ header::after {
   font-weight: 700;
 
   letter-spacing: 0.03em;
+}
+
+@media (max-width: 700px) {
+  .owned-nft-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .owned-nft-grid .wallet-nft-card {
+    min-width: 0;
+    border-radius: 13px;
+  }
+
+  .owned-nft-grid .wallet-nft-info {
+    gap: 3px;
+    padding: 8px;
+  }
+
+  .owned-nft-grid .wallet-nft-info > strong {
+    overflow: hidden;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .owned-nft-grid .wallet-nft-info > small {
+    font-size: 8px;
+  }
+
+  .owned-nft-grid .pittz-stats {
+    gap: 5px;
+    margin-top: 7px;
+  }
+
+  .owned-nft-grid .pittz-stat {
+    min-width: 0;
+    padding: 6px;
+    border-radius: 8px;
+  }
+
+  .owned-nft-grid .pittz-stat span {
+    margin-bottom: 2px;
+    font-size: 7px;
+  }
+
+  .owned-nft-grid .pittz-stat strong {
+    overflow: hidden;
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .owned-nft-grid .owned-badge {
+    top: 6px;
+    right: 6px;
+    padding: 4px 6px;
+    font-size: 8px;
+  }
+
+  .owned-nft-grid .pittz-traits {
+    display: none;
+  }
+
+  .owned-nft-grid .bonez-generation {
+    margin-top: 7px;
+    padding: 7px;
+    border-radius: 9px;
+  }
+
+  .owned-nft-grid .bonez-generation-header {
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .owned-nft-grid .bonez-generation-header span,
+  .owned-nft-grid .bonez-generation-header strong {
+    overflow: hidden;
+    font-size: 8px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .owned-nft-grid .bonez-generation-grid {
+    display: block;
+  }
+
+  .owned-nft-grid .bonez-generation-grid > div {
+    padding: 5px;
+  }
+
+  .owned-nft-grid .bonez-generation-grid > div:not(:first-child) {
+    display: none;
+  }
+
+  .owned-nft-grid .bonez-generation-grid span {
+    display: inline;
+    margin-right: 4px;
+    font-size: 7px;
+  }
+
+  .owned-nft-grid .bonez-generation-grid strong {
+    display: inline;
+    font-size: 9px;
+  }
 }

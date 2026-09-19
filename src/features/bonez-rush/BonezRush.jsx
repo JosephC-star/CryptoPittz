@@ -30,7 +30,7 @@ function getPerformanceRank(score) {
   return "YARD PUP";
 }
 
-function BonezRush() {
+function BonezRush({ embedded = false }) {
   const [status, setStatus] = useState("idle");
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(readHighScore);
@@ -268,13 +268,15 @@ function BonezRush() {
   const accuracy = totalAttempts ? Math.round((roundStats.collected / totalAttempts) * 100) : 0;
   const performanceRank = getPerformanceRank(score);
 
+  const Wrapper = embedded ? "div" : "section";
+
   return (
-    <section id="bonez-rush" className="bonez-rush-section">
-      <div className="section-title bonez-rush-title">
+    <Wrapper id="bonez-rush" className={`bonez-rush-section ${embedded ? "is-embedded" : ""}`}>
+      {!embedded && <div className="section-title bonez-rush-title">
         <span>🎮 CryptoPittz Arcade</span>
         <h2>BONEZ Rush</h2>
         <p>Tap, click or swipe the falling BONEZ. Dodge the bad bones. Chase the crunch.</p>
-      </div>
+      </div>}
 
       <div
         className={`bonez-rush ${playing ? "is-playing" : ""} ${comboTier.className} ${
@@ -385,7 +387,7 @@ function BonezRush() {
           </button>
         </div>
       </div>
-    </section>
+    </Wrapper>
   );
 }
 
