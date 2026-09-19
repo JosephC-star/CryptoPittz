@@ -19,7 +19,7 @@ import MyPittzSection from "./features/my-pittz/MyPittzSection";
 import useWalletPittz from "./features/my-pittz/useWalletPittz";
 import { getPittzStats } from "./utils/nftUtils";
 
-const BonezRush = lazy(() => import("./features/bonez-rush/BonezRush"));
+const ArcadeHub = lazy(() => import("./features/arcade/ArcadeHub"));
 
 function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -330,7 +330,7 @@ function App() {
                   Explore <span className="caret" aria-hidden="true"></span>
                 </div>
                 <div className="dropdown" role="menu">
-                  <a href="#bonez-rush">BONEZ Rush</a>
+                  <a href="#arcade">CryptoPittz Arcade</a>
                   <a href="#my-pittz">My Pittz</a>
                   <a href="#explorer">CryptoPittz Explorer</a>
                   <a href="#traits">Traits</a>
@@ -451,8 +451,8 @@ function App() {
               </button>
 
               <div className="mobile-links">
-                <a href="#bonez-rush" onClick={closeMobileMenu}>
-                  BONEZ Rush
+                <a href="#arcade" onClick={closeMobileMenu}>
+                  CryptoPittz Arcade
                 </a>
 
                 <a href="#my-pittz" onClick={closeMobileMenu}>
@@ -647,8 +647,8 @@ function App() {
                     marginTop: "18px",
                   }}
                 >
-                  <a className="btn primary" href="#bonez-rush">
-                    Play BONEZ Rush
+                  <a className="btn primary" href="#arcade">
+                    Enter the Arcade
                   </a>
 
                   <a className="btn" href="#explorer">
@@ -834,9 +834,9 @@ function App() {
           </section>
 
           <Suspense
-            fallback={<div className="bonez-market-loading">Loading BONEZ Rush arcade...</div>}
+            fallback={<div className="bonez-market-loading">Opening CryptoPittz Arcade...</div>}
           >
-            <BonezRush />
+            <ArcadeHub />
           </Suspense>
 
           <BonezMarketSection
