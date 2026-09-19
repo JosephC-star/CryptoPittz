@@ -974,7 +974,7 @@ function App() {
                         );
                       })()}
 
-                    <div className="wallet-nft-grid">
+                    <div className="wallet-nft-grid explorer-nft-grid">
                       {explorerPageNfts.map((nft) => {
                         const isOwned =
                           Boolean(account.address) &&
