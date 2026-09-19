@@ -4,6 +4,24 @@ export const MINIMUM_STAKE = 10;
 export const PITTZ_POINTS_KEY = "cryptopittz-palace-pittz-points";
 export const PALACE_STAKES = [10, 25, 50];
 
+export const DOG_CATCHER = {
+  id: "dog-catcher",
+  name: "Dog Catcher",
+  emoji: "🚨",
+  special: "dog-catcher",
+  isHazard: true,
+  isWild: false,
+};
+
+export const MUZZLE = {
+  id: "muzzle",
+  name: "Muzzle",
+  emoji: "🚫",
+  special: "muzzle",
+  isHazard: true,
+  isWild: false,
+};
+
 export function pickRandom(items, excludedId = "") {
   const choices = items.filter((item) => item.id !== excludedId);
   return choices[Math.floor(Math.random() * choices.length)] || items[0];
@@ -11,7 +29,9 @@ export function pickRandom(items, excludedId = "") {
 
 export function createSpinOutcome(symbols) {
   const wild = symbols.find((symbol) => symbol.isWild);
-  const pittz = symbols.filter((symbol) => !symbol.isWild);
+  const dogCatcher = symbols.find((symbol) => symbol.special === "dog-catcher");
+  const muzzle = symbols.find((symbol) => symbol.special === "muzzle");
+  const pittz = symbols.filter((symbol) => !symbol.isWild && !symbol.isHazard);
   const roll = Math.random();
 
   if (roll < 0.045) {
@@ -32,14 +52,24 @@ export function createSpinOutcome(symbols) {
     return Array.from({ length: 3 }, () => pickRandom(collectionPittz));
   }
 
+  if (roll < 0.39) {
+    return [pickRandom(pittz), dogCatcher, pickRandom(pittz)].sort(() => Math.random() - 0.5);
+  }
+
+  if (roll < 0.49) {
+    return [muzzle, pickRandom(pittz), pickRandom(pittz)].sort(() => Math.random() - 0.5);
+  }
+
   return Array.from({ length: 3 }, () =>
     Math.random() < 0.06 ? wild : pickRandom(pittz),
   );
 }
 
 export function evaluateSpin(symbols, stake) {
+  const dogCatchers = symbols.filter((symbol) => symbol.special === "dog-catcher").length;
+  const muzzles = symbols.filter((symbol) => symbol.special === "muzzle").length;
   const wildCount = symbols.filter((symbol) => symbol.isWild).length;
-  const pittz = symbols.filter((symbol) => !symbol.isWild);
+  const pittz = symbols.filter((symbol) => !symbol.isWild && !symbol.isHazard);
   const ids = pittz.map((symbol) => symbol.id);
   const counts = ids.reduce((total, id) => ({ ...total, [id]: (total[id] || 0) + 1 }), {});
   const highestMatch = Math.max(0, ...Object.values(counts));
@@ -47,10 +77,19 @@ export function evaluateSpin(symbols, stake) {
     pittz.length === 3 && pittz[0][trait] && pittz.every((symbol) => symbol[trait] === pittz[0][trait]);
 
   let multiplier = 0;
+  let penalty = 0;
   let title = "NO MATCH";
   let message = "The Palace keeps these Pittz Points. Spin it back!";
 
-  if (wildCount === 3) {
+  if (dogCatchers > 0) {
+    penalty = stake * dogCatchers;
+    title = "DOG CATCHER! 🚨";
+    message = `The dog catcher confiscated ${penalty} extra Pittz Points!`;
+  } else if (muzzles > 0) {
+    penalty = Math.ceil(stake * 0.5 * muzzles);
+    title = "MUZZLED! 🚫";
+    message = `The muzzle penalty cost ${penalty} extra Pittz Points.`;
+  } else if (wildCount === 3) {
     multiplier = 20;
     title = "GOLDEN BONEZ MEGA JACKPOT!";
     message = "Three wild BONEZ just lit up the entire Palace!";
@@ -83,6 +122,7 @@ export function evaluateSpin(symbols, stake) {
   return {
     multiplier,
     payout: Math.round(stake * multiplier),
+    penalty,
     title,
     message,
   };

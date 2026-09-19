@@ -124,6 +124,23 @@
   transition: filter .12s ease, transform .12s ease;
 }
 
+.palace-hazard-symbol {
+  display: grid;
+  width: 100%;
+  aspect-ratio: 1.25;
+  place-content: center;
+  background:
+    repeating-linear-gradient(135deg, rgba(255,255,255,.06) 0 9px, transparent 9px 18px),
+    linear-gradient(145deg, #3b0717, #130510);
+  color: #ff4d7d;
+}
+
+.palace-hazard-symbol b,
+.palace-hazard-symbol em { display: block; }
+.palace-hazard-symbol b { font-size: clamp(2rem, 7vw, 4.5rem); filter: drop-shadow(0 0 12px #ff1f57); }
+.palace-hazard-symbol em { color: #fff; font-size: .65rem; font-style: normal; font-weight: 1000; letter-spacing: .08em; text-transform: uppercase; }
+.palace-hazard-symbol.muzzle { background: repeating-linear-gradient(135deg, rgba(255,216,107,.08) 0 9px, transparent 9px 18px), linear-gradient(145deg, #321c05, #120b05); }
+
 .palace-reel.spinning img {
   filter: blur(5px) saturate(1.6);
   transform: scale(1.12);
@@ -148,6 +165,7 @@
 .palace-result strong { color: #fff; font-size: clamp(.9rem, 2vw, 1.35rem); letter-spacing: .05em; text-shadow: 0 0 14px rgba(255,61,247,.7); }
 .palace-result span { color: rgba(255,255,255,.6); font-size: .7rem; }
 .palace-result b { color: #ffd86b; font-size: 1rem; text-shadow: 0 0 14px #ffd86b; animation: palace-win-pulse .5s ease-in-out infinite alternate; }
+.palace-result b.palace-penalty { color: #ff4d7d; text-shadow: 0 0 15px #ff1f57; }
 
 .palace-controls-panel { position: relative; display: grid; justify-items: center; gap: 10px; }
 .palace-stakes { display: flex; gap: 7px; }
@@ -174,6 +192,7 @@
 .palace-refill { padding: 8px 12px; border: 1px solid rgba(120,255,171,.4); border-radius: 999px; background: rgba(120,255,171,.08); color: #78ffab; font: inherit; font-size: .68rem; font-weight: 900; cursor: pointer; }
 
 .palace-paytable { position: relative; display: flex; flex-wrap: wrap; justify-content: center; gap: 7px 16px; margin-top: 13px; color: rgba(255,255,255,.58); font-size: .56rem; font-weight: 900; letter-spacing: .06em; }
+.palace-paytable .danger { color: #ff7d9f; }
 .palace-disclaimer { position: relative; margin: 9px 0 0; color: rgba(255,255,255,.34); font-size: .58rem; text-align: center; }
 
 .pittz-palace-machine.big-win { animation: palace-jackpot-glow .55s ease-in-out infinite alternate; }

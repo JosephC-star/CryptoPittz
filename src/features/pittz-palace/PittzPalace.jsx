@@ -3,7 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { EXPLORER_COLLECTIONS } from "../../config/collections";
 import { getNftImage, getPittzStats } from "../../utils/nftUtils";
 import {
+  DOG_CATCHER,
   MINIMUM_STAKE,
+  MUZZLE,
   PACK_REFILL_POINTS,
   PALACE_STAKES,
   PITTZ_POINTS_KEY,
@@ -75,9 +77,12 @@ function PittzPalace() {
           return response.json();
         });
         const collections = await Promise.all(requests);
-        const loadedSymbols = [...collections.flat().map(toSymbol), WILD_BONEZ].filter(
-          (symbol) => symbol.image,
-        );
+        const loadedSymbols = [
+          ...collections.flat().map(toSymbol).filter((symbol) => symbol.image),
+          WILD_BONEZ,
+          DOG_CATCHER,
+          MUZZLE,
+        ];
 
         if (!cancelled) {
           setSymbols(loadedSymbols);
@@ -154,10 +159,13 @@ function PittzPalace() {
       window.clearInterval(ticker);
       const spinResult = evaluateSpin(outcome, stake);
       setReels(outcome);
-      setPoints((current) => current + spinResult.payout);
+      setPoints((current) => Math.max(0, current + spinResult.payout - spinResult.penalty));
       setResult(spinResult);
       setSpinning(false);
-      if (spinResult.multiplier >= 3) {
+      if (spinResult.penalty > 0) {
+        playTone(85, 0.32);
+        navigator.vibrate?.([120, 50, 120]);
+      } else if (spinResult.multiplier >= 3) {
         playTone(1040, 0.35);
         navigator.vibrate?.([70, 40, 100]);
       }
@@ -170,6 +178,7 @@ function PittzPalace() {
     setResult({
       multiplier: 0,
       payout: PACK_REFILL_POINTS,
+      penalty: 0,
       title: "PACK REFILL!",
       message: "The pack spotted you 250 Pittz Points. Get back in there!",
     });
@@ -198,11 +207,20 @@ function PittzPalace() {
           <div className="palace-reels">
             {reels.map((symbol, index) => (
               <div className={`palace-reel ${stoppedReels[index] ? "stopped" : "spinning"}`} key={index}>
-                <img src={symbol.image} alt={symbol.name} />
+                {symbol.image ? (
+                  <img src={symbol.image} alt={symbol.name} />
+                ) : (
+                  <div className={`palace-hazard-symbol ${symbol.special}`} aria-label={symbol.name}>
+                    <b>{symbol.emoji}</b>
+                    <em>{symbol.name}</em>
+                  </div>
+                )}
                 <span>{symbol.isWild ? "WILD BONEZ" : symbol.name}</span>
                 <small>
                   {symbol.isWild
                     ? "WILD"
+                    : symbol.isHazard
+                      ? "DANGER"
                     : symbol.collection === EXPLORER_COLLECTIONS.vice.collection
                       ? "VICE PITTZ"
                       : "ORIGINAL PITTZ"}
@@ -217,6 +235,7 @@ function PittzPalace() {
         <strong>{result?.title || "CHOOSE YOUR PITTZ POINTS AND SPIN"}</strong>
         <span>{result?.message || "Three matching Pittz trigger the EXTRA MUSTY JACKPOT."}</span>
         {result?.payout > 0 && result.title !== "PACK REFILL!" && <b>+{result.payout} PITTZ POINTS</b>}
+        {result?.penalty > 0 && <b className="palace-penalty">−{result.penalty} EXTRA PITTZ POINTS</b>}
       </div>
 
       <div className="palace-controls-panel">
@@ -244,7 +263,7 @@ function PittzPalace() {
       </div>
 
       <div className="palace-paytable">
-        <span>3 MATCH = 10×</span><span>2 + WILD = 8×</span><span>BLOODLINE = 4×</span><span>TYPE = 3×</span><span>PAIR = 2×</span>
+        <span>3 MATCH = 10×</span><span>2 + WILD = 8×</span><span>BLOODLINE = 4×</span><span>TYPE = 3×</span><span>PAIR = 2×</span><span className="danger">🚨 DOG CATCHER = −1×</span><span className="danger">🚫 MUZZLE = −½×</span>
       </div>
       <p className="palace-disclaimer">Pittz Points are free arcade points with no cash or token value. No purchase required.</p>
     </div>
