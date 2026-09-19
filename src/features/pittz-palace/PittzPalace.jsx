@@ -7,6 +7,9 @@ import {
   MINIMUM_STAKE,
   MUZZLE,
   PACK_REFILL_POINTS,
+  PALACE_BATCHES_PER_COLLECTION,
+  PALACE_BATCH_SIZE,
+  PALACE_COLLECTION_POOLS,
   PALACE_STAKES,
   PITTZ_POINTS_KEY,
   STARTING_PITTZ_POINTS,
@@ -57,6 +60,7 @@ function PittzPalace() {
   const [spinning, setSpinning] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [poolVersion, setPoolVersion] = useState(0);
   const [result, setResult] = useState(null);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const timers = useRef([]);
@@ -69,13 +73,16 @@ function PittzPalace() {
     async function loadPittz() {
       try {
         setLoadError("");
-        const requests = Object.values(EXPLORER_COLLECTIONS).map(async ({ collection }) => {
-          const response = await fetch(
-            `https://api.multiversx.com/collections/${collection}/nfts?from=0&size=8`,
-          );
-          if (!response.ok) throw new Error(`Unable to load ${collection}`);
-          return response.json();
-        });
+        const requests = PALACE_COLLECTION_POOLS.flatMap(({ collection, total }) =>
+          Array.from({ length: PALACE_BATCHES_PER_COLLECTION }, async () => {
+            const from = Math.floor(Math.random() * Math.max(1, total - PALACE_BATCH_SIZE));
+            const response = await fetch(
+              `https://api.multiversx.com/collections/${collection}/nfts?from=${from}&size=${PALACE_BATCH_SIZE}`,
+            );
+            if (!response.ok) throw new Error(`Unable to load ${collection}`);
+            return response.json();
+          }),
+        );
         const collections = await Promise.all(requests);
         const loadedSymbols = [
           ...collections.flat().map(toSymbol).filter((symbol) => symbol.image),
@@ -101,7 +108,7 @@ function PittzPalace() {
       cancelled = true;
       activeTimers.forEach((timer) => window.clearTimeout(timer));
     };
-  }, []);
+  }, [poolVersion]);
 
   useEffect(() => {
     try {
@@ -184,6 +191,14 @@ function PittzPalace() {
     });
   }
 
+  function shufflePittz() {
+    if (spinning) return;
+    setLoading(true);
+    setLoadError("");
+    setResult(null);
+    setPoolVersion((current) => current + 1);
+  }
+
   return (
     <div className={`pittz-palace-machine ${result?.multiplier >= 3 ? "big-win" : ""}`}>
       <div className="palace-marquee">
@@ -193,9 +208,14 @@ function PittzPalace() {
       <div className="palace-dashboard">
         <div><span>Pittz Points</span><strong>{points.toLocaleString()}</strong></div>
         <div><span>Current Spin</span><strong>{stake} PP</strong></div>
-        <button type="button" onClick={() => setSoundEnabled((current) => !current)}>
-          {soundEnabled ? "🔊 SOUND ON" : "🔇 SOUND OFF"}
-        </button>
+        <div className="palace-dashboard-actions">
+          <button type="button" onClick={shufflePittz} disabled={spinning || loading}>
+            🔀 NEW PITTZ
+          </button>
+          <button type="button" onClick={() => setSoundEnabled((current) => !current)}>
+            {soundEnabled ? "🔊 SOUND ON" : "🔇 SOUND OFF"}
+          </button>
+        </div>
       </div>
 
       <div className="palace-reel-case">
@@ -265,6 +285,7 @@ function PittzPalace() {
       <div className="palace-paytable">
         <span>3 MATCH = 10×</span><span>2 + WILD = 8×</span><span>BLOODLINE = 4×</span><span>TYPE = 3×</span><span>PAIR = 2×</span><span className="danger">🚨 DOG CATCHER = −1×</span><span className="danger">🚫 MUZZLE = −½×</span>
       </div>
+      <div className="palace-pool-count">🎰 Current reel pool: {Math.max(0, symbols.length - 3)} CryptoPittz sampled from across both collections</div>
       <p className="palace-disclaimer">Pittz Points are free arcade points with no cash or token value. No purchase required.</p>
     </div>
   );

@@ -56,6 +56,28 @@
   background: rgba(0,0,0,.3);
 }
 
+.palace-dashboard .palace-dashboard-actions {
+  display: flex;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.palace-dashboard-actions button {
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 216, 107, 0.22);
+  border-radius: 10px;
+  background: rgba(0,0,0,.3);
+  color: #00e5ff;
+  font: inherit;
+  font-size: .62rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.palace-dashboard-actions button:disabled { opacity: .4; cursor: not-allowed; }
+
 .palace-dashboard span,
 .palace-dashboard strong { display: block; }
 .palace-dashboard span { color: rgba(255,255,255,.5); font-size: .52rem; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
@@ -193,6 +215,7 @@
 
 .palace-paytable { position: relative; display: flex; flex-wrap: wrap; justify-content: center; gap: 7px 16px; margin-top: 13px; color: rgba(255,255,255,.58); font-size: .56rem; font-weight: 900; letter-spacing: .06em; }
 .palace-paytable .danger { color: #ff7d9f; }
+.palace-pool-count { position: relative; margin-top: 8px; color: rgba(0,229,255,.58); font-size: .56rem; font-weight: 800; text-align: center; }
 .palace-disclaimer { position: relative; margin: 9px 0 0; color: rgba(255,255,255,.34); font-size: .58rem; text-align: center; }
 
 .pittz-palace-machine.big-win { animation: palace-jackpot-glow .55s ease-in-out infinite alternate; }
@@ -206,7 +229,7 @@
 @media (max-width: 620px) {
   .pittz-palace-machine { padding: 10px; }
   .palace-dashboard { grid-template-columns: 1fr 1fr; }
-  .palace-dashboard > button { grid-column: 1 / -1; }
+  .palace-dashboard-actions { grid-column: 1 / -1; justify-content: center; }
   .palace-reel-case { min-height: 190px; padding: 9px; border-width: 3px; }
   .palace-reels { gap: 6px; }
   .palace-reel { border-width: 2px; border-radius: 10px; }

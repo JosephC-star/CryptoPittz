@@ -3,6 +3,12 @@ export const PACK_REFILL_POINTS = 250;
 export const MINIMUM_STAKE = 10;
 export const PITTZ_POINTS_KEY = "cryptopittz-palace-pittz-points";
 export const PALACE_STAKES = [10, 25, 50];
+export const PALACE_COLLECTION_POOLS = [
+  { collection: "PITTZ-1a4c2d", total: 5310 },
+  { collection: "PITTZVICE-c3ec94", total: 1395 },
+];
+export const PALACE_BATCH_SIZE = 4;
+export const PALACE_BATCHES_PER_COLLECTION = 3;
 
 export const DOG_CATCHER = {
   id: "dog-catcher",
