@@ -8,6 +8,7 @@ function useBonezMarket() {
   const [marketLoading, setMarketLoading] = useState(true);
   const [marketError, setMarketError] = useState("");
   const [marketUpdated, setMarketUpdated] = useState(null);
+  const [marketStatus, setMarketStatus] = useState("checking");
   const [hourlyHistory, setHourlyHistory] = useState([]);
   const [dailyHistory, setDailyHistory] = useState([]);
   const [chartLoading, setChartLoading] = useState(true);
@@ -41,12 +42,19 @@ function useBonezMarket() {
 
   useEffect(() => {
     let cancelled = false;
+    let retryTimer;
 
-    async function fetchMarket() {
+    const retryDelays = [5_000, 15_000, 30_000];
+
+    async function fetchMarket(attempt = 0) {
       try {
-        setMarketError("");
+        if (attempt === 0) setMarketStatus((current) => current === "connected" ? current : "checking");
         const response = await fetch(BONEZ_DEXSCREENER_URL);
-        if (!response.ok) throw new Error("Unable to load BONEZ market data");
+        if (!response.ok) {
+          const error = new Error("Unable to load BONEZ market data");
+          error.status = response.status;
+          throw error;
+        }
         const data = await response.json();
         const pair = data.pair || data.pairs?.[0];
         if (!pair) throw new Error("BONEZ market pair was not found");
@@ -54,21 +62,39 @@ function useBonezMarket() {
         if (!cancelled) {
           setMarket(pair);
           setMarketUpdated(new Date());
+          setMarketStatus("connected");
+          setMarketError("");
+          setMarketLoading(false);
+          retryTimer = window.setTimeout(() => fetchMarket(0), 60_000);
         }
       } catch (error) {
         console.error("BONEZ market lookup failed:", error);
-        if (!cancelled) setMarketError("Live BONEZ market data is temporarily unavailable.");
-      } finally {
-        if (!cancelled) setMarketLoading(false);
+        if (cancelled) return;
+
+        setMarketLoading(false);
+
+        if (attempt < retryDelays.length) {
+          setMarketStatus("busy");
+          setMarketError("");
+          retryTimer = window.setTimeout(
+            () => fetchMarket(attempt + 1),
+            retryDelays[attempt],
+          );
+        } else {
+          setMarketStatus("unavailable");
+          setMarketError(
+            "Live BONEZ pricing is temporarily unavailable. The site and blockchain may still be operating normally.",
+          );
+          retryTimer = window.setTimeout(() => fetchMarket(0), 60_000);
+        }
       }
     }
 
     fetchMarket();
-    const interval = setInterval(fetchMarket, 60_000);
 
     return () => {
       cancelled = true;
-      clearInterval(interval);
+      window.clearTimeout(retryTimer);
     };
   }, []);
 
@@ -117,6 +143,7 @@ function useBonezMarket() {
     market,
     marketLoading,
     marketError,
+    marketStatus,
     marketUpdated,
     chart,
     chartLoading,

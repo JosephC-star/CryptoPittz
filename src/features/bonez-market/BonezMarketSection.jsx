@@ -4,6 +4,7 @@ function BonezMarketSection({
   market,
   marketLoading,
   marketError,
+  marketStatus,
   marketUpdated,
   chart,
   chartLoading,
@@ -12,6 +13,13 @@ function BonezMarketSection({
   chartChange,
   onChartRangeChange,
 }) {
+  const statusLabels = {
+    checking: "Checking Network…",
+    connected: "Connected",
+    busy: "API Busy · Retrying",
+    unavailable: "Connection Unavailable",
+  };
+
   return (
     <>
       <div className="section-title">
@@ -27,14 +35,17 @@ function BonezMarketSection({
             <h3>BONEZ MARKET</h3>
             <p>BONEZ / EGLD • xExchange</p>
           </div>
-          <div className={`bonez-market-status ${market ? "online" : ""}`}>
+          <div className={`bonez-market-status ${marketStatus}`} role="status" aria-live="polite">
             <span className="bonez-market-dot" />
-            {marketLoading ? "Loading" : market ? "Live" : "Offline"}
+            {statusLabels[marketStatus] || "Checking Network…"}
           </div>
         </div>
 
         {marketLoading && !market && (
           <div className="bonez-market-loading">Connecting to BONEZ market data...</div>
+        )}
+        {marketStatus === "busy" && !market && (
+          <div className="bonez-market-loading">The market API is busy. Retrying automatically...</div>
         )}
         {marketError && !market && <div className="bonez-market-error">{marketError}</div>}
 

@@ -70,6 +70,7 @@ function App() {
     market: bonezMarket,
     marketLoading: bonezMarketLoading,
     marketError: bonezMarketError,
+    marketStatus: bonezMarketStatus,
     marketUpdated: bonezMarketUpdated,
     chart: bonezChart,
     chartLoading: bonezChartLoading,
@@ -843,6 +844,7 @@ function App() {
             market={bonezMarket}
             marketLoading={bonezMarketLoading}
             marketError={bonezMarketError}
+            marketStatus={bonezMarketStatus}
             marketUpdated={bonezMarketUpdated}
             chart={bonezChart}
             chartLoading={bonezChartLoading}
