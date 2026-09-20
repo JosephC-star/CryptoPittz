@@ -5850,12 +5850,25 @@ header::after {
   text-transform: uppercase;
 }
 
-.bonez-market-status.online {
+.bonez-market-status.connected {
   color: #80ffae;
 
   border-color: rgba(80, 255, 174, 0.28);
 
   background: rgba(80, 255, 174, 0.06);
+}
+
+.bonez-market-status.busy,
+.bonez-market-status.checking {
+  color: #ffd86b;
+  border-color: rgba(255, 216, 107, 0.3);
+  background: rgba(255, 216, 107, 0.07);
+}
+
+.bonez-market-status.unavailable {
+  color: #ff769f;
+  border-color: rgba(255, 118, 159, 0.3);
+  background: rgba(255, 118, 159, 0.07);
 }
 
 .bonez-market-dot {
