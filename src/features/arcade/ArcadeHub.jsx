@@ -85,7 +85,7 @@ function ArcadeHub() {
             <h3>PITTZ MATCH</h3>
             <p>Flip neon cards and reunite ten matching CryptoPittz pairs.</p>
             <div className="cabinet-tags">
-              <span>12 CARDS</span><span>REAL PITTZ</span><span>BEST MOVES</span>
+              <span>20 CARDS</span><span>REAL PITTZ</span><span>BEST MOVES</span>
             </div>
           </div>
           <div className="cabinet-controls match-controls" aria-hidden="true">

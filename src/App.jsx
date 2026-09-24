@@ -307,7 +307,7 @@ function App() {
       <div className="blob b2"></div>
       <div className="blob b3"></div>
 
-      <header>
+      <header className="site-header">
         <div className="container">
           <div className="nav">
             <a className="brand" href="#top" aria-label="CryptoPittz Home">

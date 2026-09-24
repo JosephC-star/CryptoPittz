@@ -122,7 +122,7 @@ a {
 /* =========================================================
          Header / Nav
          ========================================================= */
-header {
+.site-header {
   position: sticky;
   top: 0;
   z-index: 50;
@@ -2815,6 +2815,37 @@ section {
   font-size: 9px;
 }
 
+.my-pittz-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.my-pittz-pagination button {
+  padding: 9px 14px;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 999px;
+  background: rgba(0, 229, 255, 0.08);
+  color: #fff;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.my-pittz-pagination button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.my-pittz-pagination span {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
 #my-pittz .summary-card {
   transition:
     transform 0.22s ease,
@@ -4197,7 +4228,7 @@ footer .container > div:hover {
   text-shadow: 0 0 10px rgba(0, 229, 255, 0.16);
 }
 
-header {
+.site-header {
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -4212,7 +4243,7 @@ header {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
 }
 
-header::after {
+.site-header::after {
   content: "";
 
   position: absolute;

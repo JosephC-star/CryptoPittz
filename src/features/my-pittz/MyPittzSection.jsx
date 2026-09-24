@@ -5,12 +5,15 @@ import { getBonezGeneration, getBonezWalletTotals } from "../../utils/bonezUtils
 import { formatBonezUsd } from "../../utils/formatters";
 import { getPittzStats } from "../../utils/nftUtils";
 
+const PITTZ_PER_PAGE = 40;
+
 function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNft }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("rank");
   const [bloodlineFilter, setBloodlineFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [collection, setCollection] = useState("original");
+  const [page, setPage] = useState(1);
 
   const ownedOriginalPittz = nfts.filter((nft) => nft.collection === "PITTZ-1a4c2d");
   const ownedVicePittz = nfts.filter((nft) => nft.collection === "PITTZVICE-c3ec94");
@@ -68,6 +71,12 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
       if (sortBy === "name") return (a.name || "").localeCompare(b.name || "");
       return 0;
     });
+  const totalPages = Math.max(1, Math.ceil(filteredNfts.length / PITTZ_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+  const visibleNfts = filteredNfts.slice(
+    (currentPage - 1) * PITTZ_PER_PAGE,
+    currentPage * PITTZ_PER_PAGE,
+  );
 
   const bonezWalletTotals = getBonezWalletTotals(nfts);
   const liveUsdPrice = Number(bonezUsdPrice);
@@ -82,6 +91,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
     setSortBy("rank");
     setBloodlineFilter("all");
     setTypeFilter("all");
+    setPage(1);
   }
 
   return (
@@ -95,7 +105,10 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
         <button
           type="button"
           className={`explorer-tab ${collection === "original" ? "active" : ""}`}
-          onClick={() => setCollection("original")}
+          onClick={() => {
+            setCollection("original");
+            setPage(1);
+          }}
         >
           Original Pittz
           <span>{ownedOriginalPittz.length}</span>
@@ -104,7 +117,10 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
         <button
           type="button"
           className={`explorer-tab ${collection === "vice" ? "active" : ""}`}
-          onClick={() => setCollection("vice")}
+          onClick={() => {
+            setCollection("vice");
+            setPage(1);
+          }}
         >
           Vice Pittz
           <span>{ownedVicePittz.length}</span>
@@ -207,16 +223,25 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                   type="text"
                   placeholder="Search Pittz..."
                   value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
+                  onChange={(event) => {
+                    setSearchTerm(event.target.value);
+                    setPage(1);
+                  }}
                 />
-                <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
+                <select value={sortBy} onChange={(event) => {
+                  setSortBy(event.target.value);
+                  setPage(1);
+                }}>
                   <option value="rank">Best Rank</option>
                   <option value="score">Highest Score</option>
                   <option value="name">Name</option>
                 </select>
                 <select
                   value={bloodlineFilter}
-                  onChange={(event) => setBloodlineFilter(event.target.value)}
+                  onChange={(event) => {
+                    setBloodlineFilter(event.target.value);
+                    setPage(1);
+                  }}
                 >
                   <option value="all">All Bloodlines</option>
                   {Object.keys(walletSummary.bloodlines).map((bloodline) => (
@@ -225,7 +250,10 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                     </option>
                   ))}
                 </select>
-                <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
+                <select value={typeFilter} onChange={(event) => {
+                  setTypeFilter(event.target.value);
+                  setPage(1);
+                }}>
                   <option value="all">All Types</option>
                   {Object.keys(walletSummary.types).map((type) => (
                     <option key={type} value={type}>
@@ -237,7 +265,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
 
               <div className="pittz-results-bar">
                 <span>
-                  Showing {filteredNfts.length} of {activeOwnedPittz.length}{" "}
+                  Showing {visibleNfts.length} of {filteredNfts.length} matching{" "}
                   {collection === "vice" ? "Vice Pittz" : "Original Pittz"}
                 </span>
                 {(searchTerm ||
@@ -251,17 +279,37 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
               </div>
 
               <div className="wallet-nft-grid owned-nft-grid">
-                {filteredNfts.map((nft) => (
+                {visibleNfts.map((nft) => (
                   <NftCard
                     key={nft.identifier}
                     nft={nft}
                     bonez={getBonezGeneration(nft)}
                     isOwned
                     showTraits
-                    onClick={() => onOpenNft(nft, filteredNfts)}
+                    onClick={() => onOpenNft(nft, visibleNfts)}
                   />
                 ))}
               </div>
+
+              {totalPages > 1 && (
+                <nav className="my-pittz-pagination" aria-label="My Pittz pages">
+                  <button
+                    type="button"
+                    disabled={currentPage === 1}
+                    onClick={() => setPage((value) => Math.max(1, value - 1))}
+                  >
+                    ← Previous
+                  </button>
+                  <span>Page {currentPage} of {totalPages}</span>
+                  <button
+                    type="button"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
+                  >
+                    Next →
+                  </button>
+                </nav>
+              )}
             </>
           )}
         </div>
