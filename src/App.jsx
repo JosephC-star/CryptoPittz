@@ -393,7 +393,7 @@ function App() {
                   </a>
 
                   <a
-                    href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxjkVdFCh3ndX6vXYMa7/transactions"
+                    href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxikVdFCh3ndX6vXVMa7/transactions"
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -541,7 +541,7 @@ function App() {
                 </a>
 
                 <a
-                  href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxjkVdFCh3ndX6vXYMa7/transactions"
+                  href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxikVdFCh3ndX6vXVMa7/transactions"
                   target="_blank"
                   rel="noreferrer"
                   onClick={closeMobileMenu}
@@ -1124,7 +1124,7 @@ function App() {
 
                     <a
                       className="btn primary"
-                      href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxjkVdFCh3ndX6vXYMa7/transactions"
+                      href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxikVdFCh3ndX6vXVMa7/transactions"
                       target="_blank"
                       rel="noreferrer"
                     >
