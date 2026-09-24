@@ -18,7 +18,7 @@ import useExplorerData from "./features/explorer/useExplorerData";
 import MyPittzSection from "./features/my-pittz/MyPittzSection";
 import useWalletPittz from "./features/my-pittz/useWalletPittz";
 import TraitFinder from "./features/traits/TraitFinder";
-import { getPittzStats } from "./utils/nftUtils";
+import { getPittzStats, getPittzTraits } from "./utils/nftUtils";
 
 const ArcadeHub = lazy(() => import("./features/arcade/ArcadeHub"));
 
@@ -32,6 +32,7 @@ function App() {
   const [explorerSort, setExplorerSort] = useState("rank");
   const [explorerBloodline, setExplorerBloodline] = useState("all");
   const [explorerType, setExplorerType] = useState("all");
+  const [explorerTraits, setExplorerTraits] = useState({});
   const [randomPittLoading, setRandomPittLoading] = useState(false);
   const [randomPittError, setRandomPittError] = useState("");
   const [randomPittMode, setRandomPittMode] = useState("surprise");
@@ -100,6 +101,7 @@ function App() {
     setExplorerSort("rank");
     setExplorerBloodline("all");
     setExplorerType("all");
+    setExplorerTraits({});
     setExplorerPage(0);
     clearGlobalSearch();
   }
@@ -275,7 +277,12 @@ function App() {
 
       const matchesType = explorerType === "all" || stats.type === explorerType;
 
-      return matchesSearch && matchesBloodline && matchesType;
+      const traits = getPittzTraits(nft.attributes);
+      const matchesTraits = Object.entries(explorerTraits).every(([category, values]) =>
+        traits.some((item) => item.trait === category && values.includes(item.value)),
+      );
+
+      return matchesSearch && matchesBloodline && matchesType && matchesTraits;
     })
     .sort((a, b) => {
       const aStats = getPittzStats(a.attributes);
@@ -881,6 +888,16 @@ function App() {
                       onReset={resetExplorerFilters}
                     />
 
+                    <TraitFinder
+                      nfts={explorerAllNfts}
+                      loading={explorerAllLoading}
+                      selected={explorerTraits}
+                      onSelectedChange={(nextTraits) => {
+                        setExplorerTraits(nextTraits);
+                        setExplorerPage(0);
+                      }}
+                    />
+
                     <ExplorerPagination
                       currentPage={explorerPage}
                       totalItems={explorerFilteredTotal}
@@ -955,18 +972,6 @@ function App() {
               </div>
             </div>
           </section>
-
-          <TraitFinder
-            key={explorerCollection}
-            collection={explorerCollection}
-            collectionName={activeCollection.name}
-            nfts={explorerAllNfts}
-            loading={explorerAllLoading}
-            originalTotal={originalTotal}
-            viceTotal={viceTotal}
-            onCollectionChange={changeExplorerCollection}
-            onOpenNft={openNftDetails}
-          />
 
           <section id="rarity">
             <div className="section-title">
