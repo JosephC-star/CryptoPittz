@@ -85,16 +85,16 @@ export function evaluateSpin(symbols, stake) {
   let multiplier = 0;
   let penalty = 0;
   let title = "NO MATCH";
-  let message = "The Palace keeps these Pittz Points. Spin it back!";
+  let message = "The Palace keeps these arcade BONEZ. Spin it back!";
 
   if (dogCatchers > 0) {
     penalty = stake * dogCatchers;
     title = "DOG CATCHER! 🚨";
-    message = `The dog catcher confiscated ${penalty} extra Pittz Points!`;
+    message = `The dog catcher confiscated ${penalty} extra arcade BONEZ!`;
   } else if (muzzles > 0) {
     penalty = Math.ceil(stake * 0.5 * muzzles);
     title = "MUZZLED! 🚫";
-    message = `The muzzle penalty cost ${penalty} extra Pittz Points.`;
+    message = `The muzzle penalty cost ${penalty} extra arcade BONEZ.`;
   } else if (wildCount === 3) {
     multiplier = 20;
     title = "GOLDEN BONEZ MEGA JACKPOT!";
@@ -106,7 +106,7 @@ export function evaluateSpin(symbols, stake) {
   } else if (highestMatch === 2) {
     multiplier = 2;
     title = "DOUBLE PITTZ!";
-    message = "Two matching Pittz pay double Pittz Points.";
+    message = "Two matching Pittz pay double arcade BONEZ.";
   } else if (sharedTrait("bloodline")) {
     multiplier = 4;
     title = "BLOODLINE BONUS!";
@@ -122,7 +122,7 @@ export function evaluateSpin(symbols, stake) {
   } else if (wildCount > 0) {
     multiplier = 1;
     title = "WILD BONEZ REFUND!";
-    message = "Golden BONEZ returns your Pittz Points for another spin.";
+    message = "Golden BONEZ returns your arcade BONEZ for another spin.";
   }
 
   return {

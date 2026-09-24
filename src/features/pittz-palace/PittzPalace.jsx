@@ -212,7 +212,7 @@ function PittzPalace() {
       payout: PACK_REFILL_POINTS,
       penalty: 0,
       title: "PACK REFILL!",
-      message: "The pack spotted you 250 Pittz Points. Get back in there!",
+      message: "The pack spotted you 250 arcade BONEZ. Get back in there!",
     });
   }
 
@@ -238,8 +238,8 @@ function PittzPalace() {
       </div>
 
       <div className="palace-dashboard">
-        <div><span>Pittz Points</span><strong>{points.toLocaleString()}</strong></div>
-        <div><span>Current Spin</span><strong>{stake} PP</strong></div>
+        <div><span>Arcade BONEZ</span><strong>{points.toLocaleString()}</strong></div>
+        <div><span>Current Spin</span><strong>{stake} BONEZ</strong></div>
         <div className="palace-dashboard-actions">
           <button type="button" onClick={shufflePittz} disabled={spinning || loading}>
             🔀 NEW PITTZ
@@ -292,14 +292,14 @@ function PittzPalace() {
       </div>
 
       <div className={`palace-result ${result ? "show" : ""}`} aria-live="polite">
-        <strong>{result?.title || "CHOOSE YOUR PITTZ POINTS AND SPIN"}</strong>
+        <strong>{result?.title || "CHOOSE YOUR ARCADE BONEZ AND SPIN"}</strong>
         <span>{result?.message || "Three matching Pittz trigger the EXTRA MUSTY JACKPOT."}</span>
-        {result?.payout > 0 && result.title !== "PACK REFILL!" && <b>+{result.payout} PITTZ POINTS</b>}
-        {result?.penalty > 0 && <b className="palace-penalty">−{result.penalty} EXTRA PITTZ POINTS</b>}
+        {result?.payout > 0 && result.title !== "PACK REFILL!" && <b>+{result.payout} ARCADE BONEZ</b>}
+        {result?.penalty > 0 && <b className="palace-penalty">−{result.penalty} EXTRA ARCADE BONEZ</b>}
       </div>
 
       <div className="palace-controls-panel">
-        <div className="palace-stakes" aria-label="Select Pittz Points per spin">
+        <div className="palace-stakes" aria-label="Select arcade BONEZ per spin">
           {PALACE_STAKES.map((amount) => (
             <button
               className={stake === amount ? "active" : ""}
@@ -308,17 +308,17 @@ function PittzPalace() {
               disabled={spinning}
               key={amount}
             >
-              {amount} PP
+              {amount} BONEZ
             </button>
           ))}
         </div>
 
         <button className="palace-spin" type="button" onClick={spin} disabled={spinning || loading || Boolean(loadError) || points < stake}>
-          {spinning ? "SPINNING..." : points < stake ? "NEED MORE PITTZ POINTS" : "SPIN THE PITTZ"}
+          {spinning ? "SPINNING..." : points < stake ? "NEED MORE ARCADE BONEZ" : "SPIN THE PITTZ"}
         </button>
 
         {points < MINIMUM_STAKE && !spinning && (
-          <button className="palace-refill" type="button" onClick={refillPoints}>🐾 PACK REFILL +{PACK_REFILL_POINTS} PP</button>
+          <button className="palace-refill" type="button" onClick={refillPoints}>🐾 PACK REFILL +{PACK_REFILL_POINTS} BONEZ</button>
         )}
       </div>
 
@@ -329,7 +329,7 @@ function PittzPalace() {
       <details className="palace-rules">
         <summary>📜 How to Play &amp; Complete Payout Rules</summary>
         <div>
-          <p>Choose 10, 25, or 50 Pittz Points, then spin. Your selected amount is removed before the reels start.</p>
+          <p>Choose 10, 25, or 50 arcade BONEZ, then spin. Your selected amount is removed before the reels start.</p>
           <ul>
             <li><strong>Three matching Pittz:</strong> 10× payout</li>
             <li><strong>Two matching Pittz plus Wild BONEZ:</strong> 8× payout</li>
@@ -340,7 +340,7 @@ function PittzPalace() {
             <li><strong>Dog Catcher:</strong> loses one additional full stake</li>
             <li><strong>Muzzle:</strong> loses one additional half stake</li>
           </ul>
-          <p>Danger cards override every apparent match. Below 10 Pittz Points, the Pack Refill restores 250 free points.</p>
+          <p>Danger cards override every apparent match. Below 10 arcade BONEZ, the Pack Refill restores 250 free arcade BONEZ.</p>
         </div>
       </details>
 
@@ -363,14 +363,14 @@ function PittzPalace() {
             <div className={spin.netChange >= 0 ? "win" : "loss"} key={spin.id}>
               <span>{spin.title}</span>
               <small title={spin.symbols.join(" • ")}>{spin.symbols.join(" • ")}</small>
-              <strong>{spin.netChange >= 0 ? "+" : ""}{spin.netChange} PP</strong>
+              <strong>{spin.netChange >= 0 ? "+" : ""}{spin.netChange} BONEZ</strong>
             </div>
           ))}
         </div>
       )}
 
       <div className="palace-pool-count">🎰 Current reel pool: {Math.max(0, symbols.length - 3)} CryptoPittz sampled from across both collections</div>
-      <p className="palace-disclaimer">Pittz Points are free arcade points with no cash or token value. No purchase required.</p>
+      <p className="palace-disclaimer"><strong>Arcade BONEZ only:</strong> these free in-game points are not $BONEZ, cryptocurrency, or anything of cash/token value. No purchase required.</p>
     </div>
   );
 }
