@@ -4,8 +4,8 @@ import { EXPLORER_COLLECTIONS } from "../../config/collections";
 import { getNftImage } from "../../utils/nftUtils";
 import "./PittzMatch.css";
 
-const PAIR_COUNT = 6;
-const BEST_MOVES_KEY = "cryptopittz-match-best-moves";
+const PAIR_COUNT = 10;
+const BEST_MOVES_KEY = "cryptopittz-match-best-moves-10-pairs";
 const COLLECTION_TOTALS = {
   [EXPLORER_COLLECTIONS.original.collection]: 5310,
   [EXPLORER_COLLECTIONS.vice.collection]: 1395,
@@ -39,9 +39,9 @@ async function fetchPittzBoard() {
   const responses = await Promise.all(
     collections.map(async ({ collection }) => {
       const total = COLLECTION_TOTALS[collection];
-      const from = Math.floor(Math.random() * Math.max(1, total - 8));
+      const from = Math.floor(Math.random() * Math.max(1, total - 12));
       const response = await fetch(
-        `https://api.multiversx.com/collections/${collection}/nfts?from=${from}&size=8`,
+        `https://api.multiversx.com/collections/${collection}/nfts?from=${from}&size=12`,
       );
       if (!response.ok) throw new Error(`Unable to load ${collection}`);
       return response.json();
@@ -190,7 +190,7 @@ function PittzMatch() {
         <div>
           <span>⚡ NEON MEMORY GRID</span>
           <h3>PITTZ MATCH</h3>
-          <p>Find all six matching CryptoPittz pairs.</p>
+          <p>Find all ten matching CryptoPittz pairs.</p>
         </div>
         <button type="button" onClick={dealNewBoard} disabled={loading}>🔀 NEW PITTZ</button>
       </header>

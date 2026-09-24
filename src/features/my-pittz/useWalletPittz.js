@@ -1,6 +1,40 @@
 import { useEffect, useState } from "react";
 
 const PITTZ_COLLECTIONS = ["PITTZ-1a4c2d", "PITTZVICE-c3ec94"];
+const PAGE_SIZE = 100;
+
+async function fetchCollectionPage(address, collection, from, signal) {
+  const params = new URLSearchParams({
+    collections: collection,
+    from: String(from),
+    size: String(PAGE_SIZE),
+  });
+  const response = await fetch(
+    `https://api.multiversx.com/accounts/${address}/nfts?${params}`,
+    { signal },
+  );
+
+  if (!response.ok) throw new Error(`Unable to load ${collection} NFTs`);
+  return response.json();
+}
+
+async function fetchAllWalletPittz(address, signal) {
+  const collectionResults = await Promise.all(
+    PITTZ_COLLECTIONS.map(async (collection) => {
+      const pittz = [];
+
+      for (let from = 0; ; from += PAGE_SIZE) {
+        const page = await fetchCollectionPage(address, collection, from, signal);
+        pittz.push(...page);
+        if (page.length < PAGE_SIZE) break;
+      }
+
+      return pittz;
+    }),
+  );
+
+  return collectionResults.flat();
+}
 
 export default function useWalletPittz(address) {
   const [nfts, setNfts] = useState([]);
@@ -17,15 +51,7 @@ export default function useWalletPittz(address) {
         setLoading(true);
         setError("");
 
-        const collections = PITTZ_COLLECTIONS.join(",");
-        const response = await fetch(
-          `https://api.multiversx.com/accounts/${address}/nfts?collections=${collections}&size=1000`,
-          { signal: controller.signal },
-        );
-
-        if (!response.ok) throw new Error("Unable to load CryptoPittz NFTs");
-
-        setNfts(await response.json());
+        setNfts(await fetchAllWalletPittz(address, controller.signal));
       } catch (fetchError) {
         if (fetchError.name !== "AbortError") {
           console.error("NFT lookup failed:", fetchError);
