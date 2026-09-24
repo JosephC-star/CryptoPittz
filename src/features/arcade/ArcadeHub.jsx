@@ -9,7 +9,7 @@ const PittzMatch = lazy(() => import("../pittz-match/PittzMatch"));
 const GAME_LABELS = {
   rush: "BONEZ RUSH",
   palace: "PITTZ PALACE",
-  match: "PITTZ MATCH",
+  match: "PITTZ MEMORY",
 };
 
 function ArcadeHub() {
@@ -33,7 +33,7 @@ function ArcadeHub() {
       <div className="section-title arcade-title">
         <span>🎮 Welcome to the Pack’s Playground</span>
         <h2>Choose Your Cabinet</h2>
-        <p>Chase high scores, stack arcade BONEZ, and make questionable neon decisions.</p>
+        <p>Chase high scores, stack BONEZ, and make questionable neon decisions.</p>
       </div>
 
       <div className="arcade-lobby">
@@ -64,9 +64,9 @@ function ArcadeHub() {
               <span>🐶</span><span>🦴</span><span>🐶</span>
             </div>
             <h3>PITTZ PALACE</h3>
-            <p>Spin CryptoPittz reels and build a glorious stack of arcade BONEZ.</p>
+            <p>Spin CryptoPittz reels and build a glorious stack of BONEZ.</p>
             <div className="cabinet-tags">
-              <span>3 REELS</span><span>ARCADE BONEZ</span><span>JACKPOTS</span>
+              <span>3 REELS</span><span>BONEZ</span><span>JACKPOTS</span>
             </div>
           </div>
           <div className="cabinet-controls palace-controls" aria-hidden="true">
@@ -82,7 +82,7 @@ function ArcadeHub() {
             <div className="match-mini-grid" aria-hidden="true">
               <span>?</span><span>🐶</span><span>?</span><span>🐶</span>
             </div>
-            <h3>PITTZ MATCH</h3>
+            <h3>PITTZ MEMORY</h3>
             <p>Flip neon cards and reunite ten matching CryptoPittz pairs.</p>
             <div className="cabinet-tags">
               <span>20 CARDS</span><span>REAL PITTZ</span><span>BEST MOVES</span>
@@ -91,7 +91,7 @@ function ArcadeHub() {
           <div className="cabinet-controls match-controls" aria-hidden="true">
             <i /><b /><i />
           </div>
-          <button type="button" onClick={() => openGame("match")}>PLAY PITTZ MATCH</button>
+          <button type="button" onClick={() => openGame("match")}>PLAY PITTZ MEMORY</button>
         </article>
       </div>
 
@@ -116,7 +116,7 @@ function ArcadeHub() {
             </Suspense>
           )}
           {activeGame === "match" && (
-            <Suspense fallback={<div className="arcade-loading">Dealing Pittz Match...</div>}>
+            <Suspense fallback={<div className="arcade-loading">Dealing Pittz Memory...</div>}>
               <PittzMatch />
             </Suspense>
           )}

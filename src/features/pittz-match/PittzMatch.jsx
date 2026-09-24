@@ -97,7 +97,7 @@ function PittzMatch() {
         if (!cancelled) setCards(nextCards);
       })
       .catch((loadError) => {
-        console.error("Pittz Match board loading failed:", loadError);
+        console.error("Pittz Memory board loading failed:", loadError);
         if (!cancelled) {
           setError("The Pittz cards could not be loaded. Try dealing a new board.");
         }
@@ -189,7 +189,7 @@ function PittzMatch() {
       <header className="match-header">
         <div>
           <span>⚡ NEON MEMORY GRID</span>
-          <h3>PITTZ MATCH</h3>
+          <h3>PITTZ MEMORY</h3>
           <p>Find all ten matching CryptoPittz pairs.</p>
         </div>
         <button type="button" onClick={dealNewBoard} disabled={loading}>🔀 NEW PITTZ</button>
