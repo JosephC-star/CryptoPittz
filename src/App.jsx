@@ -17,6 +17,7 @@ import useBonezMarket from "./features/bonez-market/useBonezMarket";
 import useExplorerData from "./features/explorer/useExplorerData";
 import MyPittzSection from "./features/my-pittz/MyPittzSection";
 import useWalletPittz from "./features/my-pittz/useWalletPittz";
+import TraitFinder from "./features/traits/TraitFinder";
 import { getPittzStats } from "./utils/nftUtils";
 
 const ArcadeHub = lazy(() => import("./features/arcade/ArcadeHub"));
@@ -24,6 +25,7 @@ const ArcadeHub = lazy(() => import("./features/arcade/ArcadeHub"));
 function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileGroup, setMobileGroup] = useState(null);
+  const [desktopGroup, setDesktopGroup] = useState(null);
   const [selectedNft, setSelectedNft] = useState(null);
   const [modalNfts, setModalNfts] = useState([]);
   const [explorerSearch, setExplorerSearch] = useState("");
@@ -326,23 +328,39 @@ function App() {
             </a>
 
             <nav className="nav-links" aria-label="Primary navigation">
-              <div className="nav-item">
-                <div className="nav-btn" role="button" tabIndex="0" aria-haspopup="true">
+              <div className={`nav-item ${desktopGroup === "explore" ? "open" : ""}`}>
+                <button
+                  className="nav-btn"
+                  type="button"
+                  aria-haspopup="true"
+                  aria-expanded={desktopGroup === "explore"}
+                  onClick={() =>
+                    setDesktopGroup((current) => (current === "explore" ? null : "explore"))
+                  }
+                >
                   Explore <span className="caret" aria-hidden="true"></span>
-                </div>
+                </button>
                 <div className="dropdown" role="menu">
-                  <a href="#arcade">CryptoPittz Arcade</a>
-                  <a href="#my-pittz">My Pittz</a>
-                  <a href="#explorer">CryptoPittz Explorer</a>
-                  <a href="#traits">Traits</a>
-                  <a href="#rarity">Rarity</a>
+                  <a href="#arcade" onClick={() => setDesktopGroup(null)}>CryptoPittz Arcade</a>
+                  <a href="#my-pittz" onClick={() => setDesktopGroup(null)}>My Pittz</a>
+                  <a href="#explorer" onClick={() => setDesktopGroup(null)}>CryptoPittz Explorer</a>
+                  <a href="#traits" onClick={() => setDesktopGroup(null)}>Traits</a>
+                  <a href="#rarity" onClick={() => setDesktopGroup(null)}>Rarity</a>
                 </div>
               </div>
 
-              <div className="nav-item">
-                <div className="nav-btn" role="button" tabIndex="0" aria-haspopup="true">
+              <div className={`nav-item ${desktopGroup === "ecosystem" ? "open" : ""}`}>
+                <button
+                  className="nav-btn"
+                  type="button"
+                  aria-haspopup="true"
+                  aria-expanded={desktopGroup === "ecosystem"}
+                  onClick={() =>
+                    setDesktopGroup((current) => (current === "ecosystem" ? null : "ecosystem"))
+                  }
+                >
                   Ecosystem <span className="caret" aria-hidden="true"></span>
-                </div>
+                </button>
 
                 <div className="dropdown" role="menu">
                   <a href="#join">CryptoPittz Ecosystem</a>
@@ -938,21 +956,17 @@ function App() {
             </div>
           </section>
 
-          <section id="traits">
-            <div className="section-title">
-              <h2>Traits (Soon)</h2>
-              <span>Explore what makes every Pitt unique.</span>
-            </div>
-
-            <div className="panel">
-              <div className="inner">
-                <p className="subtitle">
-                  A future trait explorer can let visitors search CryptoPittz by colors, accessories
-                  and other characteristics.
-                </p>
-              </div>
-            </div>
-          </section>
+          <TraitFinder
+            key={explorerCollection}
+            collection={explorerCollection}
+            collectionName={activeCollection.name}
+            nfts={explorerAllNfts}
+            loading={explorerAllLoading}
+            originalTotal={originalTotal}
+            viceTotal={viceTotal}
+            onCollectionChange={changeExplorerCollection}
+            onOpenNft={openNftDetails}
+          />
 
           <section id="rarity">
             <div className="section-title">
