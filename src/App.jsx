@@ -1168,9 +1168,21 @@ function App() {
 
       <footer>
         <div className="container footer-inner">
-          <div className="footer-community">
-            <strong>© {new Date().getFullYear()} CryptoPittz</strong>
-            <span>All vibes reserved 🐾</span>
+          <div className="footer-left">
+            <a
+              className="footer-clemons-credit"
+              href="https://clemonswebco.com/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span>⚡ CRAFTED EXTRA MUSTY BY</span>
+              <strong>CLEMONS WEB CO.</strong>
+            </a>
+
+            <div className="footer-community">
+              <strong>© {new Date().getFullYear()} CryptoPittz</strong>
+              <span>All vibes reserved 🐾</span>
+            </div>
           </div>
 
           <a
@@ -1182,15 +1194,6 @@ function App() {
             <small>support@clemonswebco.com ↗</small>
           </a>
 
-          <a
-            className="footer-clemons-credit"
-            href="https://clemonswebco.com/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <span>⚡ CRAFTED EXTRA MUSTY BY</span>
-            <strong>CLEMONS WEB CO.</strong>
-          </a>
         </div>
       </footer>
 
