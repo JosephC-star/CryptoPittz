@@ -3551,103 +3551,6 @@ section {
   animation: traitsStatusPulse 2.4s ease-in-out infinite;
 }
 
-#rarity .panel {
-  position: relative;
-  overflow: hidden;
-
-  border: 1px solid rgba(255, 208, 0, 0.16);
-  border-radius: 20px;
-
-  background: linear-gradient(135deg, rgba(255, 208, 0, 0.04), rgba(255, 61, 247, 0.03));
-
-  transition:
-    transform 0.24s ease,
-    border-color 0.24s ease,
-    box-shadow 0.24s ease,
-    background 0.24s ease;
-}
-
-#rarity .panel:hover {
-  transform: translateY(-4px);
-
-  border-color: rgba(255, 208, 0, 0.34);
-
-  background: linear-gradient(135deg, rgba(255, 208, 0, 0.08), rgba(255, 61, 247, 0.05));
-
-  box-shadow:
-    0 14px 28px rgba(0, 0, 0, 0.24),
-    0 0 18px rgba(255, 208, 0, 0.14),
-    0 0 24px rgba(255, 61, 247, 0.07);
-}
-
-#rarity .panel .inner {
-  position: relative;
-  z-index: 2;
-
-  padding: 26px;
-}
-
-#rarity .subtitle {
-  margin: 0;
-
-  max-width: 760px;
-
-  line-height: 1.7;
-
-  color: rgba(255, 255, 255, 0.72);
-
-  transition:
-    color 0.22s ease,
-    text-shadow 0.22s ease;
-}
-
-#rarity .panel:hover .subtitle {
-  color: rgba(255, 255, 255, 0.92);
-
-  text-shadow: 0 0 10px rgba(255, 208, 0, 0.1);
-}
-
-#rarity .panel::before {
-  content: "";
-
-  position: absolute;
-  inset: 0;
-
-  background: linear-gradient(
-    120deg,
-    transparent 20%,
-    rgba(255, 208, 0, 0.07) 42%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 61, 247, 0.05) 58%,
-    transparent 80%
-  );
-
-  transform: translateX(-120%);
-
-  animation: rarityShimmer 7s ease-in-out infinite;
-
-  pointer-events: none;
-}
-
-#rarity .panel::after {
-  content: "✦";
-
-  position: absolute;
-
-  top: 13px;
-  right: 16px;
-
-  font-size: 15px;
-
-  color: #ffd000;
-
-  text-shadow:
-    0 0 8px rgba(255, 208, 0, 0.7),
-    0 0 14px rgba(255, 61, 247, 0.22);
-
-  animation: raritySpark 2.8s ease-in-out infinite;
-}
-
 #gallery .tile-img {
   position: relative;
   overflow: hidden;
@@ -4780,31 +4683,6 @@ footer .container > div:hover {
   }
 }
 
-@keyframes raritySpark {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: scale(0.9) rotate(0deg);
-  }
-
-  50% {
-    opacity: 1;
-    transform: scale(1.15) rotate(12deg);
-  }
-}
-
-@keyframes rarityShimmer {
-  0%,
-  28% {
-    transform: translateX(-120%);
-  }
-
-  72%,
-  100% {
-    transform: translateX(120%);
-  }
-}
-
 @keyframes traitsStatusPulse {
   0%,
   100% {
@@ -4815,13 +4693,6 @@ footer .container > div:hover {
   50% {
     opacity: 1;
     transform: scale(1.15);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  #rarity .panel::before,
-  #rarity .panel::after {
-    animation: none;
   }
 }
 

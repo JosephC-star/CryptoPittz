@@ -352,7 +352,6 @@ function App() {
                   <a href="#my-pittz" onClick={() => setDesktopGroup(null)}>My Pittz</a>
                   <a href="#explorer" onClick={() => setDesktopGroup(null)}>CryptoPittz Explorer</a>
                   <a href="#traits" onClick={() => setDesktopGroup(null)}>Traits</a>
-                  <a href="#rarity" onClick={() => setDesktopGroup(null)}>Rarity</a>
                 </div>
               </div>
 
@@ -491,10 +490,6 @@ function App() {
 
                 <a href="#traits" onClick={closeMobileMenu}>
                   Traits
-                </a>
-
-                <a href="#rarity" onClick={closeMobileMenu}>
-                  Rarity
                 </a>
               </div>
             </div>
@@ -969,22 +964,6 @@ function App() {
                     />
                   </>
                 )}
-              </div>
-            </div>
-          </section>
-
-          <section id="rarity">
-            <div className="section-title">
-              <h2>Rarity (Soon)</h2>
-              <span>Collection stats are coming later.</span>
-            </div>
-
-            <div className="panel">
-              <div className="inner">
-                <p className="subtitle">
-                  This area can eventually display rarity information using CryptoPittz NFT
-                  metadata.
-                </p>
               </div>
             </div>
           </section>
