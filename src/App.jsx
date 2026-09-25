@@ -41,6 +41,7 @@ function App() {
 
   const [mobileWalletConnecting, setMobileWalletConnecting] = useState(false);
   const [mobileWalletError, setMobileWalletError] = useState("");
+  const [supportEmailCopied, setSupportEmailCopied] = useState(false);
 
   const EXPLORER_PAGE_SIZE = 100;
 
@@ -1183,14 +1184,26 @@ function App() {
             <span>All vibes reserved 🐾</span>
           </div>
 
-          <a
-            className="footer-support"
-            href="mailto:support@clemonswebco.com?subject=CryptoPittz%20Support%20%2F%20Feedback"
-          >
+          <div className="footer-support">
             <span>🐛 REPORT A GREMLIN</span>
             <strong>Technical issues or suggestions?</strong>
-            <small>support@clemonswebco.com ↗</small>
-          </a>
+            <small>support@clemonswebco.com</small>
+            <div className="footer-support-actions">
+              <a href="mailto:support@clemonswebco.com?subject=CryptoPittz%20Support%20%2F%20Feedback">
+                Email Support ↗
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText("support@clemonswebco.com");
+                  setSupportEmailCopied(true);
+                  window.setTimeout(() => setSupportEmailCopied(false), 1800);
+                }}
+              >
+                {supportEmailCopied ? "Copied! ✓" : "Copy Address"}
+              </button>
+            </div>
+          </div>
 
         </div>
       </footer>
