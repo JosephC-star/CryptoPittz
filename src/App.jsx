@@ -1167,18 +1167,30 @@ function App() {
       </main>
 
       <footer>
-        <div
-          className="container"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            gap: "14px",
-            flexWrap: "wrap",
-          }}
-        >
-          <div>© {new Date().getFullYear()} CryptoPittz • All vibes reserved 🐾</div>
+        <div className="container footer-inner">
+          <div className="footer-community">
+            <strong>© {new Date().getFullYear()} CryptoPittz</strong>
+            <span>All vibes reserved 🐾</span>
+          </div>
 
-          <div style={{ opacity: 0.9 }}>Built for the CryptoPittz community</div>
+          <a
+            className="footer-support"
+            href="mailto:support@clemonswebco.com?subject=CryptoPittz%20Support%20%2F%20Feedback"
+          >
+            <span>🐛 REPORT A GREMLIN</span>
+            <strong>Technical issues or suggestions?</strong>
+            <small>support@clemonswebco.com ↗</small>
+          </a>
+
+          <a
+            className="footer-clemons-credit"
+            href="https://clemonswebco.com/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <span>⚡ CRAFTED EXTRA MUSTY BY</span>
+            <strong>CLEMONS WEB CO.</strong>
+          </a>
         </div>
       </footer>
 
