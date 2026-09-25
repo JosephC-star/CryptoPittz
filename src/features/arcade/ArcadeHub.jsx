@@ -5,11 +5,13 @@ import "./ArcadeHub.css";
 const BonezRush = lazy(() => import("../bonez-rush/BonezRush"));
 const PittzPalace = lazy(() => import("../pittz-palace/PittzPalace"));
 const PittzMatch = lazy(() => import("../pittz-match/PittzMatch"));
+const Pittz21 = lazy(() => import("../pittz-21/Pittz21"));
 
 const GAME_LABELS = {
   rush: "BONEZ RUSH",
   palace: "PITTZ PALACE",
   match: "PITTZ MEMORY",
+  twentyone: "PITTZ 21",
 };
 
 function ArcadeHub() {
@@ -93,6 +95,26 @@ function ArcadeHub() {
           </div>
           <button type="button" onClick={() => openGame("match")}>PLAY PITTZ MEMORY</button>
         </article>
+
+        <article className="arcade-cabinet twentyone-cabinet">
+          <div className="cabinet-bulbs" aria-hidden="true" />
+          <div className="cabinet-screen">
+            <span className="cabinet-status live">● LIVE</span>
+            <div className="twentyone-cabinet-art" aria-hidden="true">
+              <span>P</span>
+              <div><b>A♠</b><b>K♥</b></div>
+            </div>
+            <h3>PITTZ 21</h3>
+            <p>Play Pack-rules blackjack with a fresh deck of 52 random CryptoPittz.</p>
+            <div className="cabinet-tags">
+              <span>52 PITTZ</span><span>SHARED BONEZ</span><span>DOUBLE DOWN</span>
+            </div>
+          </div>
+          <div className="cabinet-controls twentyone-controls" aria-hidden="true">
+            <i /><b /><i />
+          </div>
+          <button type="button" onClick={() => openGame("twentyone")}>PLAY PITTZ 21</button>
+        </article>
       </div>
 
       {activeGame && (
@@ -118,6 +140,11 @@ function ArcadeHub() {
           {activeGame === "match" && (
             <Suspense fallback={<div className="arcade-loading">Dealing Pittz Memory...</div>}>
               <PittzMatch />
+            </Suspense>
+          )}
+          {activeGame === "twentyone" && (
+            <Suspense fallback={<div className="arcade-loading">Shuffling the Pittz 21 deck...</div>}>
+              <Pittz21 />
             </Suspense>
           )}
         </div>
