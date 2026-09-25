@@ -352,6 +352,7 @@ function App() {
                   <a href="#my-pittz" onClick={() => setDesktopGroup(null)}>My Pittz</a>
                   <a href="#explorer" onClick={() => setDesktopGroup(null)}>CryptoPittz Explorer</a>
                   <a href="#traits" onClick={() => setDesktopGroup(null)}>Traits</a>
+                  <a href="#merch" onClick={() => setDesktopGroup(null)}>Merch — Coming Soon</a>
                 </div>
               </div>
 
@@ -490,6 +491,10 @@ function App() {
 
                 <a href="#traits" onClick={closeMobileMenu}>
                   Traits
+                </a>
+
+                <a href="#merch" onClick={closeMobileMenu}>
+                  Merch — Coming Soon
                 </a>
               </div>
             </div>
@@ -968,34 +973,46 @@ function App() {
             </div>
           </section>
 
-          <section id="faq">
-            <div className="section-title">
-              <h2>FAQ</h2>
-              <span>Common questions about CryptoPittz.</span>
-            </div>
-
-            <div className="faq">
-              <details>
-                <summary>When is the mint?</summary>
-                <p>Additional mint information will be added here.</p>
-              </details>
-
-              <details>
-                <summary>What chain is CryptoPittz on?</summary>
-                <p>CryptoPittz is being prepared for integration with the MultiversX ecosystem.</p>
-              </details>
-
-              <details>
-                <summary>What do holders get?</summary>
-                <p>Holder utilities and community features can be added as the project grows.</p>
-              </details>
-
-              <details>
-                <summary>How can I join the community?</summary>
+          <section id="merch" className="merch-coming-soon">
+            <div className="merch-neon-banner">
+              <div className="merch-copy">
+                <span className="merch-eyebrow">⚡ FROM THE SCREEN TO THE STREETS</span>
+                <h2>CRYPTOPITTZ MERCH</h2>
+                <strong>COMING SOON</strong>
                 <p>
-                  Community and social links will be added to the site as they become available.
+                  The Pack is moving into the physical world. Apparel, pet gear, collectibles and
+                  more are being explored for future CryptoPittz drops.
                 </p>
-              </details>
+                <a
+                  className="btn primary"
+                  href="https://discord.gg/PP8S8DX9t"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Follow Merch Updates ↗
+                </a>
+              </div>
+
+              <div className="merch-preview-grid" aria-label="Planned merchandise categories">
+                <article>
+                  <span>👕</span>
+                  <div><small>PACK STYLE</small><h3>Apparel</h3></div>
+                  <b>IN DEVELOPMENT</b>
+                </article>
+                <article>
+                  <span>🐕</span>
+                  <div><small>FOR THE REAL PACK</small><h3>Pet Gear</h3></div>
+                  <b>IN DEVELOPMENT</b>
+                </article>
+                <article>
+                  <span>🦴</span>
+                  <div><small>PHYSICAL DROPS</small><h3>Collectibles</h3></div>
+                  <b>IN DEVELOPMENT</b>
+                </article>
+              </div>
+
+              <div className="merch-orbit merch-orbit-one" aria-hidden="true" />
+              <div className="merch-orbit merch-orbit-two" aria-hidden="true" />
             </div>
           </section>
 
