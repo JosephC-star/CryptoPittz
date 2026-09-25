@@ -17,19 +17,22 @@ import useBonezMarket from "./features/bonez-market/useBonezMarket";
 import useExplorerData from "./features/explorer/useExplorerData";
 import MyPittzSection from "./features/my-pittz/MyPittzSection";
 import useWalletPittz from "./features/my-pittz/useWalletPittz";
-import { getPittzStats } from "./utils/nftUtils";
+import TraitFinder from "./features/traits/TraitFinder";
+import { getPittzStats, getPittzTraits } from "./utils/nftUtils";
 
 const ArcadeHub = lazy(() => import("./features/arcade/ArcadeHub"));
 
 function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileGroup, setMobileGroup] = useState(null);
+  const [desktopGroup, setDesktopGroup] = useState(null);
   const [selectedNft, setSelectedNft] = useState(null);
   const [modalNfts, setModalNfts] = useState([]);
   const [explorerSearch, setExplorerSearch] = useState("");
   const [explorerSort, setExplorerSort] = useState("rank");
   const [explorerBloodline, setExplorerBloodline] = useState("all");
   const [explorerType, setExplorerType] = useState("all");
+  const [explorerTraits, setExplorerTraits] = useState({});
   const [randomPittLoading, setRandomPittLoading] = useState(false);
   const [randomPittError, setRandomPittError] = useState("");
   const [randomPittMode, setRandomPittMode] = useState("surprise");
@@ -38,6 +41,7 @@ function App() {
 
   const [mobileWalletConnecting, setMobileWalletConnecting] = useState(false);
   const [mobileWalletError, setMobileWalletError] = useState("");
+  const [supportEmailCopied, setSupportEmailCopied] = useState(false);
 
   const EXPLORER_PAGE_SIZE = 100;
 
@@ -98,6 +102,7 @@ function App() {
     setExplorerSort("rank");
     setExplorerBloodline("all");
     setExplorerType("all");
+    setExplorerTraits({});
     setExplorerPage(0);
     clearGlobalSearch();
   }
@@ -273,7 +278,12 @@ function App() {
 
       const matchesType = explorerType === "all" || stats.type === explorerType;
 
-      return matchesSearch && matchesBloodline && matchesType;
+      const traits = getPittzTraits(nft.attributes);
+      const matchesTraits = Object.entries(explorerTraits).every(([category, values]) =>
+        traits.some((item) => item.trait === category && values.includes(item.value)),
+      );
+
+      return matchesSearch && matchesBloodline && matchesType && matchesTraits;
     })
     .sort((a, b) => {
       const aStats = getPittzStats(a.attributes);
@@ -307,7 +317,7 @@ function App() {
       <div className="blob b2"></div>
       <div className="blob b3"></div>
 
-      <header>
+      <header className="site-header">
         <div className="container">
           <div className="nav">
             <a className="brand" href="#top" aria-label="CryptoPittz Home">
@@ -326,23 +336,39 @@ function App() {
             </a>
 
             <nav className="nav-links" aria-label="Primary navigation">
-              <div className="nav-item">
-                <div className="nav-btn" role="button" tabIndex="0" aria-haspopup="true">
+              <div className={`nav-item ${desktopGroup === "explore" ? "open" : ""}`}>
+                <button
+                  className="nav-btn"
+                  type="button"
+                  aria-haspopup="true"
+                  aria-expanded={desktopGroup === "explore"}
+                  onClick={() =>
+                    setDesktopGroup((current) => (current === "explore" ? null : "explore"))
+                  }
+                >
                   Explore <span className="caret" aria-hidden="true"></span>
-                </div>
+                </button>
                 <div className="dropdown" role="menu">
-                  <a href="#arcade">CryptoPittz Arcade</a>
-                  <a href="#my-pittz">My Pittz</a>
-                  <a href="#explorer">CryptoPittz Explorer</a>
-                  <a href="#traits">Traits</a>
-                  <a href="#rarity">Rarity</a>
+                  <a href="#arcade" onClick={() => setDesktopGroup(null)}>CryptoPittz Arcade</a>
+                  <a href="#my-pittz" onClick={() => setDesktopGroup(null)}>My Pittz</a>
+                  <a href="#explorer" onClick={() => setDesktopGroup(null)}>CryptoPittz Explorer</a>
+                  <a href="#traits" onClick={() => setDesktopGroup(null)}>Traits</a>
+                  <a href="#merch" onClick={() => setDesktopGroup(null)}>Merch — Coming Soon</a>
                 </div>
               </div>
 
-              <div className="nav-item">
-                <div className="nav-btn" role="button" tabIndex="0" aria-haspopup="true">
+              <div className={`nav-item ${desktopGroup === "ecosystem" ? "open" : ""}`}>
+                <button
+                  className="nav-btn"
+                  type="button"
+                  aria-haspopup="true"
+                  aria-expanded={desktopGroup === "ecosystem"}
+                  onClick={() =>
+                    setDesktopGroup((current) => (current === "ecosystem" ? null : "ecosystem"))
+                  }
+                >
                   Ecosystem <span className="caret" aria-hidden="true"></span>
-                </div>
+                </button>
 
                 <div className="dropdown" role="menu">
                   <a href="#join">CryptoPittz Ecosystem</a>
@@ -368,7 +394,7 @@ function App() {
                   </a>
 
                   <a
-                    href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxjkVdFCh3ndX6vXYMa7/transactions"
+                    href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxikVdFCh3ndX6vXVMa7/transactions"
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -468,8 +494,8 @@ function App() {
                   Traits
                 </a>
 
-                <a href="#rarity" onClick={closeMobileMenu}>
-                  Rarity
+                <a href="#merch" onClick={closeMobileMenu}>
+                  Merch — Coming Soon
                 </a>
               </div>
             </div>
@@ -516,7 +542,7 @@ function App() {
                 </a>
 
                 <a
-                  href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxjkVdFCh3ndX6vXYMa7/transactions"
+                  href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxikVdFCh3ndX6vXVMa7/transactions"
                   target="_blank"
                   rel="noreferrer"
                   onClick={closeMobileMenu}
@@ -767,73 +793,6 @@ function App() {
             </div>
           </div>
 
-          <div className="grid" aria-label="Highlights">
-            <div className="card">
-              <div className="accent"></div>
-
-              <div className="inner">
-                <h3>Mission</h3>
-                <p>
-                  Build a recognizable collection centered around art, community and future utility.
-                </p>
-              </div>
-            </div>
-
-            <div className="card">
-              <div className="accent"></div>
-
-              <div className="inner">
-                <h3>Collection</h3>
-                <p>Explore the growing world of unique CryptoPittz characters and traits.</p>
-              </div>
-            </div>
-
-            <div className="card">
-              <div className="accent"></div>
-
-              <div className="inner">
-                <h3>Community</h3>
-                <p>Connect with the pack as CryptoPittz continues to grow.</p>
-              </div>
-            </div>
-          </div>
-
-          <section id="roadmap">
-            <div className="section-title">
-              <h2>Roadmap</h2>
-              <span>The journey begins.</span>
-            </div>
-
-            <div className="grid">
-              <div className="card" style={{ gridColumn: "span 4" }}>
-                <div className="accent"></div>
-
-                <div className="inner">
-                  <h3>Phase 1</h3>
-                  <p>Website foundation, artwork and community presence.</p>
-                </div>
-              </div>
-
-              <div className="card" style={{ gridColumn: "span 4" }}>
-                <div className="accent"></div>
-
-                <div className="inner">
-                  <h3>Phase 2</h3>
-                  <p>MultiversX wallet integration and holder identification.</p>
-                </div>
-              </div>
-
-              <div className="card" style={{ gridColumn: "span 4" }}>
-                <div className="accent"></div>
-
-                <div className="inner">
-                  <h3>Phase 3</h3>
-                  <p>Expanded utility, NFT tools and future community features.</p>
-                </div>
-              </div>
-            </div>
-          </section>
-
           <Suspense
             fallback={<div className="bonez-market-loading">Opening CryptoPittz Arcade...</div>}
           >
@@ -930,6 +889,16 @@ function App() {
                       onReset={resetExplorerFilters}
                     />
 
+                    <TraitFinder
+                      nfts={explorerAllNfts}
+                      loading={explorerAllLoading}
+                      selected={explorerTraits}
+                      onSelectedChange={(nextTraits) => {
+                        setExplorerTraits(nextTraits);
+                        setExplorerPage(0);
+                      }}
+                    />
+
                     <ExplorerPagination
                       currentPage={explorerPage}
                       totalItems={explorerFilteredTotal}
@@ -1005,66 +974,46 @@ function App() {
             </div>
           </section>
 
-          <section id="traits">
-            <div className="section-title">
-              <h2>Traits (Soon)</h2>
-              <span>Explore what makes every Pitt unique.</span>
-            </div>
-
-            <div className="panel">
-              <div className="inner">
-                <p className="subtitle">
-                  A future trait explorer can let visitors search CryptoPittz by colors, accessories
-                  and other characteristics.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <section id="rarity">
-            <div className="section-title">
-              <h2>Rarity (Soon)</h2>
-              <span>Collection stats are coming later.</span>
-            </div>
-
-            <div className="panel">
-              <div className="inner">
-                <p className="subtitle">
-                  This area can eventually display rarity information using CryptoPittz NFT
-                  metadata.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <section id="faq">
-            <div className="section-title">
-              <h2>FAQ</h2>
-              <span>Common questions about CryptoPittz.</span>
-            </div>
-
-            <div className="faq">
-              <details>
-                <summary>When is the mint?</summary>
-                <p>Additional mint information will be added here.</p>
-              </details>
-
-              <details>
-                <summary>What chain is CryptoPittz on?</summary>
-                <p>CryptoPittz is being prepared for integration with the MultiversX ecosystem.</p>
-              </details>
-
-              <details>
-                <summary>What do holders get?</summary>
-                <p>Holder utilities and community features can be added as the project grows.</p>
-              </details>
-
-              <details>
-                <summary>How can I join the community?</summary>
+          <section id="merch" className="merch-coming-soon">
+            <div className="merch-neon-banner">
+              <div className="merch-copy">
+                <span className="merch-eyebrow">⚡ FROM THE SCREEN TO THE STREETS</span>
+                <h2>CRYPTOPITTZ MERCH</h2>
+                <strong>COMING SOON</strong>
                 <p>
-                  Community and social links will be added to the site as they become available.
+                  The Pack is moving into the physical world. Apparel, pet gear, collectibles and
+                  more are being explored for future CryptoPittz drops.
                 </p>
-              </details>
+                <a
+                  className="btn primary"
+                  href="https://discord.gg/PP8S8DX9t"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Follow Merch Updates ↗
+                </a>
+              </div>
+
+              <div className="merch-preview-grid" aria-label="Planned merchandise categories">
+                <article>
+                  <span>👕</span>
+                  <div><small>PACK STYLE</small><h3>Apparel</h3></div>
+                  <b>IN DEVELOPMENT</b>
+                </article>
+                <article>
+                  <span>🐕</span>
+                  <div><small>FOR THE REAL PACK</small><h3>Pet Gear</h3></div>
+                  <b>IN DEVELOPMENT</b>
+                </article>
+                <article>
+                  <span>🦴</span>
+                  <div><small>PHYSICAL DROPS</small><h3>Collectibles</h3></div>
+                  <b>IN DEVELOPMENT</b>
+                </article>
+              </div>
+
+              <div className="merch-orbit merch-orbit-one" aria-hidden="true" />
+              <div className="merch-orbit merch-orbit-two" aria-hidden="true" />
             </div>
           </section>
 
@@ -1172,7 +1121,7 @@ function App() {
 
                     <a
                       className="btn primary"
-                      href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxjkVdFCh3ndX6vXYMa7/transactions"
+                      href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxikVdFCh3ndX6vXVMa7/transactions"
                       target="_blank"
                       rel="noreferrer"
                     >
@@ -1219,18 +1168,43 @@ function App() {
       </main>
 
       <footer>
-        <div
-          className="container"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            gap: "14px",
-            flexWrap: "wrap",
-          }}
-        >
-          <div>© {new Date().getFullYear()} CryptoPittz • All vibes reserved 🐾</div>
+        <div className="container footer-inner">
+          <a
+            className="footer-clemons-credit"
+            href="https://clemonswebco.com/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <span>⚡ CRAFTED EXTRA MUSTY BY</span>
+            <strong>CLEMONS WEB CO.</strong>
+          </a>
 
-          <div style={{ opacity: 0.9 }}>Built for the CryptoPittz community</div>
+          <div className="footer-community">
+            <strong>© {new Date().getFullYear()} CryptoPittz</strong>
+            <span>All vibes reserved 🐾</span>
+          </div>
+
+          <div className="footer-support">
+            <span>🐛 REPORT A GREMLIN</span>
+            <strong>Technical issues or suggestions?</strong>
+            <small>support@clemonswebco.com</small>
+            <div className="footer-support-actions">
+              <a href="mailto:support@clemonswebco.com?subject=CryptoPittz%20Support%20%2F%20Feedback">
+                Email Support ↗
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText("support@clemonswebco.com");
+                  setSupportEmailCopied(true);
+                  window.setTimeout(() => setSupportEmailCopied(false), 1800);
+                }}
+              >
+                {supportEmailCopied ? "Copied! ✓" : "Copy Address"}
+              </button>
+            </div>
+          </div>
+
         </div>
       </footer>
 

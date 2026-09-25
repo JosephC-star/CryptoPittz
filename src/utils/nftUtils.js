@@ -58,6 +58,42 @@ export function getPittzStats(encodedAttributes) {
   }
 }
 
+export function getPittzTraits(encodedAttributes) {
+  if (!encodedAttributes) return [];
+
+  try {
+    const decoded = atob(encodedAttributes);
+    const traits = [];
+    const addTrait = (trait, value) => {
+      const cleanTrait = trait.trim();
+      const cleanValue = value.trim();
+      if (!cleanTrait || !cleanValue || ["Rank", "PointScore"].includes(cleanTrait)) return;
+      if (!traits.some((item) => item.trait === cleanTrait && item.value === cleanValue)) {
+        traits.push({ trait: cleanTrait, value: cleanValue });
+      }
+    };
+
+    decoded.split(";").forEach((section) => {
+      if (section.startsWith("tags:")) {
+        section.replace("tags:", "").split(",").forEach((tag) => {
+          const separator = tag.indexOf("-");
+          if (separator > 0) addTrait(tag.slice(0, separator), tag.slice(separator + 1));
+        });
+        return;
+      }
+
+      if (section.startsWith("metadata:")) return;
+      const separator = section.indexOf(":");
+      if (separator > 0) addTrait(section.slice(0, separator), section.slice(separator + 1));
+    });
+
+    return traits;
+  } catch (error) {
+    console.error("Unable to decode CryptoPittz traits:", error);
+    return [];
+  }
+}
+
 export function getNftMarketplace(nft) {
   if (!nft?.identifier || !nft?.collection) {
     return EXPLORER_COLLECTIONS.original.marketplace;
