@@ -89,7 +89,7 @@ async function fetchPittzDeck() {
 
 function PittzCard({ card, hidden = false }) {
   if (hidden) {
-    return <div className="p21-card hidden" aria-label="Dealer card hidden"><div className="p21-neon-p">P</div><small>CRYPTOPITTZ</small></div>;
+    return <div className="p21-card hidden" aria-label="Dealer card hidden"><div className="p21-card-logo"><img src="/images/cryptopittz-bonez.jpg" alt="" /></div><small>CRYPTOPITTZ</small></div>;
   }
 
   const red = card.suit === "♥" || card.suit === "♦";

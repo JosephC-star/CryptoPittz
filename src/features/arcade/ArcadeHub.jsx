@@ -101,7 +101,7 @@ function ArcadeHub() {
           <div className="cabinet-screen">
             <span className="cabinet-status live">● LIVE</span>
             <div className="twentyone-cabinet-art" aria-hidden="true">
-              <span>P</span>
+              <span><img src="/images/cryptopittz-bonez.jpg" alt="" /></span>
               <div><b>A♠</b><b>K♥</b></div>
             </div>
             <h3>PITTZ 21</h3>
