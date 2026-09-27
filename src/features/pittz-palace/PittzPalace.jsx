@@ -10,6 +10,7 @@ import {
   PALACE_BATCHES_PER_COLLECTION,
   PALACE_BATCH_SIZE,
   PALACE_COLLECTION_POOLS,
+  PACK_METER_GOAL,
   PALACE_STAKES,
   PITTZ_POINTS_KEY,
   STARTING_PITTZ_POINTS,
@@ -30,6 +31,10 @@ function readPittzPoints() {
 
 function createSessionStats() {
   return { spins: 0, won: 0, lost: 0, biggestPayout: 0, dogCatchers: 0, muzzles: 0 };
+}
+
+function shuffleRewards(rewards) {
+  return [...rewards].sort(() => Math.random() - 0.5);
 }
 
 function toSymbol(nft) {
@@ -69,6 +74,8 @@ function PittzPalace() {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [history, setHistory] = useState([]);
   const [sessionStats, setSessionStats] = useState(createSessionStats);
+  const [packMeter, setPackMeter] = useState(0);
+  const [vault, setVault] = useState(null);
   const timers = useRef([]);
   const audioContext = useRef(null);
 
@@ -143,14 +150,19 @@ function PittzPalace() {
   }
 
   function spin() {
-    if (spinning || symbols.length < 4 || points < stake) return;
+    if (spinning || vault || symbols.length < 4 || points < stake) return;
 
-    const outcome = createSpinOutcome(symbols);
+    const packMode = packMeter >= PACK_METER_GOAL;
+    const outcome = createSpinOutcome(symbols, packMode);
     const stopped = [false, false, false];
     setPoints((current) => current - stake);
     setResult(null);
     setStoppedReels(stopped);
     setSpinning(true);
+    if (packMode) {
+      setPackMeter(0);
+      setResult({ title: "PACK MODE ACTIVATED!", message: "Charged reels guarantee a boosted result.", multiplier: 0, payout: 0, penalty: 0 });
+    }
     playTone(220, 0.16);
 
     const ticker = window.setInterval(() => {
@@ -170,12 +182,30 @@ function PittzPalace() {
 
     const finishTimer = window.setTimeout(() => {
       window.clearInterval(ticker);
-      const spinResult = evaluateSpin(outcome, stake);
+      const spinResult = evaluateSpin(outcome, stake, packMode);
       const netChange = spinResult.payout - stake - spinResult.penalty;
       setReels(outcome);
+      if (spinResult.bonus === "vault") {
+        setResult(spinResult);
+        setVault({
+          chosen: null,
+          rewards: shuffleRewards([stake, stake * 2, stake * 5]),
+          stake,
+          symbols: outcome.map((symbol) => symbol.name),
+          packMode,
+        });
+        setSpinning(false);
+        playTone(880, 0.32);
+        navigator.vibrate?.([60, 35, 60, 35, 110]);
+        return;
+      }
       setPoints((current) => Math.max(0, current + spinResult.payout - spinResult.penalty));
       setResult(spinResult);
       setSpinning(false);
+      if (!packMode && netChange < 0) {
+        const meterGain = outcome.some((symbol) => symbol.special === "dog-catcher") ? 2 : 1;
+        setPackMeter((current) => Math.min(PACK_METER_GOAL, current + meterGain));
+      }
       setHistory((current) => [
         {
           id: `${Date.now()}-${Math.random()}`,
@@ -203,6 +233,39 @@ function PittzPalace() {
       }
     }, 1750);
     timers.current.push(finishTimer);
+  }
+
+  function chooseVault(index) {
+    if (!vault || vault.chosen !== null) return;
+    const reward = vault.rewards[index];
+    const netChange = reward - vault.stake;
+    setPoints((current) => current + reward);
+    setVault((current) => ({ ...current, chosen: index }));
+    setResult({
+      multiplier: reward / vault.stake,
+      payout: reward,
+      penalty: 0,
+      title: reward >= vault.stake * 5 ? "VAULT JACKPOT!" : "BONEZ VAULT OPENED!",
+      message: `The Pack uncovered ${reward} BONEZ.`,
+    });
+    setHistory((current) => [
+      {
+        id: `${Date.now()}-${Math.random()}`,
+        title: "BONEZ VAULT",
+        netChange,
+        symbols: vault.symbols,
+      },
+      ...current,
+    ].slice(0, 5));
+    setSessionStats((current) => ({
+      ...current,
+      spins: current.spins + 1,
+      won: current.won + Math.max(0, netChange),
+      lost: current.lost + Math.max(0, -netChange),
+      biggestPayout: Math.max(current.biggestPayout, reward),
+    }));
+    playTone(reward >= vault.stake * 5 ? 1200 : 960, 0.38);
+    navigator.vibrate?.([80, 40, 130]);
   }
 
   function refillPoints() {
@@ -241,13 +304,24 @@ function PittzPalace() {
         <div><span>BONEZ</span><strong>{points.toLocaleString()}</strong></div>
         <div><span>Current Spin</span><strong>{stake} BONEZ</strong></div>
         <div className="palace-dashboard-actions">
-          <button type="button" onClick={shufflePittz} disabled={spinning || loading}>
+          <button type="button" onClick={shufflePittz} disabled={spinning || loading || Boolean(vault)}>
             🔀 NEW PITTZ
           </button>
           <button type="button" onClick={() => setSoundEnabled((current) => !current)}>
             {soundEnabled ? "🔊 SOUND ON" : "🔇 SOUND OFF"}
           </button>
         </div>
+      </div>
+
+      <div className={`palace-pack-meter ${packMeter >= PACK_METER_GOAL ? "ready" : ""}`}>
+        <div>
+          <span>🐾 PACK METER</span>
+          <strong>{packMeter >= PACK_METER_GOAL ? "PACK MODE READY" : `${packMeter}/${PACK_METER_GOAL} PAWS`}</strong>
+        </div>
+        <div className="palace-paws" aria-label={`${packMeter} of ${PACK_METER_GOAL} Pack Meter paws filled`}>
+          {Array.from({ length: PACK_METER_GOAL }, (_, index) => <i className={index < packMeter ? "filled" : ""} key={index}>🐾</i>)}
+        </div>
+        <small>{packMeter >= PACK_METER_GOAL ? "Your next spin is powered up." : "Losses charge a guaranteed powered-up spin."}</small>
       </div>
 
       <div className="palace-reel-case">
@@ -298,6 +372,29 @@ function PittzPalace() {
         {result?.penalty > 0 && <b className="palace-penalty">−{result.penalty} EXTRA BONEZ</b>}
       </div>
 
+      {vault && (
+        <div className="palace-vault" role="dialog" aria-label="Bonez Vault bonus round">
+          <span className="vault-eyebrow">🔓 {vault.packMode ? "PACK MODE BONUS" : "SURPRISE VAULT"}</span>
+          <h4>{vault.chosen === null ? "CHOOSE A BONEZ VAULT" : "VAULT REVEALED!"}</h4>
+          <p>{vault.chosen === null ? "One vault returns your wager, one doubles it, and one hides a 5× jackpot." : "Collect your BONEZ and send the reels again."}</p>
+          <div className="vault-doors">
+            {vault.rewards.map((reward, index) => (
+              <button
+                className={vault.chosen === index ? "chosen" : vault.chosen !== null ? "revealed" : ""}
+                type="button"
+                onClick={() => chooseVault(index)}
+                disabled={vault.chosen !== null}
+                key={`${reward}-${index}`}
+              >
+                <span>{vault.chosen === null ? "?" : `${reward}`}</span>
+                <small>{vault.chosen === null ? `VAULT ${index + 1}` : "BONEZ"}</small>
+              </button>
+            ))}
+          </div>
+          {vault.chosen !== null && <button className="vault-collect" type="button" onClick={() => setVault(null)}>COLLECT &amp; RETURN TO REELS</button>}
+        </div>
+      )}
+
       <div className="palace-controls-panel">
         <div className="palace-stakes" aria-label="Select BONEZ per spin">
           {PALACE_STAKES.map((amount) => (
@@ -305,7 +402,7 @@ function PittzPalace() {
               className={stake === amount ? "active" : ""}
               type="button"
               onClick={() => setStake(amount)}
-              disabled={spinning}
+              disabled={spinning || Boolean(vault)}
               key={amount}
             >
               {amount} BONEZ
@@ -313,17 +410,17 @@ function PittzPalace() {
           ))}
         </div>
 
-        <button className="palace-spin" type="button" onClick={spin} disabled={spinning || loading || Boolean(loadError) || points < stake}>
-          {spinning ? "SPINNING..." : points < stake ? "NEED MORE BONEZ" : "SPIN THE PITTZ"}
+        <button className="palace-spin" type="button" onClick={spin} disabled={spinning || loading || Boolean(loadError) || Boolean(vault) || points < stake}>
+          {spinning ? "SPINNING..." : vault ? "OPEN YOUR VAULT" : points < stake ? "NEED MORE BONEZ" : packMeter >= PACK_METER_GOAL ? "ACTIVATE PACK MODE" : "SPIN THE PITTZ"}
         </button>
 
-        {points < MINIMUM_STAKE && !spinning && (
+        {points < MINIMUM_STAKE && !spinning && !vault && (
           <button className="palace-refill" type="button" onClick={refillPoints}>🐾 PACK REFILL +{PACK_REFILL_POINTS} BONEZ</button>
         )}
       </div>
 
       <div className="palace-paytable">
-        <span>3 MATCH = 10×</span><span>2 + WILD = 8×</span><span>BLOODLINE = 4×</span><span>TYPE = 3×</span><span>PAIR = 2×</span><span className="danger">🚨 DOG CATCHER = −1×</span><span className="danger">🚫 MUZZLE = −½×</span>
+        <span>3 MATCH = 8×</span><span>2 + WILD = 5×</span><span>BLOODLINE = 3×</span><span>TYPE = 2×</span><span>PAIR = 1.5×</span><span>WILD SAVE = ½×</span><span className="danger">🚨 DOG CATCHER = −1×</span><span className="danger">🚫 MUZZLE = −½×</span>
       </div>
 
       <details className="palace-rules">
@@ -331,16 +428,17 @@ function PittzPalace() {
         <div>
           <p>Choose 10, 25, or 50 BONEZ, then spin. Your selected amount is removed before the reels start.</p>
           <ul>
-            <li><strong>Three matching Pittz:</strong> 10× payout</li>
-            <li><strong>Two matching Pittz plus Wild BONEZ:</strong> 8× payout</li>
-            <li><strong>Matching bloodline:</strong> 4× payout</li>
-            <li><strong>Matching type:</strong> 3× payout</li>
-            <li><strong>Two matching Pittz:</strong> 2× payout</li>
-            <li><strong>Same collection:</strong> 1.5× payout</li>
+            <li><strong>Three Wild BONEZ:</strong> 15× payout</li>
+            <li><strong>Three matching Pittz:</strong> 8× payout</li>
+            <li><strong>Two matching Pittz plus Wild BONEZ:</strong> 5× payout</li>
+            <li><strong>Matching bloodline:</strong> 3× payout</li>
+            <li><strong>Matching type:</strong> 2× payout</li>
+            <li><strong>Two matching Pittz:</strong> 1.5× payout</li>
+            <li><strong>Single Wild BONEZ:</strong> half-wager save</li>
             <li><strong>Dog Catcher:</strong> loses one additional full stake</li>
             <li><strong>Muzzle:</strong> loses one additional half stake</li>
           </ul>
-          <p>Danger cards override every apparent match. Below 10 BONEZ, the Pack Refill restores 250 free BONEZ.</p>
+          <p>Danger cards override every apparent match. Losing spins add one paw to the Pack Meter, while a Dog Catcher adds two. At five paws, the next spin activates Pack Mode and guarantees a boosted match or the interactive BONEZ Vault. Below 10 BONEZ, the Pack Refill restores 250 free game BONEZ.</p>
         </div>
       </details>
 
