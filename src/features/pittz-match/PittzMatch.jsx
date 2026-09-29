@@ -242,7 +242,8 @@ function PittzMatch({ equippedPittz = null }) {
               >
                 <span className="match-card-inner">
                   <span className="match-card-back" aria-hidden="true">
-                    <b>🦴</b><small>PITTZ</small>
+                    <img src="/images/cryptopittz-bonez-transparent.png" alt="" />
+                    <small>PITTZ</small>
                   </span>
                   <span className="match-card-front">
                     <img
