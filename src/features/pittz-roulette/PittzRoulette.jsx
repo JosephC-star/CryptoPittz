@@ -240,7 +240,7 @@ function PittzRoulette({ equippedPittz = null }) {
                     <b>{index + 1}</b>
                   </div>
                 ))}
-                <div className="roulette-hub"><img src="/images/cryptopittz-bonez.jpg" alt="" /></div>
+                <div className="roulette-hub"><img src="/images/cryptopittz-bonez-transparent.png" alt="" /></div>
               </div>
             </div>
 

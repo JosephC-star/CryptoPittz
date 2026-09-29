@@ -34,7 +34,7 @@
 .roulette-pocket.equipped-pitt::after { position: absolute; top: -8px; color: #78ffab; font-size: .38rem; font-weight: 1000; content: "YOUR PITT"; text-shadow: 0 0 7px #071; white-space: nowrap; }
 .roulette-pocket b { position: absolute; right: -2px; bottom: -2px; display: grid; width: 18px; height: 18px; place-items: center; border-radius: 50%; background: #070819; color: #fff; font-size: .48rem; }
 .roulette-hub { position: absolute; top: 50%; left: 50%; z-index: 2; display: grid; width: 32%; aspect-ratio: 1; place-items: center; transform: translate(-50%, -50%); }
-.roulette-hub img { display: block; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: screen; filter: drop-shadow(-5px 0 9px var(--roulette-cyan)) drop-shadow(5px 0 9px var(--roulette-pink)); }
+.roulette-hub img { display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(-5px 0 9px var(--roulette-cyan)) drop-shadow(5px 0 9px var(--roulette-pink)); }
 .roulette-betting { padding: 16px; border: 1px solid rgba(255, 255, 255, .1); border-radius: 17px; background: rgba(4, 5, 20, .55); }
 .roulette-eyebrow { color: #ffd86b; font-size: .54rem; font-weight: 1000; letter-spacing: .14em; }
 .roulette-bet-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin-top: 8px; }
