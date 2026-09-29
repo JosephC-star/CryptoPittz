@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { getNftImage } from "../../utils/nftUtils";
 import {
@@ -126,6 +126,8 @@ function PittzCard({ card, hidden = false }) {
 }
 
 function Pittz21({ equippedPittz = null, walletPittz = [] }) {
+  const walletPittzRef = useRef(walletPittz);
+  const equippedPittzRef = useRef(equippedPittz);
   const [deck, setDeck] = useState([]);
   const [player, setPlayer] = useState([]);
   const [dealer, setDealer] = useState([]);
@@ -141,7 +143,7 @@ function Pittz21({ equippedPittz = null, walletPittz = [] }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetchPittzDeck(walletPittz, equippedPittz)
+    fetchPittzDeck(walletPittzRef.current, equippedPittzRef.current)
       .then((cards) => {
         if (!cancelled) {
           setDeck(cards);
@@ -159,7 +161,7 @@ function Pittz21({ equippedPittz = null, walletPittz = [] }) {
         if (!cancelled) setLoading(false);
       });
     return () => { cancelled = true; };
-  }, [deckVersion, equippedPittz, walletPittz]);
+  }, [deckVersion]);
 
   useEffect(() => {
     try {

@@ -61,6 +61,8 @@ const WILD_BONEZ = {
 };
 
 function PittzPalace({ equippedPittz = null, walletPittz = [] }) {
+  const walletPittzRef = useRef(walletPittz);
+  const equippedPittzRef = useRef(equippedPittz);
   const [symbols, setSymbols] = useState([]);
   const [reels, setReels] = useState([WILD_BONEZ, WILD_BONEZ, WILD_BONEZ]);
   const [stoppedReels, setStoppedReels] = useState([true, true, true]);
@@ -90,13 +92,15 @@ function PittzPalace({ equippedPittz = null, walletPittz = [] }) {
           PALACE_COLLECTION_POOLS.length * PALACE_BATCHES_PER_COLLECTION * PALACE_BATCH_SIZE;
         const ownedSymbols = Array.from(
           new Map(
-            walletPittz
+            walletPittzRef.current
               .map((nft) => ({ ...toSymbol(nft), isOwned: true }))
               .filter((symbol) => symbol.image)
               .map((symbol) => [symbol.id, symbol]),
           ).values(),
         );
-        const equippedSymbol = ownedSymbols.find((symbol) => symbol.id === equippedPittz?.identifier);
+        const equippedSymbol = ownedSymbols.find(
+          (symbol) => symbol.id === equippedPittzRef.current?.identifier,
+        );
         const prioritizedOwned = [
           ...(equippedSymbol ? [{ ...equippedSymbol, isEquipped: true }] : []),
           ...ownedSymbols.filter((symbol) => symbol.id !== equippedSymbol?.id),
@@ -150,7 +154,7 @@ function PittzPalace({ equippedPittz = null, walletPittz = [] }) {
       cancelled = true;
       activeTimers.forEach((timer) => window.clearTimeout(timer));
     };
-  }, [poolVersion, equippedPittz, walletPittz]);
+  }, [poolVersion]);
 
   useEffect(() => {
     try {

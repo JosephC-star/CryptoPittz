@@ -103,6 +103,8 @@ function evaluateBet(bet, winner, pocketNumber, stake) {
 }
 
 function PittzRoulette({ equippedPittz = null, walletPittz = [] }) {
+  const walletPittzRef = useRef(walletPittz);
+  const equippedPittzRef = useRef(equippedPittz);
   const [wheel, setWheel] = useState([]);
   const [bonez, setBonez] = useState(readBonez);
   const [stake, setStake] = useState(25);
@@ -119,7 +121,7 @@ function PittzRoulette({ equippedPittz = null, walletPittz = [] }) {
 
   useEffect(() => {
     let cancelled = false;
-    buildWheel(walletPittz, equippedPittz)
+    buildWheel(walletPittzRef.current, equippedPittzRef.current)
       .then((pittz) => {
         if (!cancelled) {
           setWheel(pittz);
@@ -134,7 +136,7 @@ function PittzRoulette({ equippedPittz = null, walletPittz = [] }) {
         if (!cancelled) setLoading(false);
       });
     return () => { cancelled = true; };
-  }, [wheelVersion, equippedPittz, walletPittz]);
+  }, [wheelVersion]);
 
   useEffect(() => {
     try {

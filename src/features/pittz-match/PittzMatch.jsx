@@ -90,6 +90,8 @@ async function fetchPittzBoard(walletPittz, equippedPittz) {
 }
 
 function PittzMatch({ equippedPittz = null, walletPittz = [] }) {
+  const walletPittzRef = useRef(walletPittz);
+  const equippedPittzRef = useRef(equippedPittz);
   const [cards, setCards] = useState([]);
   const [openCards, setOpenCards] = useState([]);
   const [matchedPairs, setMatchedPairs] = useState([]);
@@ -107,7 +109,7 @@ function PittzMatch({ equippedPittz = null, walletPittz = [] }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetchPittzBoard(walletPittz, equippedPittz)
+    fetchPittzBoard(walletPittzRef.current, equippedPittzRef.current)
       .then((nextCards) => {
         if (!cancelled) setCards(nextCards);
       })
@@ -123,7 +125,7 @@ function PittzMatch({ equippedPittz = null, walletPittz = [] }) {
     return () => {
       cancelled = true;
     };
-  }, [boardVersion, equippedPittz, walletPittz]);
+  }, [boardVersion]);
 
   useEffect(() => {
     if (!started || completed) return undefined;
