@@ -10,7 +10,6 @@ export default function NftCard({
   isOwned = false,
   showTraits = false,
   variant = "wallet",
-  marketplaceUrl = "",
   onClick,
 }) {
   const stats = getPittzStats(nft.attributes);
@@ -122,22 +121,6 @@ export default function NftCard({
           </div>
         )}
 
-        {isOwned && marketplaceUrl && (
-          <a
-            className="nft-oox-list-link"
-            href={marketplaceUrl}
-            target="_blank"
-            rel="noreferrer"
-            title={`Copy ${nft.identifier} and finish listing securely on OOX`}
-            onClick={(event) => {
-              event.stopPropagation();
-              navigator.clipboard?.writeText(nft.identifier).catch(() => {});
-            }}
-          >
-            <span>List on OOX</span>
-            <small>Copies Pittz ID ↗</small>
-          </a>
-        )}
       </div>
     </div>
   );

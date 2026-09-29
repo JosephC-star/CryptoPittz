@@ -108,11 +108,21 @@ export function getNftMarketplace(nft) {
 }
 
 export function getNftImage(nft) {
+  const primaryMedia = nft?.media?.[0];
+  const mediaType = primaryMedia?.fileType?.toLowerCase() || "";
+  const mediaUrl = primaryMedia?.url || primaryMedia?.originalUrl || "";
+  const isAnimatedImage =
+    mediaType === "image/gif" || /\.(gif|apng)(?:[?#].*)?$/i.test(mediaUrl);
+
+  // MultiversX thumbnails are static, so use the collection's original media
+  // for animated artwork while keeping lightweight thumbnails for regular Pittz.
+  if (isAnimatedImage) return mediaUrl;
+
   return (
-    nft?.media?.[0]?.thumbnailUrl ||
-    nft?.media?.[0]?.url ||
+    primaryMedia?.thumbnailUrl ||
+    primaryMedia?.url ||
     nft?.url ||
-    nft?.media?.[0]?.originalUrl ||
+    primaryMedia?.originalUrl ||
     nft?.metadata?.image ||
     ""
   );

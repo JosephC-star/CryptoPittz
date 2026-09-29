@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import NftCard from "../../components/nft/NftCard";
-import { EXPLORER_COLLECTIONS } from "../../config/collections";
 import { getBonezGeneration, getBonezWalletTotals } from "../../utils/bonezUtils";
 import { formatBonezUsd } from "../../utils/formatters";
 import { getPittzStats, getPittzTraits } from "../../utils/nftUtils";
@@ -311,16 +310,10 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                     bonez={getBonezGeneration(nft)}
                     isOwned
                     showTraits
-                    marketplaceUrl={EXPLORER_COLLECTIONS[collection].marketplace}
                     onClick={() => onOpenNft(nft, visibleNfts)}
                   />
                 ))}
               </div>
-
-              <p className="wallet-marketplace-note">
-                🛡️ Marketplace handoff: “List on OOX” copies the Pittz identifier and opens the
-                official collection. Pricing, approval, and transaction signing stay securely on OOX.
-              </p>
 
               {totalPages > 1 && (
                 <nav className="my-pittz-pagination" aria-label="My Pittz pages">

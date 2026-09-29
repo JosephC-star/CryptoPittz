@@ -5079,40 +5079,6 @@ footer .container > div:hover {
     inset 0 0 18px rgba(255, 208, 0, 0.05);
 }
 
-.nft-oox-list-link {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 11px;
-  padding: 9px 11px;
-  border: 1px solid rgba(0, 229, 255, 0.34);
-  border-radius: 11px;
-  background: linear-gradient(90deg, rgba(0, 229, 255, 0.1), rgba(255, 61, 247, 0.08));
-  color: #fff;
-  text-decoration: none;
-  box-shadow: 0 0 14px rgba(0, 229, 255, 0.08);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-}
-
-.nft-oox-list-link:hover {
-  border-color: rgba(255, 61, 247, 0.7);
-  box-shadow: -4px 0 15px rgba(0, 229, 255, 0.17), 4px 0 15px rgba(255, 61, 247, 0.15);
-  transform: translateY(-1px);
-}
-
-.nft-oox-list-link span { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.04em; }
-.nft-oox-list-link small { color: rgba(255, 255, 255, 0.48); font-size: 0.52rem; white-space: nowrap; }
-
-.wallet-marketplace-note {
-  margin: 12px auto 0;
-  max-width: 760px;
-  color: rgba(255, 255, 255, 0.46);
-  font-size: 0.66rem;
-  line-height: 1.5;
-  text-align: center;
-}
-
 .bonez-generation-header {
   display: flex;
   justify-content: space-between;
