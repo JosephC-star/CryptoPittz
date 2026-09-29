@@ -1,9 +1,11 @@
 import { useState } from "react";
 
 import NftCard from "../../components/nft/NftCard";
+import { EXPLORER_COLLECTIONS } from "../../config/collections";
 import { getBonezGeneration, getBonezWalletTotals } from "../../utils/bonezUtils";
 import { formatBonezUsd } from "../../utils/formatters";
-import { getPittzStats } from "../../utils/nftUtils";
+import { getPittzStats, getPittzTraits } from "../../utils/nftUtils";
+import TraitFinder from "../traits/TraitFinder";
 
 const PITTZ_PER_PAGE = 40;
 
@@ -13,6 +15,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
   const [bloodlineFilter, setBloodlineFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [collection, setCollection] = useState("original");
+  const [walletTraits, setWalletTraits] = useState({});
   const [page, setPage] = useState(1);
 
   const ownedOriginalPittz = nfts.filter((nft) => nft.collection === "PITTZ-1a4c2d");
@@ -57,8 +60,12 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
         nft.identifier?.toLowerCase().includes(normalizedSearch);
       const matchesBloodline = bloodlineFilter === "all" || stats.bloodline === bloodlineFilter;
       const matchesType = typeFilter === "all" || stats.type === typeFilter;
+      const traits = getPittzTraits(nft.attributes);
+      const matchesTraits = Object.entries(walletTraits).every(([category, values]) =>
+        traits.some((item) => item.trait === category && values.includes(item.value)),
+      );
 
-      return matchesSearch && matchesBloodline && matchesType;
+      return matchesSearch && matchesBloodline && matchesType && matchesTraits;
     })
     .sort((a, b) => {
       const aStats = getPittzStats(a.attributes);
@@ -91,6 +98,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
     setSortBy("rank");
     setBloodlineFilter("all");
     setTypeFilter("all");
+    setWalletTraits({});
     setPage(1);
   }
 
@@ -107,6 +115,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
           className={`explorer-tab ${collection === "original" ? "active" : ""}`}
           onClick={() => {
             setCollection("original");
+            setWalletTraits({});
             setPage(1);
           }}
         >
@@ -119,6 +128,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
           className={`explorer-tab ${collection === "vice" ? "active" : ""}`}
           onClick={() => {
             setCollection("vice");
+            setWalletTraits({});
             setPage(1);
           }}
         >
@@ -263,6 +273,20 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                 </select>
               </div>
 
+              <TraitFinder
+                id="my-pittz-traits"
+                nfts={activeOwnedPittz}
+                loading={loading}
+                selected={walletTraits}
+                title="🔎 Filter My Pittz by Traits"
+                description="Combine traits to search only the Pittz in your wallet"
+                indexLabel="YOUR WALLET INDEX"
+                onSelectedChange={(nextTraits) => {
+                  setWalletTraits(nextTraits);
+                  setPage(1);
+                }}
+              />
+
               <div className="pittz-results-bar">
                 <span>
                   Showing {visibleNfts.length} of {filteredNfts.length} matching{" "}
@@ -271,6 +295,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                 {(searchTerm ||
                   bloodlineFilter !== "all" ||
                   typeFilter !== "all" ||
+                  Object.keys(walletTraits).length > 0 ||
                   sortBy !== "rank") && (
                   <button className="reset-filters" type="button" onClick={resetFilters}>
                     ↻ Reset Filters
@@ -286,10 +311,16 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                     bonez={getBonezGeneration(nft)}
                     isOwned
                     showTraits
+                    marketplaceUrl={EXPLORER_COLLECTIONS[collection].marketplace}
                     onClick={() => onOpenNft(nft, visibleNfts)}
                   />
                 ))}
               </div>
+
+              <p className="wallet-marketplace-note">
+                🛡️ Marketplace handoff: “List on OOX” copies the Pittz identifier and opens the
+                official collection. Pricing, approval, and transaction signing stay securely on OOX.
+              </p>
 
               {totalPages > 1 && (
                 <nav className="my-pittz-pagination" aria-label="My Pittz pages">

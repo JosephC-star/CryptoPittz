@@ -6,12 +6,14 @@ const BonezRush = lazy(() => import("../bonez-rush/BonezRush"));
 const PittzPalace = lazy(() => import("../pittz-palace/PittzPalace"));
 const PittzMatch = lazy(() => import("../pittz-match/PittzMatch"));
 const Pittz21 = lazy(() => import("../pittz-21/Pittz21"));
+const PittzRoulette = lazy(() => import("../pittz-roulette/PittzRoulette"));
 
 const GAME_LABELS = {
   rush: "BONEZ RUSH",
   palace: "PITTZ PALACE",
   match: "PITTZ MEMORY",
   twentyone: "PITTZ 21",
+  roulette: "PITTZ ROULETTE",
 };
 
 function ArcadeHub() {
@@ -115,6 +117,26 @@ function ArcadeHub() {
           </div>
           <button type="button" onClick={() => openGame("twentyone")}>PLAY PITTZ 21</button>
         </article>
+
+        <article className="arcade-cabinet roulette-cabinet">
+          <div className="cabinet-bulbs" aria-hidden="true" />
+          <div className="cabinet-screen">
+            <span className="cabinet-status live">● LIVE</span>
+            <div className="roulette-cabinet-art" aria-hidden="true">
+              <div><span /><span /><span /><span /><span /><span /></div>
+              <img src="/images/cryptopittz-bonez.jpg" alt="" />
+            </div>
+            <h3>PITTZ ROULETTE</h3>
+            <p>Bet shared BONEZ on Original, Vice, odd, even, or one exact Pitt.</p>
+            <div className="cabinet-tags">
+              <span>12 PITTZ</span><span>SHARED BONEZ</span><span>10× EXACT</span>
+            </div>
+          </div>
+          <div className="cabinet-controls roulette-controls-mini" aria-hidden="true">
+            <i /><b /><i />
+          </div>
+          <button type="button" onClick={() => openGame("roulette")}>SPIN PITTZ ROULETTE</button>
+        </article>
       </div>
 
       {activeGame && (
@@ -145,6 +167,11 @@ function ArcadeHub() {
           {activeGame === "twentyone" && (
             <Suspense fallback={<div className="arcade-loading">Shuffling the Pittz 21 deck...</div>}>
               <Pittz21 />
+            </Suspense>
+          )}
+          {activeGame === "roulette" && (
+            <Suspense fallback={<div className="arcade-loading">Rolling out the Pittz Roulette wheel...</div>}>
+              <PittzRoulette />
             </Suspense>
           )}
         </div>

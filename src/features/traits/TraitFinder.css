@@ -103,6 +103,8 @@
   background: linear-gradient(135deg, rgba(0, 229, 255, 0.055), rgba(255, 61, 247, 0.045));
 }
 
+#my-pittz-traits { margin-top: 14px; }
+
 .trait-finder-toggle {
   display: flex;
   width: 100%;

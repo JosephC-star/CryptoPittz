@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 31103)
+Total output lines: 6757
+
 /* =========================================================
          CryptoPittz "Neon Pop" Foundation
          - Saturated gradients, glow, thick borders, comic vibe
@@ -3226,267 +3229,7 @@ section {
   text-shadow: 0 0 10px rgba(0, 229, 255, 0.32);
 }
 
-#roadmap .grid > .card:nth-child(2):hover h3 {
-  color: #ff85fb;
-
-  text-shadow: 0 0 10px rgba(255, 61, 247, 0.32);
-}
-
-#roadmap .grid > .card:nth-child(3):hover h3 {
-  color: #ffe46b;
-
-  text-shadow: 0 0 10px rgba(255, 208, 0, 0.32);
-}
-
-#roadmap .card .accent {
-  animation: roadmapAccentPulse 3.8s ease-in-out infinite;
-}
-
-#roadmap .grid > .card:nth-child(2) .accent {
-  animation-delay: 0.35s;
-}
-
-#roadmap .grid > .card:nth-child(3) .accent {
-  animation-delay: 0.7s;
-}
-
-.pittz-traits {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.pittz-trait {
-  position: relative;
-  overflow: hidden;
-
-  padding: 11px 12px;
-  border-radius: 12px;
-
-  border: 1px solid rgba(255, 255, 255, 0.09);
-
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02));
-
-  transition:
-    transform 0.22s ease,
-    border-color 0.22s ease,
-    box-shadow 0.22s ease,
-    background 0.22s ease;
-}
-
-.pittz-trait:hover {
-  transform: translateY(-3px);
-
-  border-color: rgba(0, 229, 255, 0.3);
-
-  background: linear-gradient(135deg, rgba(0, 229, 255, 0.07), rgba(255, 61, 247, 0.05));
-
-  box-shadow:
-    0 8px 18px rgba(0, 0, 0, 0.22),
-    0 0 12px rgba(0, 229, 255, 0.12),
-    0 0 18px rgba(255, 61, 247, 0.06);
-}
-
-.pittz-trait span {
-  display: block;
-
-  margin-bottom: 4px;
-
-  font-size: 10px;
-  font-weight: 700;
-
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-
-  color: rgba(255, 255, 255, 0.5);
-
-  transition:
-    color 0.22s ease,
-    text-shadow 0.22s ease;
-}
-
-.pittz-trait strong {
-  display: block;
-
-  font-size: 12px;
-  line-height: 1.35;
-
-  color: rgba(255, 255, 255, 0.9);
-
-  overflow-wrap: anywhere;
-
-  transition:
-    color 0.22s ease,
-    text-shadow 0.22s ease;
-}
-
-.pittz-trait:hover span {
-  color: #00e5ff;
-
-  text-shadow: 0 0 8px rgba(0, 229, 255, 0.25);
-}
-
-.pittz-trait:hover strong {
-  color: white;
-
-  text-shadow: 0 0 10px rgba(255, 61, 247, 0.16);
-}
-
-.pittz-trait::before {
-  content: "";
-
-  position: absolute;
-  top: 0;
-  left: -75%;
-
-  width: 45%;
-  height: 100%;
-
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
-
-  transform: skewX(-18deg);
-
-  transition: left 0.45s ease;
-
-  pointer-events: none;
-}
-
-.pittz-trait:hover::before {
-  left: 130%;
-}
-
-.pittz-trait:nth-child(even):hover {
-  border-color: rgba(255, 61, 247, 0.3);
-
-  box-shadow:
-    0 8px 18px rgba(0, 0, 0, 0.22),
-    0 0 12px rgba(255, 61, 247, 0.12),
-    0 0 18px rgba(0, 229, 255, 0.06);
-}
-
-.pittz-trait:nth-child(even):hover span {
-  color: #ff72fa;
-
-  text-shadow: 0 0 8px rgba(255, 61, 247, 0.25);
-}
-
-#traits .panel {
-  position: relative;
-  overflow: hidden;
-
-  border: 1px solid rgba(0, 229, 255, 0.14);
-  border-radius: 20px;
-
-  background: linear-gradient(135deg, rgba(0, 229, 255, 0.035), rgba(255, 61, 247, 0.03));
-
-  transition:
-    transform 0.24s ease,
-    border-color 0.24s ease,
-    box-shadow 0.24s ease,
-    background 0.24s ease;
-}
-
-#traits .panel:hover {
-  transform: translateY(-4px);
-
-  border-color: rgba(0, 229, 255, 0.32);
-
-  background: linear-gradient(135deg, rgba(0, 229, 255, 0.07), rgba(255, 61, 247, 0.05));
-
-  box-shadow:
-    0 14px 28px rgba(0, 0, 0, 0.24),
-    0 0 18px rgba(0, 229, 255, 0.12),
-    0 0 24px rgba(255, 61, 247, 0.06);
-}
-
-#traits .panel .inner {
-  position: relative;
-  z-index: 2;
-
-  padding: 26px;
-}
-
-#traits .subtitle {
-  margin: 0;
-
-  max-width: 760px;
-
-  line-height: 1.7;
-
-  color: rgba(255, 255, 255, 0.72);
-
-  transition:
-    color 0.22s ease,
-    text-shadow 0.22s ease;
-}
-
-#traits .panel:hover .subtitle {
-  color: rgba(255, 255, 255, 0.9);
-
-  text-shadow: 0 0 10px rgba(0, 229, 255, 0.08);
-}
-
-#traits .panel::before {
-  content: "";
-
-  position: absolute;
-
-  top: 0;
-  left: -35%;
-
-  width: 20%;
-  height: 100%;
-
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(0, 229, 255, 0.08),
-    rgba(255, 61, 247, 0.05),
-    transparent
-  );
-
-  transform: skewX(-18deg);
-
-  animation: traitsScanner 6s ease-in-out infinite;
-
-  pointer-events: none;
-}
-
-@keyframes traitsScanner {
-  0%,
-  20% {
-    left: -35%;
-  }
-
-  70%,
-  100% {
-    left: 120%;
-  }
-}
-
-#traits .panel::after {
-  content: "";
-
-  position: absolute;
-
-  top: 16px;
-  right: 16px;
-
-  width: 8px;
-  height: 8px;
-
-  border-radius: 50%;
-
-  background: #00e5ff;
-
-  box-shadow:
-    0 0 8px rgba(0, 229, 255, 0.75),
-    0 0 14px rgba(0, 229, 255, 0.35);
-
-  animation: traitsStatusPulse 2.4s ease-in-out infinite;
-}
-
-#gallery .tile-img {
+#roadmap .grid > .card:nth-c…1103 tokens truncated…lery .tile-img {
   position: relative;
   overflow: hidden;
 
@@ -5077,6 +4820,40 @@ footer .container > div:hover {
     0 0 14px rgba(255, 208, 0, 0.28),
     0 0 32px rgba(255, 208, 0, 0.14),
     inset 0 0 18px rgba(255, 208, 0, 0.05);
+}
+
+.nft-oox-list-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 11px;
+  padding: 9px 11px;
+  border: 1px solid rgba(0, 229, 255, 0.34);
+  border-radius: 11px;
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.1), rgba(255, 61, 247, 0.08));
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.08);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.nft-oox-list-link:hover {
+  border-color: rgba(255, 61, 247, 0.7);
+  box-shadow: -4px 0 15px rgba(0, 229, 255, 0.17), 4px 0 15px rgba(255, 61, 247, 0.15);
+  transform: translateY(-1px);
+}
+
+.nft-oox-list-link span { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.04em; }
+.nft-oox-list-link small { color: rgba(255, 255, 255, 0.48); font-size: 0.52rem; white-space: nowrap; }
+
+.wallet-marketplace-note {
+  margin: 12px auto 0;
+  max-width: 760px;
+  color: rgba(255, 255, 255, 0.46);
+  font-size: 0.66rem;
+  line-height: 1.5;
+  text-align: center;
 }
 
 .bonez-generation-header {

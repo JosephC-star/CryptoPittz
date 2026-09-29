@@ -3,7 +3,16 @@ import { useMemo, useState } from "react";
 import { getPittzTraits } from "../../utils/nftUtils";
 import "./TraitFinder.css";
 
-function TraitFinder({ nfts, loading, selected, onSelectedChange }) {
+function TraitFinder({
+  nfts,
+  loading,
+  selected,
+  onSelectedChange,
+  id = "traits",
+  title = "🔎 PittzStop Trait Finder",
+  description = "Combine traits to filter this Explorer grid",
+  indexLabel = "PITTZSTOP INDEX",
+}) {
   const [traitSearch, setTraitSearch] = useState("");
   const [expanded, setExpanded] = useState(false);
 
@@ -47,14 +56,14 @@ function TraitFinder({ nfts, loading, selected, onSelectedChange }) {
   }
 
   return (
-    <div id="traits" className={`explorer-trait-finder ${expanded ? "open" : ""}`}>
+    <div id={id} className={`explorer-trait-finder ${expanded ? "open" : ""}`}>
       <button
         className="trait-finder-toggle"
         type="button"
         aria-expanded={expanded}
         onClick={() => setExpanded((current) => !current)}
       >
-        <span><b>🔎 PittzStop Trait Finder</b><small>Combine traits to filter this Explorer grid</small></span>
+        <span><b>{title}</b><small>{description}</small></span>
         <span className="trait-toggle-meta">
           {activeFilters.length > 0 && <strong>{activeFilters.length} active</strong>}
           <i aria-hidden="true">⌄</i>
@@ -75,7 +84,7 @@ function TraitFinder({ nfts, loading, selected, onSelectedChange }) {
       {expanded && (
         <div className="trait-finder-body">
           <div className="trait-finder-intro">
-            <div><span>PITTZSTOP INDEX</span><strong>{catalog.length} trait categories</strong></div>
+            <div><span>{indexLabel}</span><strong>{catalog.length} trait categories</strong></div>
             {activeFilters.length > 0 && <button type="button" onClick={clearTraits}>Clear all</button>}
           </div>
 

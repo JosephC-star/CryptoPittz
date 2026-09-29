@@ -44,10 +44,14 @@
 
 .arcade-lobby {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 18px;
   margin-top: 18px;
 }
+
+.arcade-cabinet { grid-column: span 2; }
+.arcade-cabinet:nth-child(4) { grid-column: 2 / span 2; }
+.arcade-cabinet:nth-child(5) { grid-column: 4 / span 2; }
 
 .arcade-cabinet {
   position: relative;
@@ -98,6 +102,15 @@
     0 24px 60px rgba(0, 0, 0, 0.42),
     -8px 0 30px rgba(0, 229, 255, 0.25),
     8px 0 30px rgba(255, 61, 247, 0.23);
+}
+
+.roulette-cabinet:hover {
+  border-color: #ffd86b;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.42),
+    -8px 0 30px rgba(0, 229, 255, 0.22),
+    8px 0 30px rgba(255, 61, 247, 0.24),
+    0 0 24px rgba(255, 216, 107, 0.18);
 }
 
 .cabinet-bulbs {
@@ -273,6 +286,18 @@
 
 .twentyone-cabinet-art b:last-child { color: #e51f60; }
 
+.roulette-cabinet-art {
+  position: relative;
+  display: grid;
+  width: 92px;
+  aspect-ratio: 1;
+  margin: 9px auto 1px;
+  place-items: center;
+}
+.roulette-cabinet-art > div { position: absolute; inset: 3px; border: 3px solid #fff; border-radius: 50%; background: repeating-conic-gradient(rgba(0, 229, 255, .55) 0deg 30deg, rgba(255, 61, 247, .5) 30deg 60deg); box-shadow: -4px 0 14px #00e5ff, 4px 0 14px #ff3df7; animation: cabinet-wheel-spin 9s linear infinite; }
+.roulette-cabinet-art > div::after { position: absolute; inset: 18%; border: 1px solid rgba(255,255,255,.75); border-radius: 50%; content: ""; }
+.roulette-cabinet-art img { position: relative; z-index: 2; width: 42px; aspect-ratio: 1; border: 2px solid #fff; border-radius: 50%; object-fit: cover; }
+
 .palace-mini-reels span {
   border-color: rgba(255, 216, 107, 0.35);
   background: linear-gradient(180deg, rgba(255, 216, 107, 0.13), rgba(255, 61, 247, 0.07));
@@ -351,6 +376,8 @@
   background: linear-gradient(90deg, #00e5ff, #ff3df7);
   box-shadow: -5px 0 14px #00e5ff, 5px 0 14px #ff3df7;
 }
+.roulette-controls-mini { border-color: rgba(255, 216, 107, .3); }
+.roulette-controls-mini b { background: #ffd86b; box-shadow: 0 0 16px #ffd86b; }
 
 .arcade-cabinet > button,
 .palace-preview > button {
@@ -382,6 +409,8 @@
   background: linear-gradient(90deg, #00e5ff, #f3fbff 50%, #ff3df7);
   box-shadow: -7px 0 18px rgba(0, 229, 255, 0.28), 7px 0 18px rgba(255, 61, 247, 0.28);
 }
+
+.roulette-cabinet > button { background: linear-gradient(90deg, #00e5ff, #ffd86b, #ff3df7); }
 
 .arcade-stage {
   scroll-margin-top: 90px;
@@ -561,11 +590,15 @@
     opacity: 0.45;
   }
 }
+@keyframes cabinet-wheel-spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 760px) {
   .arcade-lobby {
     grid-template-columns: 1fr;
   }
+  .arcade-cabinet,
+  .arcade-cabinet:nth-child(4),
+  .arcade-cabinet:nth-child(5) { grid-column: auto; }
   .cabinet-screen {
     min-height: 215px;
   }
@@ -579,6 +612,9 @@
 
 @media (min-width: 761px) and (max-width: 1050px) {
   .arcade-lobby { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .arcade-cabinet,
+  .arcade-cabinet:nth-child(4),
+  .arcade-cabinet:nth-child(5) { grid-column: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -587,6 +623,7 @@
   .palace-preview-lights {
     animation: none;
   }
+  .roulette-cabinet-art > div { animation: none; }
   .arcade-cabinet {
     transition: none;
   }
