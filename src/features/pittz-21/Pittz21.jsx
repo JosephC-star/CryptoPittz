@@ -53,7 +53,7 @@ function isBlackjack(hand) {
   return hand.length === 2 && handValue(hand) === 21;
 }
 
-async function fetchPittzDeck() {
+async function fetchPittzDeck(equippedPittz) {
   const batches = await Promise.all(
     COLLECTIONS.map(async ({ id, total }) => {
       const from = Math.floor(Math.random() * Math.max(1, total - 30));
@@ -65,7 +65,7 @@ async function fetchPittzDeck() {
     }),
   );
 
-  const pittz = shuffle(
+  let pittz = shuffle(
     Array.from(
       new Map(
         batches
@@ -81,6 +81,16 @@ async function fetchPittzDeck() {
     ),
   );
 
+  if (equippedPittz) {
+    const equippedCard = {
+      pittId: equippedPittz.identifier,
+      name: equippedPittz.name || equippedPittz.identifier,
+      image: getNftImage(equippedPittz),
+      isEquipped: true,
+    };
+    pittz = [equippedCard, ...pittz.filter((nft) => nft.pittId !== equippedCard.pittId)];
+  }
+
   if (pittz.length < 52) throw new Error("Not enough Pittz were available for a full deck");
 
   const faces = shuffle(SUITS.flatMap((suit) => RANKS.map((rank) => ({ rank, suit }))));
@@ -94,7 +104,7 @@ function PittzCard({ card, hidden = false }) {
 
   const red = card.suit === "♥" || card.suit === "♦";
   return (
-    <div className={`p21-card dealt ${red ? "red" : "black"}`}>
+    <div className={`p21-card dealt ${red ? "red" : "black"} ${card.isEquipped ? "equipped-pitt" : ""}`}>
       <div className="p21-rank"><b>{card.rank}</b><span>{card.suit}</span></div>
       <img
         src={card.image}
@@ -104,12 +114,12 @@ function PittzCard({ card, hidden = false }) {
           event.currentTarget.src = "/images/cryptopittz-bonez.jpg";
         }}
       />
-      <small>{card.name}</small>
+      <small>{card.isEquipped ? `YOUR PITT • ${card.name}` : card.name}</small>
     </div>
   );
 }
 
-function Pittz21() {
+function Pittz21({ equippedPittz = null }) {
   const [deck, setDeck] = useState([]);
   const [player, setPlayer] = useState([]);
   const [dealer, setDealer] = useState([]);
@@ -125,7 +135,7 @@ function Pittz21() {
 
   useEffect(() => {
     let cancelled = false;
-    fetchPittzDeck()
+    fetchPittzDeck(equippedPittz)
       .then((cards) => {
         if (!cancelled) {
           setDeck(cards);
@@ -143,7 +153,7 @@ function Pittz21() {
         if (!cancelled) setLoading(false);
       });
     return () => { cancelled = true; };
-  }, [deckVersion]);
+  }, [deckVersion, equippedPittz]);
 
   useEffect(() => {
     try {

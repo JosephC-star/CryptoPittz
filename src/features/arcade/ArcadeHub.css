@@ -42,6 +42,54 @@
   color: rgba(255, 255, 255, 0.64);
 }
 
+.arcade-pack-player {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  max-width: 940px;
+  margin: 18px auto 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(0, 229, 255, 0.28);
+  border-radius: 18px;
+  background: linear-gradient(110deg, rgba(0, 229, 255, 0.08), rgba(14, 9, 35, 0.92) 44%, rgba(255, 61, 247, 0.08));
+  box-shadow: -7px 0 22px rgba(0, 229, 255, 0.1), 7px 0 22px rgba(255, 61, 247, 0.09);
+}
+
+.arcade-pack-player.equipped { border-color: rgba(120, 255, 171, 0.45); }
+.arcade-pack-player > img,
+.arcade-pack-player-placeholder {
+  width: 62px;
+  height: 62px;
+  border: 2px solid #fff;
+  border-radius: 14px;
+  object-fit: cover;
+  box-shadow: -3px 0 13px #00e5ff, 3px 0 13px #ff3df7;
+}
+.arcade-pack-player-placeholder { display: grid; place-items: center; background: #08091c; font-size: 1.8rem; }
+.arcade-pack-player > div:nth-child(2) span,
+.arcade-pack-player > div:nth-child(2) strong,
+.arcade-pack-player > div:nth-child(2) small { display: block; }
+.arcade-pack-player > div:nth-child(2) span { color: #78ffab; font-size: 0.55rem; font-weight: 900; letter-spacing: 0.12em; }
+.arcade-pack-player > div:nth-child(2) strong { margin-top: 3px; color: #fff; font-size: 0.88rem; }
+.arcade-pack-player > div:nth-child(2) small { margin-top: 2px; color: rgba(255, 255, 255, 0.48); font-size: 0.58rem; }
+.arcade-pack-player label { display: grid; gap: 4px; min-width: 190px; }
+.arcade-pack-player label span { color: rgba(255, 255, 255, 0.52); font-size: 0.5rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
+.arcade-pack-player select,
+.arcade-pack-player > button {
+  max-width: 250px;
+  padding: 9px 11px;
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  border-radius: 10px;
+  background: #090a1d;
+  color: #fff;
+  font: inherit;
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+.arcade-pack-player > button { cursor: pointer; box-shadow: 0 0 14px rgba(0, 229, 255, 0.14); }
+
 .arcade-lobby {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -593,6 +641,9 @@
 @keyframes cabinet-wheel-spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 760px) {
+  .arcade-pack-player { grid-template-columns: auto minmax(0, 1fr); }
+  .arcade-pack-player label,
+  .arcade-pack-player > button { grid-column: 1 / -1; width: 100%; max-width: none; }
   .arcade-lobby {
     grid-template-columns: 1fr;
   }

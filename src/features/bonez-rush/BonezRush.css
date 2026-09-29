@@ -168,6 +168,33 @@
   animation: laser-sweep 4s linear infinite;
 }
 
+.bonez-rush-player-pitt {
+  position: absolute;
+  bottom: 13px;
+  left: 13px;
+  z-index: 3;
+  display: grid;
+  width: 66px;
+  pointer-events: none;
+  text-align: center;
+}
+.bonez-rush-player-pitt img {
+  width: 66px;
+  height: 66px;
+  border: 2px solid #fff;
+  border-radius: 15px;
+  object-fit: cover;
+  box-shadow: -4px 0 14px #00e5ff, 4px 0 14px #ff3df7;
+}
+.bonez-rush-player-pitt span {
+  margin-top: 4px;
+  color: #78ffab;
+  font-size: 0.46rem;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 8px rgba(120, 255, 171, 0.75);
+}
+
 .bonez-rush-feedback {
   position: absolute;
   top: 18px;

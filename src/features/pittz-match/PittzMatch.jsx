@@ -34,7 +34,7 @@ function formatTime(seconds) {
   return `${minutes}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
-async function fetchPittzBoard() {
+async function fetchPittzBoard(equippedPittz) {
   const collections = Object.values(EXPLORER_COLLECTIONS);
   const responses = await Promise.all(
     collections.map(async ({ collection }) => {
@@ -65,7 +65,22 @@ async function fetchPittzBoard() {
 
   if (uniquePittz.length < PAIR_COUNT) throw new Error("Not enough Pittz were available");
 
-  const selected = shuffle(uniquePittz).slice(0, PAIR_COUNT);
+  const equippedCard = equippedPittz
+    ? {
+        id: equippedPittz.identifier,
+        name: equippedPittz.name || equippedPittz.identifier,
+        image: getNftImage(equippedPittz),
+        collection: equippedPittz.collection,
+        isEquipped: true,
+      }
+    : null;
+  const availablePittz = equippedCard
+    ? uniquePittz.filter((pitt) => pitt.id !== equippedCard.id)
+    : uniquePittz;
+  const selected = [
+    ...(equippedCard?.image ? [equippedCard] : []),
+    ...shuffle(availablePittz).slice(0, PAIR_COUNT - (equippedCard?.image ? 1 : 0)),
+  ];
   return shuffle(
     selected.flatMap((pitt) => [
       { ...pitt, cardId: `${pitt.id}-a` },
@@ -74,7 +89,7 @@ async function fetchPittzBoard() {
   );
 }
 
-function PittzMatch() {
+function PittzMatch({ equippedPittz = null }) {
   const [cards, setCards] = useState([]);
   const [openCards, setOpenCards] = useState([]);
   const [matchedPairs, setMatchedPairs] = useState([]);
@@ -92,7 +107,7 @@ function PittzMatch() {
 
   useEffect(() => {
     let cancelled = false;
-    fetchPittzBoard()
+    fetchPittzBoard(equippedPittz)
       .then((nextCards) => {
         if (!cancelled) setCards(nextCards);
       })
@@ -108,7 +123,7 @@ function PittzMatch() {
     return () => {
       cancelled = true;
     };
-  }, [boardVersion]);
+  }, [boardVersion, equippedPittz]);
 
   useEffect(() => {
     if (!started || completed) return undefined;
@@ -217,7 +232,7 @@ function PittzMatch() {
             const matched = matchedPairs.includes(card.id);
             return (
               <button
-                className={`match-card ${flipped ? "flipped" : ""} ${matched ? "matched" : ""}`}
+                className={`match-card ${flipped ? "flipped" : ""} ${matched ? "matched" : ""} ${card.isEquipped ? "equipped-pitt" : ""}`}
                 type="button"
                 onClick={() => flipCard(card)}
                 aria-label={flipped ? card.name : "Hidden CryptoPittz card"}
@@ -238,7 +253,7 @@ function PittzMatch() {
                         event.currentTarget.src = "/images/cryptopittz-bonez.jpg";
                       }}
                     />
-                    <small>{card.name}</small>
+                    <small>{card.isEquipped ? `YOUR PITT • ${card.name}` : card.name}</small>
                   </span>
                 </span>
               </button>

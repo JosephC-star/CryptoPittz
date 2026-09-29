@@ -60,7 +60,7 @@ const WILD_BONEZ = {
   isWild: true,
 };
 
-function PittzPalace() {
+function PittzPalace({ equippedPittz = null }) {
   const [symbols, setSymbols] = useState([]);
   const [reels, setReels] = useState([WILD_BONEZ, WILD_BONEZ, WILD_BONEZ]);
   const [stoppedReels, setStoppedReels] = useState([true, true, true]);
@@ -97,8 +97,11 @@ function PittzPalace() {
           }),
         );
         const collections = await Promise.all(requests);
+        const equippedSymbol = equippedPittz ? { ...toSymbol(equippedPittz), isEquipped: true } : null;
+        const sampledSymbols = collections.flat().map(toSymbol).filter((symbol) => symbol.image);
         const loadedSymbols = [
-          ...collections.flat().map(toSymbol).filter((symbol) => symbol.image),
+          ...(equippedSymbol?.image ? [equippedSymbol] : []),
+          ...sampledSymbols.filter((symbol) => symbol.id !== equippedSymbol?.id),
           WILD_BONEZ,
           DOG_CATCHER,
           MUZZLE,
@@ -106,7 +109,11 @@ function PittzPalace() {
 
         if (!cancelled) {
           setSymbols(loadedSymbols);
-          setReels(loadedSymbols.slice(0, 3));
+          setReels(
+            equippedSymbol?.image
+              ? [equippedSymbol, ...loadedSymbols.filter((symbol) => symbol.id !== equippedSymbol.id).slice(0, 2)]
+              : loadedSymbols.slice(0, 3),
+          );
         }
       } catch (error) {
         console.error("Pittz Palace symbol loading failed:", error);
@@ -121,7 +128,7 @@ function PittzPalace() {
       cancelled = true;
       activeTimers.forEach((timer) => window.clearTimeout(timer));
     };
-  }, [poolVersion]);
+  }, [poolVersion, equippedPittz]);
 
   useEffect(() => {
     try {
@@ -332,7 +339,7 @@ function PittzPalace() {
         {!loading && !loadError && (
           <div className="palace-reels">
             {reels.map((symbol, index) => (
-              <div className={`palace-reel ${stoppedReels[index] ? "stopped" : "spinning"}`} key={index}>
+              <div className={`palace-reel ${stoppedReels[index] ? "stopped" : "spinning"} ${symbol.isEquipped ? "equipped-pitt" : ""}`} key={index}>
                 {symbol.image ? (
                   <img
                     src={symbol.image}
@@ -349,7 +356,7 @@ function PittzPalace() {
                     <em>{symbol.name}</em>
                   </div>
                 )}
-                <span>{symbol.isWild ? "WILD BONEZ" : symbol.name}</span>
+                <span>{symbol.isWild ? "WILD BONEZ" : symbol.isEquipped ? `YOUR PITT • ${symbol.name}` : symbol.name}</span>
                 <small>
                   {symbol.isWild
                     ? "WILD"

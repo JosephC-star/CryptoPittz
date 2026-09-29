@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
+import { getNftImage } from "../../utils/nftUtils";
 import {
   BONEZ_RUSH_HIGH_SCORE_KEY,
   GAME_DURATION,
@@ -30,7 +31,7 @@ function getPerformanceRank(score) {
   return "YARD PUP";
 }
 
-function BonezRush({ embedded = false }) {
+function BonezRush({ embedded = false, equippedPittz = null }) {
   const [status, setStatus] = useState("idle");
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(readHighScore);
@@ -56,6 +57,7 @@ function BonezRush({ embedded = false }) {
   const finalFrenzy = playing && timeLeft <= 5;
   const comboProgress = combo >= 10 ? 100 : combo >= 5 ? ((combo - 5) / 5) * 100 : (combo / 5) * 100;
   const nextComboLabel = combo >= 10 ? "MAXIMUM MUSTY" : combo >= 5 ? "EXTRA MUSTY AT 10" : "WOOF WOOF AT 5";
+  const equippedPittzImage = getNftImage(equippedPittz);
 
   useEffect(() => {
     const timers = effectTimers.current;
@@ -306,6 +308,12 @@ function BonezRush({ embedded = false }) {
         >
           <div className="bonez-rush-skyline" aria-hidden="true" />
           <div className="bonez-rush-lasers" aria-hidden="true" />
+          {equippedPittzImage && (
+            <div className="bonez-rush-player-pitt" title={`Playing with ${equippedPittz.name || equippedPittz.identifier}`}>
+              <img src={equippedPittzImage} alt={equippedPittz.name || equippedPittz.identifier} />
+              <span>YOUR PITT</span>
+            </div>
+          )}
           <div className={`bonez-rush-feedback ${comboTier.className}`}>{feedback}</div>
 
           {finalFrenzy && <div className="bonez-rush-frenzy-sign">FINAL FIVE!</div>}

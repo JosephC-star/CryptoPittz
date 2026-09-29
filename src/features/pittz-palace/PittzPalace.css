@@ -206,6 +206,8 @@
 .palace-reel.stopped { animation: reel-stop .24s ease-out; }
 .palace-reel > span { display: block; overflow: hidden; padding: 6px 7px 1px; color: #080a18; font-size: .72rem; font-weight: 1000; text-overflow: ellipsis; white-space: nowrap; }
 .palace-reel > small { display: block; padding-bottom: 6px; color: #7b276f; font-size: .52rem; font-weight: 900; letter-spacing: .07em; }
+.palace-reel.equipped-pitt { border-color: #78ffab; box-shadow: 0 0 9px #fff, 0 0 24px rgba(120, 255, 171, .72); }
+.palace-reel.equipped-pitt > span { color: #075d35; }
 
 .palace-machine-message { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; padding: 20px; color: #ffd86b; text-align: center; }
 .palace-machine-message.error { color: #ff7d9f; }

@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from "react";
 
+import { getNftImage } from "../../utils/nftUtils";
 import "./ArcadeHub.css";
 
 const BonezRush = lazy(() => import("../bonez-rush/BonezRush"));
@@ -16,8 +17,32 @@ const GAME_LABELS = {
   roulette: "PITTZ ROULETTE",
 };
 
-function ArcadeHub() {
+function ArcadeHub({ address = "", nfts = [], nftsLoading = false, nftsError = "", onConnectWallet }) {
   const [activeGame, setActiveGame] = useState(null);
+  const [equippedPittzId, setEquippedPittzId] = useState("");
+  let savedPittzId = "";
+  try {
+    savedPittzId = address
+      ? window.localStorage.getItem(`cryptopittz-equipped-pitt-${address}`) || ""
+      : "";
+  } catch {
+    // The selector remains usable when local storage is unavailable.
+  }
+  const resolvedPittzId = nfts.some((nft) => nft.identifier === equippedPittzId)
+    ? equippedPittzId
+    : nfts.some((nft) => nft.identifier === savedPittzId)
+      ? savedPittzId
+      : nfts[0]?.identifier || "";
+  const equippedPittz = nfts.find((nft) => nft.identifier === resolvedPittzId) || null;
+
+  function equipPittz(identifier) {
+    setEquippedPittzId(identifier);
+    try {
+      window.localStorage.setItem(`cryptopittz-equipped-pitt-${address}`, identifier);
+    } catch {
+      // The equipped Pittz remains active for this visit.
+    }
+  }
 
   function openGame(game) {
     setActiveGame(game);
@@ -38,6 +63,46 @@ function ArcadeHub() {
         <span>🎮 Welcome to the Pack’s Playground</span>
         <h2>Choose Your Cabinet</h2>
         <p>Chase high scores, stack BONEZ, and make questionable neon decisions.</p>
+      </div>
+
+      <div className={`arcade-pack-player ${equippedPittz ? "equipped" : ""}`}>
+        {equippedPittz ? (
+          <>
+            <img src={getNftImage(equippedPittz)} alt={equippedPittz.name || equippedPittz.identifier} />
+            <div>
+              <span>🐾 YOUR CABINET PITT</span>
+              <strong>{equippedPittz.name || equippedPittz.identifier}</strong>
+              <small>Equipped across all five games</small>
+            </div>
+            <label>
+              <span>Switch Pittz</span>
+              <select
+                value={resolvedPittzId}
+                onChange={(event) => equipPittz(event.target.value)}
+                disabled={Boolean(activeGame)}
+                title={activeGame ? "Exit the current cabinet to switch Pittz" : "Choose your cabinet Pitt"}
+              >
+                {nfts.map((nft) => (
+                  <option value={nft.identifier} key={nft.identifier}>
+                    {nft.name || nft.identifier}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </>
+        ) : (
+          <>
+            <div className="arcade-pack-player-placeholder" aria-hidden="true">🐶</div>
+            <div>
+              <span>🐾 PLAY WITH YOUR OWN PITTZ</span>
+              <strong>{nftsLoading ? "Checking your wallet..." : "Equip a CryptoPittz"}</strong>
+              <small>
+                {nftsError || (address ? "No CryptoPittz found in this wallet yet." : "Connect your wallet to bring your Pittz into every cabinet.")}
+              </small>
+            </div>
+            {!address && <button type="button" onClick={onConnectWallet}>Connect Wallet</button>}
+          </>
+        )}
       </div>
 
       <div className="arcade-lobby">
@@ -151,27 +216,27 @@ function ArcadeHub() {
 
           {activeGame === "rush" && (
             <Suspense fallback={<div className="arcade-loading">Powering up BONEZ Rush...</div>}>
-              <BonezRush embedded />
+              <BonezRush embedded equippedPittz={equippedPittz} />
             </Suspense>
           )}
           {activeGame === "palace" && (
             <Suspense fallback={<div className="arcade-loading">Lighting up Pittz Palace...</div>}>
-              <PittzPalace />
+              <PittzPalace equippedPittz={equippedPittz} />
             </Suspense>
           )}
           {activeGame === "match" && (
             <Suspense fallback={<div className="arcade-loading">Dealing Pittz Memory...</div>}>
-              <PittzMatch />
+              <PittzMatch equippedPittz={equippedPittz} />
             </Suspense>
           )}
           {activeGame === "twentyone" && (
             <Suspense fallback={<div className="arcade-loading">Shuffling the Pittz 21 deck...</div>}>
-              <Pittz21 />
+              <Pittz21 equippedPittz={equippedPittz} />
             </Suspense>
           )}
           {activeGame === "roulette" && (
             <Suspense fallback={<div className="arcade-loading">Rolling out the Pittz Roulette wheel...</div>}>
-              <PittzRoulette />
+              <PittzRoulette equippedPittz={equippedPittz} />
             </Suspense>
           )}
         </div>

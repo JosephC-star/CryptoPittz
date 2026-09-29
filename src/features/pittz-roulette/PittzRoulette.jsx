@@ -56,7 +56,7 @@ async function fetchCollectionPittz(key) {
   ).slice(0, WHEEL_POCKETS / 2);
 }
 
-async function buildWheel() {
+async function buildWheel(equippedPittz) {
   const [originals, vice] = await Promise.all([
     fetchCollectionPittz("original"),
     fetchCollectionPittz("vice"),
@@ -64,7 +64,21 @@ async function buildWheel() {
   if (originals.length < 6 || vice.length < 6) {
     throw new Error("Not enough Pittz were available to build the wheel");
   }
-  return originals.flatMap((pitt, index) => [pitt, vice[index]]);
+  const wheel = originals.flatMap((pitt, index) => [pitt, vice[index]]);
+  if (!equippedPittz) return wheel;
+
+  const collection =
+    equippedPittz.collection === EXPLORER_COLLECTIONS.vice.collection ? "vice" : "original";
+  const equippedPocket = {
+    id: equippedPittz.identifier,
+    name: equippedPittz.name || equippedPittz.identifier,
+    image: getNftImage(equippedPittz),
+    collection,
+    isEquipped: true,
+  };
+  const replaceIndex = wheel.findIndex((pitt) => pitt.collection === collection);
+  if (equippedPocket.image && replaceIndex >= 0) wheel[replaceIndex] = equippedPocket;
+  return wheel;
 }
 
 function betLabel(bet, wheel) {
@@ -81,7 +95,7 @@ function evaluateBet(bet, winner, pocketNumber, stake) {
   return { multiplier, payout: Math.round(stake * multiplier) };
 }
 
-function PittzRoulette() {
+function PittzRoulette({ equippedPittz = null }) {
   const [wheel, setWheel] = useState([]);
   const [bonez, setBonez] = useState(readBonez);
   const [stake, setStake] = useState(25);
@@ -98,7 +112,7 @@ function PittzRoulette() {
 
   useEffect(() => {
     let cancelled = false;
-    buildWheel()
+    buildWheel(equippedPittz)
       .then((pittz) => {
         if (!cancelled) {
           setWheel(pittz);
@@ -113,7 +127,7 @@ function PittzRoulette() {
         if (!cancelled) setLoading(false);
       });
     return () => { cancelled = true; };
-  }, [wheelVersion]);
+  }, [wheelVersion, equippedPittz]);
 
   useEffect(() => {
     try {
@@ -217,7 +231,7 @@ function PittzRoulette() {
               >
                 {wheel.map((pitt, index) => (
                   <div
-                    className={`roulette-pocket ${pitt.collection}`}
+                    className={`roulette-pocket ${pitt.collection} ${pitt.isEquipped ? "equipped-pitt" : ""}`}
                     style={{ "--pocket-angle": `${index * (360 / WHEEL_POCKETS)}deg` }}
                     title={`${index + 1}. ${pitt.name}`}
                     key={pitt.id}

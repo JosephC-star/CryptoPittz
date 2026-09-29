@@ -103,6 +103,8 @@
 }
 
 .match-card.flipped .match-card-inner { transform: rotateY(180deg); }
+.match-card.equipped-pitt .match-card-front { border-color: #78ffab; box-shadow: 0 0 8px #fff, 0 0 20px rgba(120, 255, 171, 0.75); }
+.match-card.equipped-pitt .match-card-front small { color: #78ffab; }
 
 .match-card-back,
 .match-card-front {

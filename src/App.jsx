@@ -796,7 +796,13 @@ function App() {
           <Suspense
             fallback={<div className="bonez-market-loading">Opening CryptoPittz Arcade...</div>}
           >
-            <ArcadeHub />
+            <ArcadeHub
+              address={account.address}
+              nfts={nfts}
+              nftsLoading={nftsLoading}
+              nftsError={nftsError}
+              onConnectWallet={connectWallet}
+            />
           </Suspense>
 
           <BonezMarketSection
