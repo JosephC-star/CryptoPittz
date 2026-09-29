@@ -60,7 +60,7 @@ const WILD_BONEZ = {
   isWild: true,
 };
 
-function PittzPalace({ equippedPittz = null }) {
+function PittzPalace({ equippedPittz = null, walletPittz = [] }) {
   const [symbols, setSymbols] = useState([]);
   const [reels, setReels] = useState([WILD_BONEZ, WILD_BONEZ, WILD_BONEZ]);
   const [stoppedReels, setStoppedReels] = useState([true, true, true]);
@@ -86,22 +86,44 @@ function PittzPalace({ equippedPittz = null }) {
     async function loadPittz() {
       try {
         setLoadError("");
-        const requests = PALACE_COLLECTION_POOLS.flatMap(({ collection, total }) =>
-          Array.from({ length: PALACE_BATCHES_PER_COLLECTION }, async () => {
-            const from = Math.floor(Math.random() * Math.max(1, total - PALACE_BATCH_SIZE));
-            const response = await fetch(
-              `https://api.multiversx.com/collections/${collection}/nfts?from=${from}&size=${PALACE_BATCH_SIZE}`,
-            );
-            if (!response.ok) throw new Error(`Unable to load ${collection}`);
-            return response.json();
-          }),
+        const targetPoolSize =
+          PALACE_COLLECTION_POOLS.length * PALACE_BATCHES_PER_COLLECTION * PALACE_BATCH_SIZE;
+        const ownedSymbols = Array.from(
+          new Map(
+            walletPittz
+              .map((nft) => ({ ...toSymbol(nft), isOwned: true }))
+              .filter((symbol) => symbol.image)
+              .map((symbol) => [symbol.id, symbol]),
+          ).values(),
         );
-        const collections = await Promise.all(requests);
-        const equippedSymbol = equippedPittz ? { ...toSymbol(equippedPittz), isEquipped: true } : null;
-        const sampledSymbols = collections.flat().map(toSymbol).filter((symbol) => symbol.image);
+        const equippedSymbol = ownedSymbols.find((symbol) => symbol.id === equippedPittz?.identifier);
+        const prioritizedOwned = [
+          ...(equippedSymbol ? [{ ...equippedSymbol, isEquipped: true }] : []),
+          ...ownedSymbols.filter((symbol) => symbol.id !== equippedSymbol?.id),
+        ].slice(0, targetPoolSize);
+        let sampledSymbols = [];
+        if (prioritizedOwned.length < targetPoolSize) {
+          const requests = PALACE_COLLECTION_POOLS.flatMap(({ collection, total }) =>
+            Array.from({ length: PALACE_BATCHES_PER_COLLECTION }, async () => {
+              const from = Math.floor(Math.random() * Math.max(1, total - PALACE_BATCH_SIZE));
+              const response = await fetch(
+                `https://api.multiversx.com/collections/${collection}/nfts?from=${from}&size=${PALACE_BATCH_SIZE}`,
+              );
+              if (!response.ok) throw new Error(`Unable to load ${collection}`);
+              return response.json();
+            }),
+          );
+          const collections = await Promise.all(requests);
+          const ownedIds = new Set(prioritizedOwned.map((symbol) => symbol.id));
+          sampledSymbols = collections
+            .flat()
+            .map(toSymbol)
+            .filter((symbol) => symbol.image && !ownedIds.has(symbol.id))
+            .slice(0, targetPoolSize - prioritizedOwned.length);
+        }
         const loadedSymbols = [
-          ...(equippedSymbol?.image ? [equippedSymbol] : []),
-          ...sampledSymbols.filter((symbol) => symbol.id !== equippedSymbol?.id),
+          ...prioritizedOwned,
+          ...sampledSymbols,
           WILD_BONEZ,
           DOG_CATCHER,
           MUZZLE,
@@ -128,7 +150,7 @@ function PittzPalace({ equippedPittz = null }) {
       cancelled = true;
       activeTimers.forEach((timer) => window.clearTimeout(timer));
     };
-  }, [poolVersion, equippedPittz]);
+  }, [poolVersion, equippedPittz, walletPittz]);
 
   useEffect(() => {
     try {
@@ -339,7 +361,7 @@ function PittzPalace({ equippedPittz = null }) {
         {!loading && !loadError && (
           <div className="palace-reels">
             {reels.map((symbol, index) => (
-              <div className={`palace-reel ${stoppedReels[index] ? "stopped" : "spinning"} ${symbol.isEquipped ? "equipped-pitt" : ""}`} key={index}>
+              <div className={`palace-reel ${stoppedReels[index] ? "stopped" : "spinning"} ${symbol.isOwned ? "owned-pitt" : ""} ${symbol.isEquipped ? "equipped-pitt" : ""}`} key={index}>
                 {symbol.image ? (
                   <img
                     src={symbol.image}
@@ -356,7 +378,7 @@ function PittzPalace({ equippedPittz = null }) {
                     <em>{symbol.name}</em>
                   </div>
                 )}
-                <span>{symbol.isWild ? "WILD BONEZ" : symbol.isEquipped ? `YOUR PITT • ${symbol.name}` : symbol.name}</span>
+                <span>{symbol.isWild ? "WILD BONEZ" : symbol.isEquipped ? `EQUIPPED • ${symbol.name}` : symbol.isOwned ? `OWNED • ${symbol.name}` : symbol.name}</span>
                 <small>
                   {symbol.isWild
                     ? "WILD"

@@ -53,42 +53,48 @@ function isBlackjack(hand) {
   return hand.length === 2 && handValue(hand) === 21;
 }
 
-async function fetchPittzDeck(equippedPittz) {
-  const batches = await Promise.all(
-    COLLECTIONS.map(async ({ id, total }) => {
-      const from = Math.floor(Math.random() * Math.max(1, total - 30));
-      const response = await fetch(
-        `https://api.multiversx.com/collections/${id}/nfts?from=${from}&size=30`,
-      );
-      if (!response.ok) throw new Error(`Unable to load ${id}`);
-      return response.json();
-    }),
-  );
+function toDeckPitt(nft, ownedIds, equippedPittz) {
+  return {
+    pittId: nft.identifier,
+    name: nft.name || nft.identifier,
+    image: getNftImage(nft),
+    isOwned: ownedIds.has(nft.identifier),
+    isEquipped: nft.identifier === equippedPittz?.identifier,
+  };
+}
 
-  let pittz = shuffle(
-    Array.from(
+async function fetchPittzDeck(walletPittz, equippedPittz) {
+  const ownedIds = new Set(walletPittz.map((nft) => nft.identifier));
+  const ownedCards = shuffle(walletPittz.map((nft) => toDeckPitt(nft, ownedIds, equippedPittz)))
+    .filter((nft) => nft.image);
+  const equippedCard = ownedCards.find((nft) => nft.isEquipped);
+  let pittz = [
+    ...(equippedCard ? [equippedCard] : []),
+    ...ownedCards.filter((nft) => !nft.isEquipped),
+  ].slice(0, 52);
+
+  if (pittz.length < 52) {
+    const batches = await Promise.all(
+      COLLECTIONS.map(async ({ id, total }) => {
+        const from = Math.floor(Math.random() * Math.max(1, total - 30));
+        const response = await fetch(
+          `https://api.multiversx.com/collections/${id}/nfts?from=${from}&size=30`,
+        );
+        if (!response.ok) throw new Error(`Unable to load ${id}`);
+        return response.json();
+      }),
+    );
+    const deckIds = new Set(pittz.map((nft) => nft.pittId));
+    const fillers = Array.from(
       new Map(
         batches
           .flat()
-          .map((nft) => ({
-            pittId: nft.identifier,
-            name: nft.name || nft.identifier,
-            image: getNftImage(nft),
-          }))
-          .filter((nft) => nft.image)
+          .map((nft) => toDeckPitt(nft, ownedIds, equippedPittz))
+          .filter((nft) => nft.image && !deckIds.has(nft.pittId))
           .map((nft) => [nft.pittId, nft]),
       ).values(),
-    ),
-  );
-
-  if (equippedPittz) {
-    const equippedCard = {
-      pittId: equippedPittz.identifier,
-      name: equippedPittz.name || equippedPittz.identifier,
-      image: getNftImage(equippedPittz),
-      isEquipped: true,
-    };
-    pittz = [equippedCard, ...pittz.filter((nft) => nft.pittId !== equippedCard.pittId)];
+    );
+    pittz = [...pittz, ...shuffle(fillers).slice(0, 52 - pittz.length)];
   }
 
   if (pittz.length < 52) throw new Error("Not enough Pittz were available for a full deck");
@@ -99,12 +105,12 @@ async function fetchPittzDeck(equippedPittz) {
 
 function PittzCard({ card, hidden = false }) {
   if (hidden) {
-    return <div className="p21-card hidden" aria-label="Dealer card hidden"><div className="p21-card-logo"><img src="/images/cryptopittz-bonez.jpg" alt="" /></div><small>CRYPTOPITTZ</small></div>;
+    return <div className="p21-card hidden" aria-label="Dealer card hidden"><div className="p21-card-logo"><img src="/images/cryptopittz-bonez-transparent.png" alt="" /></div><small>CRYPTOPITTZ</small></div>;
   }
 
   const red = card.suit === "♥" || card.suit === "♦";
   return (
-    <div className={`p21-card dealt ${red ? "red" : "black"} ${card.isEquipped ? "equipped-pitt" : ""}`}>
+    <div className={`p21-card dealt ${red ? "red" : "black"} ${card.isOwned ? "owned-pitt" : ""} ${card.isEquipped ? "equipped-pitt" : ""}`}>
       <div className="p21-rank"><b>{card.rank}</b><span>{card.suit}</span></div>
       <img
         src={card.image}
@@ -114,12 +120,12 @@ function PittzCard({ card, hidden = false }) {
           event.currentTarget.src = "/images/cryptopittz-bonez.jpg";
         }}
       />
-      <small>{card.isEquipped ? `YOUR PITT • ${card.name}` : card.name}</small>
+      <small>{card.isEquipped ? `EQUIPPED • ${card.name}` : card.isOwned ? `OWNED • ${card.name}` : card.name}</small>
     </div>
   );
 }
 
-function Pittz21({ equippedPittz = null }) {
+function Pittz21({ equippedPittz = null, walletPittz = [] }) {
   const [deck, setDeck] = useState([]);
   const [player, setPlayer] = useState([]);
   const [dealer, setDealer] = useState([]);
@@ -135,7 +141,7 @@ function Pittz21({ equippedPittz = null }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetchPittzDeck(equippedPittz)
+    fetchPittzDeck(walletPittz, equippedPittz)
       .then((cards) => {
         if (!cancelled) {
           setDeck(cards);
@@ -153,7 +159,7 @@ function Pittz21({ equippedPittz = null }) {
         if (!cancelled) setLoading(false);
       });
     return () => { cancelled = true; };
-  }, [deckVersion, equippedPittz]);
+  }, [deckVersion, equippedPittz, walletPittz]);
 
   useEffect(() => {
     try {

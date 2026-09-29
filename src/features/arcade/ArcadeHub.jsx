@@ -221,22 +221,22 @@ function ArcadeHub({ address = "", nfts = [], nftsLoading = false, nftsError = "
           )}
           {activeGame === "palace" && (
             <Suspense fallback={<div className="arcade-loading">Lighting up Pittz Palace...</div>}>
-              <PittzPalace equippedPittz={equippedPittz} />
+              <PittzPalace equippedPittz={equippedPittz} walletPittz={nfts} />
             </Suspense>
           )}
           {activeGame === "match" && (
             <Suspense fallback={<div className="arcade-loading">Dealing Pittz Memory...</div>}>
-              <PittzMatch equippedPittz={equippedPittz} />
+              <PittzMatch equippedPittz={equippedPittz} walletPittz={nfts} />
             </Suspense>
           )}
           {activeGame === "twentyone" && (
             <Suspense fallback={<div className="arcade-loading">Shuffling the Pittz 21 deck...</div>}>
-              <Pittz21 equippedPittz={equippedPittz} />
+              <Pittz21 equippedPittz={equippedPittz} walletPittz={nfts} />
             </Suspense>
           )}
           {activeGame === "roulette" && (
             <Suspense fallback={<div className="arcade-loading">Rolling out the Pittz Roulette wheel...</div>}>
-              <PittzRoulette equippedPittz={equippedPittz} />
+              <PittzRoulette equippedPittz={equippedPittz} walletPittz={nfts} />
             </Suspense>
           )}
         </div>

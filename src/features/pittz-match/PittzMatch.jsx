@@ -34,53 +34,53 @@ function formatTime(seconds) {
   return `${minutes}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
-async function fetchPittzBoard(equippedPittz) {
-  const collections = Object.values(EXPLORER_COLLECTIONS);
-  const responses = await Promise.all(
-    collections.map(async ({ collection }) => {
-      const total = COLLECTION_TOTALS[collection];
-      const from = Math.floor(Math.random() * Math.max(1, total - 12));
-      const response = await fetch(
-        `https://api.multiversx.com/collections/${collection}/nfts?from=${from}&size=12`,
-      );
-      if (!response.ok) throw new Error(`Unable to load ${collection}`);
-      return response.json();
-    }),
-  );
+function toMemoryPitt(nft, ownedIds, equippedPittz) {
+  return {
+    id: nft.identifier,
+    name: nft.name || nft.identifier,
+    image: getNftImage(nft),
+    collection: nft.collection,
+    isOwned: ownedIds.has(nft.identifier),
+    isEquipped: nft.identifier === equippedPittz?.identifier,
+  };
+}
 
-  const uniquePittz = Array.from(
-    new Map(
-      responses
-        .flat()
-        .map((nft) => ({
-          id: nft.identifier,
-          name: nft.name || nft.identifier,
-          image: getNftImage(nft),
-          collection: nft.collection,
-        }))
-        .filter((pitt) => pitt.image)
-        .map((pitt) => [pitt.id, pitt]),
-    ).values(),
-  );
+async function fetchPittzBoard(walletPittz, equippedPittz) {
+  const ownedIds = new Set(walletPittz.map((nft) => nft.identifier));
+  const ownedCards = shuffle(walletPittz.map((nft) => toMemoryPitt(nft, ownedIds, equippedPittz)))
+    .filter((pitt) => pitt.image);
+  const equippedCard = ownedCards.find((pitt) => pitt.isEquipped);
+  let selected = [
+    ...(equippedCard ? [equippedCard] : []),
+    ...ownedCards.filter((pitt) => !pitt.isEquipped),
+  ].slice(0, PAIR_COUNT);
 
-  if (uniquePittz.length < PAIR_COUNT) throw new Error("Not enough Pittz were available");
+  if (selected.length < PAIR_COUNT) {
+    const responses = await Promise.all(
+      Object.values(EXPLORER_COLLECTIONS).map(async ({ collection }) => {
+        const total = COLLECTION_TOTALS[collection];
+        const from = Math.floor(Math.random() * Math.max(1, total - 12));
+        const response = await fetch(
+          `https://api.multiversx.com/collections/${collection}/nfts?from=${from}&size=12`,
+        );
+        if (!response.ok) throw new Error(`Unable to load ${collection}`);
+        return response.json();
+      }),
+    );
+    const selectedIds = new Set(selected.map((pitt) => pitt.id));
+    const fillers = Array.from(
+      new Map(
+        responses
+          .flat()
+          .map((nft) => toMemoryPitt(nft, ownedIds, equippedPittz))
+          .filter((pitt) => pitt.image && !selectedIds.has(pitt.id))
+          .map((pitt) => [pitt.id, pitt]),
+      ).values(),
+    );
+    selected = [...selected, ...shuffle(fillers).slice(0, PAIR_COUNT - selected.length)];
+  }
 
-  const equippedCard = equippedPittz
-    ? {
-        id: equippedPittz.identifier,
-        name: equippedPittz.name || equippedPittz.identifier,
-        image: getNftImage(equippedPittz),
-        collection: equippedPittz.collection,
-        isEquipped: true,
-      }
-    : null;
-  const availablePittz = equippedCard
-    ? uniquePittz.filter((pitt) => pitt.id !== equippedCard.id)
-    : uniquePittz;
-  const selected = [
-    ...(equippedCard?.image ? [equippedCard] : []),
-    ...shuffle(availablePittz).slice(0, PAIR_COUNT - (equippedCard?.image ? 1 : 0)),
-  ];
+  if (selected.length < PAIR_COUNT) throw new Error("Not enough Pittz were available");
   return shuffle(
     selected.flatMap((pitt) => [
       { ...pitt, cardId: `${pitt.id}-a` },
@@ -89,7 +89,7 @@ async function fetchPittzBoard(equippedPittz) {
   );
 }
 
-function PittzMatch({ equippedPittz = null }) {
+function PittzMatch({ equippedPittz = null, walletPittz = [] }) {
   const [cards, setCards] = useState([]);
   const [openCards, setOpenCards] = useState([]);
   const [matchedPairs, setMatchedPairs] = useState([]);
@@ -107,7 +107,7 @@ function PittzMatch({ equippedPittz = null }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetchPittzBoard(equippedPittz)
+    fetchPittzBoard(walletPittz, equippedPittz)
       .then((nextCards) => {
         if (!cancelled) setCards(nextCards);
       })
@@ -123,7 +123,7 @@ function PittzMatch({ equippedPittz = null }) {
     return () => {
       cancelled = true;
     };
-  }, [boardVersion, equippedPittz]);
+  }, [boardVersion, equippedPittz, walletPittz]);
 
   useEffect(() => {
     if (!started || completed) return undefined;
@@ -232,7 +232,7 @@ function PittzMatch({ equippedPittz = null }) {
             const matched = matchedPairs.includes(card.id);
             return (
               <button
-                className={`match-card ${flipped ? "flipped" : ""} ${matched ? "matched" : ""} ${card.isEquipped ? "equipped-pitt" : ""}`}
+                className={`match-card ${flipped ? "flipped" : ""} ${matched ? "matched" : ""} ${card.isOwned ? "owned-pitt" : ""} ${card.isEquipped ? "equipped-pitt" : ""}`}
                 type="button"
                 onClick={() => flipCard(card)}
                 aria-label={flipped ? card.name : "Hidden CryptoPittz card"}
@@ -254,7 +254,7 @@ function PittzMatch({ equippedPittz = null }) {
                         event.currentTarget.src = "/images/cryptopittz-bonez.jpg";
                       }}
                     />
-                    <small>{card.isEquipped ? `YOUR PITT • ${card.name}` : card.name}</small>
+                    <small>{card.isEquipped ? `EQUIPPED • ${card.name}` : card.isOwned ? `OWNED • ${card.name}` : card.name}</small>
                   </span>
                 </span>
               </button>

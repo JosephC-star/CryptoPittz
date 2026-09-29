@@ -30,6 +30,7 @@
 .roulette-pocket { position: absolute; top: 50%; left: 50%; display: grid; width: clamp(38px, 7vw, 54px); aspect-ratio: 1; place-items: center; transform: translate(-50%, -50%) rotate(var(--pocket-angle)) translateY(clamp(-165px, -15vw, -116px)); transform-origin: center; }
 .roulette-pocket img { width: 100%; height: 100%; border: 2px solid #fff; border-radius: 50%; object-fit: cover; box-shadow: 0 0 10px rgba(0, 229, 255, .5); }
 .roulette-pocket.vice img { box-shadow: 0 0 10px rgba(255, 61, 247, .62); }
+.roulette-pocket.owned-pitt img { border-color: #00e5ff; box-shadow: 0 0 7px #fff, 0 0 16px #00e5ff; }
 .roulette-pocket.equipped-pitt img { border-color: #78ffab; box-shadow: 0 0 7px #fff, 0 0 18px #78ffab; }
 .roulette-pocket.equipped-pitt::after { position: absolute; top: -8px; color: #78ffab; font-size: .38rem; font-weight: 1000; content: "YOUR PITT"; text-shadow: 0 0 7px #071; white-space: nowrap; }
 .roulette-pocket b { position: absolute; right: -2px; bottom: -2px; display: grid; width: 18px; height: 18px; place-items: center; border-radius: 50%; background: #070819; color: #fff; font-size: .48rem; }

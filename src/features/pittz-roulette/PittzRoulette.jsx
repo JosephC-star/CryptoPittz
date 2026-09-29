@@ -35,8 +35,33 @@ function shuffle(items) {
   return copy;
 }
 
-async function fetchCollectionPittz(key) {
+function toWheelPitt(nft, key, ownedIds, equippedPittz) {
+  return {
+    id: nft.identifier,
+    name: nft.name || nft.identifier,
+    image: getNftImage(nft),
+    collection: key,
+    isOwned: ownedIds.has(nft.identifier),
+    isEquipped: nft.identifier === equippedPittz?.identifier,
+  };
+}
+
+async function fetchCollectionPittz(key, walletPittz, equippedPittz) {
   const collection = EXPLORER_COLLECTIONS[key].collection;
+  const ownedIds = new Set(walletPittz.map((nft) => nft.identifier));
+  const owned = shuffle(
+    walletPittz
+      .filter((nft) => nft.collection === collection)
+      .map((nft) => toWheelPitt(nft, key, ownedIds, equippedPittz)),
+  ).filter((pitt) => pitt.image);
+  const equippedPocket = owned.find((pitt) => pitt.isEquipped);
+  let selected = [
+    ...(equippedPocket ? [equippedPocket] : []),
+    ...owned.filter((pitt) => !pitt.isEquipped),
+  ].slice(0, WHEEL_POCKETS / 2);
+
+  if (selected.length >= WHEEL_POCKETS / 2) return selected;
+
   const total = COLLECTION_TOTALS[key];
   const from = Math.floor(Math.random() * Math.max(1, total - 18));
   const response = await fetch(
@@ -44,41 +69,23 @@ async function fetchCollectionPittz(key) {
   );
   if (!response.ok) throw new Error(`Unable to load ${key} Pittz`);
   const data = await response.json();
-  return shuffle(
-    data
-      .map((nft) => ({
-        id: nft.identifier,
-        name: nft.name || nft.identifier,
-        image: getNftImage(nft),
-        collection: key,
-      }))
-      .filter((nft) => nft.image),
-  ).slice(0, WHEEL_POCKETS / 2);
+  const selectedIds = new Set(selected.map((pitt) => pitt.id));
+  const fillers = data
+    .map((nft) => toWheelPitt(nft, key, ownedIds, equippedPittz))
+    .filter((pitt) => pitt.image && !selectedIds.has(pitt.id));
+  selected = [...selected, ...shuffle(fillers).slice(0, WHEEL_POCKETS / 2 - selected.length)];
+  return selected;
 }
 
-async function buildWheel(equippedPittz) {
+async function buildWheel(walletPittz, equippedPittz) {
   const [originals, vice] = await Promise.all([
-    fetchCollectionPittz("original"),
-    fetchCollectionPittz("vice"),
+    fetchCollectionPittz("original", walletPittz, equippedPittz),
+    fetchCollectionPittz("vice", walletPittz, equippedPittz),
   ]);
   if (originals.length < 6 || vice.length < 6) {
     throw new Error("Not enough Pittz were available to build the wheel");
   }
-  const wheel = originals.flatMap((pitt, index) => [pitt, vice[index]]);
-  if (!equippedPittz) return wheel;
-
-  const collection =
-    equippedPittz.collection === EXPLORER_COLLECTIONS.vice.collection ? "vice" : "original";
-  const equippedPocket = {
-    id: equippedPittz.identifier,
-    name: equippedPittz.name || equippedPittz.identifier,
-    image: getNftImage(equippedPittz),
-    collection,
-    isEquipped: true,
-  };
-  const replaceIndex = wheel.findIndex((pitt) => pitt.collection === collection);
-  if (equippedPocket.image && replaceIndex >= 0) wheel[replaceIndex] = equippedPocket;
-  return wheel;
+  return originals.flatMap((pitt, index) => [pitt, vice[index]]);
 }
 
 function betLabel(bet, wheel) {
@@ -95,7 +102,7 @@ function evaluateBet(bet, winner, pocketNumber, stake) {
   return { multiplier, payout: Math.round(stake * multiplier) };
 }
 
-function PittzRoulette({ equippedPittz = null }) {
+function PittzRoulette({ equippedPittz = null, walletPittz = [] }) {
   const [wheel, setWheel] = useState([]);
   const [bonez, setBonez] = useState(readBonez);
   const [stake, setStake] = useState(25);
@@ -112,7 +119,7 @@ function PittzRoulette({ equippedPittz = null }) {
 
   useEffect(() => {
     let cancelled = false;
-    buildWheel(equippedPittz)
+    buildWheel(walletPittz, equippedPittz)
       .then((pittz) => {
         if (!cancelled) {
           setWheel(pittz);
@@ -127,7 +134,7 @@ function PittzRoulette({ equippedPittz = null }) {
         if (!cancelled) setLoading(false);
       });
     return () => { cancelled = true; };
-  }, [wheelVersion, equippedPittz]);
+  }, [wheelVersion, equippedPittz, walletPittz]);
 
   useEffect(() => {
     try {
@@ -231,7 +238,7 @@ function PittzRoulette({ equippedPittz = null }) {
               >
                 {wheel.map((pitt, index) => (
                   <div
-                    className={`roulette-pocket ${pitt.collection} ${pitt.isEquipped ? "equipped-pitt" : ""}`}
+                    className={`roulette-pocket ${pitt.collection} ${pitt.isOwned ? "owned-pitt" : ""} ${pitt.isEquipped ? "equipped-pitt" : ""}`}
                     style={{ "--pocket-angle": `${index * (360 / WHEEL_POCKETS)}deg` }}
                     title={`${index + 1}. ${pitt.name}`}
                     key={pitt.id}
