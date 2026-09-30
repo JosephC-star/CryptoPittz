@@ -1,13 +1,22 @@
 import {
   decodePittzAttributes,
   getNftImage,
+  getNftMarketplace,
   getPittzStats,
 } from "../../utils/nftUtils";
+
+function formatListingPrice(listing) {
+  const price = Number(listing?.price);
+  if (!Number.isFinite(price)) return listing?.price || "";
+  if (price >= 1000) return price.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  return price.toLocaleString(undefined, { maximumFractionDigits: 4 });
+}
 
 export default function NftCard({
   nft,
   bonez = null,
   isOwned = false,
+  listing = null,
   showTraits = false,
   variant = "wallet",
   onClick,
@@ -50,11 +59,31 @@ export default function NftCard({
         )}
 
         {isOwned && <span className="owned-badge">OWNED ✓</span>}
+        {isExplorer && listing && <span className="listed-badge">FOR SALE</span>}
       </div>
 
       <div className="wallet-nft-info">
         <strong>{nft.name || nft.identifier}</strong>
         <small>{nft.identifier}</small>
+
+        {isExplorer && listing && (
+          <div className="oox-listing">
+            <div>
+              <span>OOX LISTING</span>
+              <strong>
+                {formatListingPrice(listing)} {listing.paymentToken.split("-")[0]}
+              </strong>
+            </div>
+            <a
+              href={getNftMarketplace(nft)}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(event) => event.stopPropagation()}
+            >
+              VIEW ON OOX ↗
+            </a>
+          </div>
+        )}
 
         <div className="pittz-stats">
           {stats.rank && (

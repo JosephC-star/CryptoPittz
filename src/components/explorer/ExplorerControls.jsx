@@ -14,11 +14,17 @@ export default function ExplorerControls({
   onBloodlineChange,
   type,
   onTypeChange,
+  sale,
+  listedCount,
+  listingsLoading,
+  listingsError,
+  onSaleChange,
   shownCount,
   filteredCount,
   onReset,
 }) {
-  const filtersActive = search || bloodline !== "all" || type !== "all" || sort !== "rank";
+  const filtersActive =
+    search || bloodline !== "all" || type !== "all" || sale !== "all" || sort !== "rank";
   const progressPercent =
     loadProgress.total > 0
       ? Math.min(100, (loadProgress.loaded / loadProgress.total) * 100)
@@ -93,6 +99,8 @@ export default function ExplorerControls({
           <option value="rank">Best Rank</option>
           <option value="score">Highest Score</option>
           <option value="name">Name</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
         </select>
 
         <select value={bloodline} onChange={(event) => onBloodlineChange(event.target.value)}>
@@ -111,6 +119,25 @@ export default function ExplorerControls({
           <option value="Holo">Holo</option>
           <option value="Legendary">Legendary</option>
         </select>
+
+        <div className={`explorer-sale-filter ${sale === "listed" ? "active" : ""}`}>
+          <div>
+            <span>OOX Marketplace</span>
+            <strong>
+              {listingsLoading
+                ? "Checking listings..."
+                : listingsError || `${listedCount.toLocaleString()} currently listed`}
+            </strong>
+          </div>
+          <button
+            type="button"
+            onClick={() => onSaleChange(sale === "listed" ? "all" : "listed")}
+            disabled={listingsLoading || Boolean(listingsError)}
+            aria-pressed={sale === "listed"}
+          >
+            {sale === "listed" ? "✓ FOR SALE ONLY" : "SHOW FOR SALE"}
+          </button>
+        </div>
       </div>
 
       <div className="pittz-results-bar">

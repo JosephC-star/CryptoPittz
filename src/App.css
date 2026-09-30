@@ -1262,6 +1262,41 @@ html {
   opacity: 0.55;
 }
 
+.listed-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 3;
+  padding: 6px 9px;
+  border: 1px solid rgba(120, 255, 171, 0.75);
+  border-radius: 999px;
+  background: rgba(4, 20, 15, 0.88);
+  color: #78ffab;
+  font-size: 9px;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+  box-shadow: 0 0 14px rgba(120, 255, 171, 0.4);
+}
+
+.oox-listing {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 5px;
+  padding: 8px;
+  border: 1px solid rgba(120, 255, 171, 0.25);
+  border-radius: 10px;
+  background: linear-gradient(120deg, rgba(120, 255, 171, 0.08), rgba(0, 229, 255, 0.06));
+}
+
+.oox-listing > div span,
+.oox-listing > div strong { display: block; }
+.oox-listing > div span { color: rgba(255, 255, 255, 0.46); font-size: 7px; font-weight: 900; letter-spacing: 0.08em; }
+.oox-listing > div strong { margin-top: 2px; color: #78ffab; font-size: 12px; }
+.oox-listing a { flex: 0 0 auto; color: #bdfaff; font-size: 8px; font-weight: 1000; text-decoration: none; }
+.oox-listing a:hover { color: #fff; text-shadow: 0 0 8px #00e5ff; }
+
 .nft-detail-heading h2 {
   margin: 0 0 6px;
 
@@ -1963,6 +1998,40 @@ html {
 .explorer-header strong {
   font-size: 14px;
 }
+
+.explorer-sale-filter {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-color: rgba(120, 255, 171, 0.18) !important;
+  background: linear-gradient(105deg, rgba(120, 255, 171, 0.06), rgba(0, 229, 255, 0.04)) !important;
+}
+
+.explorer-sale-filter.active {
+  border-color: rgba(120, 255, 171, 0.55) !important;
+  box-shadow: 0 0 18px rgba(120, 255, 171, 0.13);
+}
+
+.explorer-sale-filter > div span,
+.explorer-sale-filter > div strong { display: block; }
+.explorer-sale-filter > div strong { color: #78ffab; }
+.explorer-sale-filter button {
+  flex: 0 0 auto;
+  padding: 9px 12px;
+  border: 1px solid rgba(120, 255, 171, 0.4);
+  border-radius: 999px;
+  background: rgba(120, 255, 171, 0.08);
+  color: #78ffab;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 1000;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+.explorer-sale-filter button:disabled { opacity: 0.4; cursor: wait; }
+.explorer-sale-filter.active button { background: #78ffab; color: #06120c; box-shadow: 0 0 14px rgba(120, 255, 171, 0.35); }
 
 .explorer-card {
   position: relative;
@@ -4866,6 +4935,18 @@ footer .container > div:hover {
     padding: 4px 6px;
     font-size: 8px;
   }
+
+  .explorer-nft-grid .listed-badge {
+    top: 6px;
+    left: 6px;
+    padding: 4px 6px;
+    font-size: 7px;
+  }
+
+  .explorer-nft-grid .oox-listing { display: block; padding: 6px; }
+  .explorer-nft-grid .oox-listing a { display: block; margin-top: 5px; }
+  .explorer-sale-filter { align-items: flex-start; flex-direction: column; }
+  .explorer-sale-filter button { width: 100%; }
 }
 
 @keyframes randomPittGlow {

@@ -15,6 +15,7 @@ import NftDetailModal from "./components/nft/NftDetailModal";
 import BonezMarketSection from "./features/bonez-market/BonezMarketSection";
 import useBonezMarket from "./features/bonez-market/useBonezMarket";
 import useExplorerData from "./features/explorer/useExplorerData";
+import useOoxListings from "./features/explorer/useOoxListings";
 import MyPittzSection from "./features/my-pittz/MyPittzSection";
 import useWalletPittz from "./features/my-pittz/useWalletPittz";
 import TraitFinder from "./features/traits/TraitFinder";
@@ -33,6 +34,7 @@ function App() {
   const [explorerBloodline, setExplorerBloodline] = useState("all");
   const [explorerType, setExplorerType] = useState("all");
   const [explorerTraits, setExplorerTraits] = useState({});
+  const [explorerSale, setExplorerSale] = useState("all");
   const [randomPittLoading, setRandomPittLoading] = useState(false);
   const [randomPittError, setRandomPittError] = useState("");
   const [randomPittMode, setRandomPittMode] = useState("surprise");
@@ -67,6 +69,11 @@ function App() {
     setPage: setExplorerPage,
     viceTotal,
   } = useExplorerData(EXPLORER_PAGE_SIZE);
+  const {
+    listingMap: explorerListingMap,
+    loading: explorerListingsLoading,
+    error: explorerListingsError,
+  } = useOoxListings(activeCollection.collection);
 
   const account = useGetAccount();
   const { nfts, loading: nftsLoading, error: nftsError } = useWalletPittz(account.address);
@@ -103,6 +110,7 @@ function App() {
     setExplorerBloodline("all");
     setExplorerType("all");
     setExplorerTraits({});
+    setExplorerSale("all");
     setExplorerPage(0);
     clearGlobalSearch();
   }
@@ -283,7 +291,10 @@ function App() {
         traits.some((item) => item.trait === category && values.includes(item.value)),
       );
 
-      return matchesSearch && matchesBloodline && matchesType && matchesTraits;
+      const matchesSale =
+        explorerSale === "all" || explorerListingMap.has(nft.identifier);
+
+      return matchesSearch && matchesBloodline && matchesType && matchesTraits && matchesSale;
     })
     .sort((a, b) => {
       const aStats = getPittzStats(a.attributes);
@@ -299,6 +310,20 @@ function App() {
 
       if (explorerSort === "name") {
         return (a.name || "").localeCompare(b.name || "");
+      }
+
+      if (explorerSort === "price-asc" || explorerSort === "price-desc") {
+        const aListing = explorerListingMap.get(a.identifier);
+        const bListing = explorerListingMap.get(b.identifier);
+
+        if (!aListing && !bListing) return 0;
+        if (!aListing) return 1;
+        if (!bListing) return -1;
+
+        const aPrice = Number(aListing.dollarValue) || Number(aListing.price) || Infinity;
+        const bPrice = Number(bListing.dollarValue) || Number(bListing.price) || Infinity;
+
+        return explorerSort === "price-asc" ? aPrice - bPrice : bPrice - aPrice;
       }
 
       return 0;
@@ -890,6 +915,14 @@ function App() {
                         setExplorerType(value);
                         setExplorerPage(0);
                       }}
+                      sale={explorerSale}
+                      listedCount={explorerListingMap.size}
+                      listingsLoading={explorerListingsLoading}
+                      listingsError={explorerListingsError}
+                      onSaleChange={(value) => {
+                        setExplorerSale(value);
+                        setExplorerPage(0);
+                      }}
                       shownCount={explorerPageNfts.length}
                       filteredCount={filteredExplorerNfts.length}
                       onReset={resetExplorerFilters}
@@ -961,6 +994,7 @@ function App() {
                           <NftCard
                             key={nft.identifier}
                             nft={nft}
+                            listing={explorerListingMap.get(nft.identifier)}
                             isOwned={isOwned}
                             variant="explorer"
                             onClick={() => openNftDetails(nft, filteredExplorerNfts)}
