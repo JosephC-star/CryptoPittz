@@ -111,11 +111,27 @@ export function getNftImage(nft) {
   const primaryMedia = nft?.media?.[0];
   const mediaType = primaryMedia?.fileType?.toLowerCase() || "";
   const mediaUrl = primaryMedia?.url || primaryMedia?.originalUrl || "";
+  const isVicePittz = nft?.collection === EXPLORER_COLLECTIONS.vice.collection;
   const isAnimatedImage =
     mediaType === "image/gif" || /\.(gif|apng)(?:[?#].*)?$/i.test(mediaUrl);
 
+  // Vice Secret and Holo GIFs are served from an unreliable origin. Prefer
+  // MultiversX's generated still thumbnail for every Vice Pittz so the cards
+  // remain visible throughout the explorer, wallet, and games.
+  if (isVicePittz) {
+    return (
+      primaryMedia?.thumbnailUrl ||
+      nft?.url ||
+      primaryMedia?.url ||
+      primaryMedia?.originalUrl ||
+      nft?.metadata?.image ||
+      ""
+    );
+  }
+
   // MultiversX thumbnails are static, so use the collection's original media
-  // for animated artwork while keeping lightweight thumbnails for regular Pittz.
+  // for animated Original artwork while keeping lightweight thumbnails for
+  // regular Pittz.
   if (isAnimatedImage) return mediaUrl;
 
   return (
