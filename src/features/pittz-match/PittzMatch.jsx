@@ -4,8 +4,16 @@ import { EXPLORER_COLLECTIONS } from "../../config/collections";
 import { getNftImage } from "../../utils/nftUtils";
 import "./PittzMatch.css";
 
-const PAIR_COUNT = 10;
-const BEST_MOVES_KEY = "cryptopittz-match-best-moves-10-pairs";
+const BOARD_OPTIONS = [
+  { id: "pup", label: "Pup", pairs: 6, columns: 4, mobileColumns: 3 },
+  { id: "street", label: "Street", pairs: 8, columns: 4, mobileColumns: 4 },
+  { id: "pack", label: "Pack", pairs: 10, columns: 5, mobileColumns: 4 },
+  { id: "alpha", label: "Alpha", pairs: 12, columns: 6, mobileColumns: 4 },
+  { id: "legend", label: "Legend", pairs: 15, columns: 6, mobileColumns: 5 },
+];
+const DEFAULT_BOARD = BOARD_OPTIONS[2];
+// Keep the existing 10-pair storage key compatible with players' saved records.
+const BEST_MOVES_KEY = "cryptopittz-match-best-moves";
 const COLLECTION_TOTALS = {
   [EXPLORER_COLLECTIONS.original.collection]: 5310,
   [EXPLORER_COLLECTIONS.vice.collection]: 1395,
@@ -20,9 +28,9 @@ function shuffle(items) {
   return copy;
 }
 
-function readBestMoves() {
+function readBestMoves(pairCount) {
   try {
-    const saved = Number(window.localStorage.getItem(BEST_MOVES_KEY));
+    const saved = Number(window.localStorage.getItem(`${BEST_MOVES_KEY}-${pairCount}-pairs`));
     return Number.isFinite(saved) && saved > 0 ? saved : null;
   } catch {
     return null;
@@ -45,7 +53,7 @@ function toMemoryPitt(nft, ownedIds, equippedPittz) {
   };
 }
 
-async function fetchPittzBoard(walletPittz, equippedPittz) {
+async function fetchPittzBoard(walletPittz, equippedPittz, pairCount) {
   const ownedIds = new Set(walletPittz.map((nft) => nft.identifier));
   const ownedCards = shuffle(walletPittz.map((nft) => toMemoryPitt(nft, ownedIds, equippedPittz)))
     .filter((pitt) => pitt.image);
@@ -53,15 +61,16 @@ async function fetchPittzBoard(walletPittz, equippedPittz) {
   let selected = [
     ...(equippedCard ? [equippedCard] : []),
     ...ownedCards.filter((pitt) => !pitt.isEquipped),
-  ].slice(0, PAIR_COUNT);
+  ].slice(0, pairCount);
 
-  if (selected.length < PAIR_COUNT) {
+  if (selected.length < pairCount) {
     const responses = await Promise.all(
       Object.values(EXPLORER_COLLECTIONS).map(async ({ collection }) => {
         const total = COLLECTION_TOTALS[collection];
-        const from = Math.floor(Math.random() * Math.max(1, total - 12));
+        const batchSize = Math.max(12, pairCount);
+        const from = Math.floor(Math.random() * Math.max(1, total - batchSize));
         const response = await fetch(
-          `https://api.multiversx.com/collections/${collection}/nfts?from=${from}&size=12`,
+          `https://api.multiversx.com/collections/${collection}/nfts?from=${from}&size=${batchSize}`,
         );
         if (!response.ok) throw new Error(`Unable to load ${collection}`);
         return response.json();
@@ -77,10 +86,10 @@ async function fetchPittzBoard(walletPittz, equippedPittz) {
           .map((pitt) => [pitt.id, pitt]),
       ).values(),
     );
-    selected = [...selected, ...shuffle(fillers).slice(0, PAIR_COUNT - selected.length)];
+    selected = [...selected, ...shuffle(fillers).slice(0, pairCount - selected.length)];
   }
 
-  if (selected.length < PAIR_COUNT) throw new Error("Not enough Pittz were available");
+  if (selected.length < pairCount) throw new Error("Not enough Pittz were available");
   return shuffle(
     selected.flatMap((pitt) => [
       { ...pitt, cardId: `${pitt.id}-a` },
@@ -97,7 +106,8 @@ function PittzMatch({ equippedPittz = null, walletPittz = [] }) {
   const [matchedPairs, setMatchedPairs] = useState([]);
   const [moves, setMoves] = useState(0);
   const [seconds, setSeconds] = useState(0);
-  const [bestMoves, setBestMoves] = useState(readBestMoves);
+  const [board, setBoard] = useState(DEFAULT_BOARD);
+  const [bestMoves, setBestMoves] = useState(() => readBestMoves(DEFAULT_BOARD.pairs));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [locked, setLocked] = useState(false);
@@ -105,11 +115,11 @@ function PittzMatch({ equippedPittz = null, walletPittz = [] }) {
   const [boardVersion, setBoardVersion] = useState(0);
   const timers = useRef([]);
 
-  const completed = matchedPairs.length === PAIR_COUNT;
+  const completed = matchedPairs.length === board.pairs;
 
   useEffect(() => {
     let cancelled = false;
-    fetchPittzBoard(walletPittzRef.current, equippedPittzRef.current)
+    fetchPittzBoard(walletPittzRef.current, equippedPittzRef.current, board.pairs)
       .then((nextCards) => {
         if (!cancelled) setCards(nextCards);
       })
@@ -125,7 +135,7 @@ function PittzMatch({ equippedPittz = null, walletPittz = [] }) {
     return () => {
       cancelled = true;
     };
-  }, [boardVersion]);
+  }, [boardVersion, board.pairs]);
 
   useEffect(() => {
     if (!started || completed) return undefined;
@@ -164,11 +174,11 @@ function PittzMatch({ equippedPittz = null, walletPittz = [] }) {
     const timer = window.setTimeout(() => {
       if (isMatch) {
         setMatchedPairs((current) => [...current, card.id]);
-        const completesBoard = matchedPairs.length + 1 === PAIR_COUNT;
+        const completesBoard = matchedPairs.length + 1 === board.pairs;
         if (completesBoard && (!bestMoves || nextMoves < bestMoves)) {
           setBestMoves(nextMoves);
           try {
-            window.localStorage.setItem(BEST_MOVES_KEY, String(nextMoves));
+            window.localStorage.setItem(`${BEST_MOVES_KEY}-${board.pairs}-pairs`, String(nextMoves));
           } catch {
             // The game still works if browser storage is unavailable.
           }
@@ -180,7 +190,7 @@ function PittzMatch({ equippedPittz = null, walletPittz = [] }) {
     timers.current.push(timer);
   }
 
-  function dealNewBoard() {
+  function resetBoardState() {
     timers.current.forEach((timer) => window.clearTimeout(timer));
     timers.current = [];
     setLoading(true);
@@ -192,7 +202,18 @@ function PittzMatch({ equippedPittz = null, walletPittz = [] }) {
     setSeconds(0);
     setLocked(false);
     setStarted(false);
+  }
+
+  function dealNewBoard() {
+    resetBoardState();
     setBoardVersion((current) => current + 1);
+  }
+
+  function selectBoard(nextBoard) {
+    if (loading || nextBoard.id === board.id) return;
+    resetBoardState();
+    setBestMoves(readBestMoves(nextBoard.pairs));
+    setBoard(nextBoard);
   }
 
   return (
@@ -207,15 +228,34 @@ function PittzMatch({ equippedPittz = null, walletPittz = [] }) {
         <div>
           <span>⚡ NEON MEMORY GRID</span>
           <h3>PITTZ MEMORY</h3>
-          <p>Find all ten matching CryptoPittz pairs.</p>
+          <p>Find all {board.pairs} matching CryptoPittz pairs.</p>
         </div>
         <button type="button" onClick={dealNewBoard} disabled={loading}>🔀 NEW PITTZ</button>
       </header>
 
+      <div className="match-difficulty" aria-label="Choose Pittz Memory difficulty">
+        <span>BOARD SIZE</span>
+        <div>
+          {BOARD_OPTIONS.map((option) => (
+            <button
+              className={board.id === option.id ? "active" : ""}
+              type="button"
+              onClick={() => selectBoard(option)}
+              disabled={loading}
+              aria-pressed={board.id === option.id}
+              key={option.id}
+            >
+              <strong>{option.label}</strong>
+              <small>{option.pairs} pairs</small>
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="match-dashboard" aria-label="Game statistics">
         <div><span>Moves</span><strong>{moves}</strong></div>
         <div><span>Time</span><strong>{formatTime(seconds)}</strong></div>
-        <div><span>Pairs</span><strong>{matchedPairs.length}/{PAIR_COUNT}</strong></div>
+        <div><span>Pairs</span><strong>{matchedPairs.length}/{board.pairs}</strong></div>
         <div><span>Best</span><strong>{bestMoves ? `${bestMoves} moves` : "—"}</strong></div>
       </div>
 
@@ -228,7 +268,10 @@ function PittzMatch({ equippedPittz = null, walletPittz = [] }) {
       )}
 
       {!loading && !error && (
-        <div className="match-board">
+        <div
+          className="match-board"
+          style={{ "--match-columns": board.columns, "--match-mobile-columns": board.mobileColumns }}
+        >
           {cards.map((card) => {
             const flipped = openCards.includes(card.cardId) || matchedPairs.includes(card.id);
             const matched = matchedPairs.includes(card.id);

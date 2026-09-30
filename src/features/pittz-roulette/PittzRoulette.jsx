@@ -11,10 +11,11 @@ import {
 } from "../pittz-palace/palaceConfig";
 import "./PittzRoulette.css";
 
-const WHEEL_POCKETS = 12;
+const WHEEL_POCKETS = 30;
+const POCKETS_PER_COLLECTION = WHEEL_POCKETS / 2;
 const COLLECTION_MULTIPLIER = 1.75;
 const PARITY_MULTIPLIER = 1.75;
-const EXACT_MULTIPLIER = 10;
+const EXACT_MULTIPLIER = 25;
 const COLLECTION_TOTALS = { original: 5310, vice: 1395 };
 
 function readBonez() {
@@ -58,14 +59,15 @@ async function fetchCollectionPittz(key, walletPittz, equippedPittz) {
   let selected = [
     ...(equippedPocket ? [equippedPocket] : []),
     ...owned.filter((pitt) => !pitt.isEquipped),
-  ].slice(0, WHEEL_POCKETS / 2);
+  ].slice(0, POCKETS_PER_COLLECTION);
 
-  if (selected.length >= WHEEL_POCKETS / 2) return selected;
+  if (selected.length >= POCKETS_PER_COLLECTION) return selected;
 
   const total = COLLECTION_TOTALS[key];
-  const from = Math.floor(Math.random() * Math.max(1, total - 18));
+  const batchSize = 30;
+  const from = Math.floor(Math.random() * Math.max(1, total - batchSize));
   const response = await fetch(
-    `https://api.multiversx.com/collections/${collection}/nfts?from=${from}&size=18`,
+    `https://api.multiversx.com/collections/${collection}/nfts?from=${from}&size=${batchSize}`,
   );
   if (!response.ok) throw new Error(`Unable to load ${key} Pittz`);
   const data = await response.json();
@@ -73,7 +75,7 @@ async function fetchCollectionPittz(key, walletPittz, equippedPittz) {
   const fillers = data
     .map((nft) => toWheelPitt(nft, key, ownedIds, equippedPittz))
     .filter((pitt) => pitt.image && !selectedIds.has(pitt.id));
-  selected = [...selected, ...shuffle(fillers).slice(0, WHEEL_POCKETS / 2 - selected.length)];
+  selected = [...selected, ...shuffle(fillers).slice(0, POCKETS_PER_COLLECTION - selected.length)];
   return selected;
 }
 
@@ -82,7 +84,7 @@ async function buildWheel(walletPittz, equippedPittz) {
     fetchCollectionPittz("original", walletPittz, equippedPittz),
     fetchCollectionPittz("vice", walletPittz, equippedPittz),
   ]);
-  if (originals.length < 6 || vice.length < 6) {
+  if (originals.length < POCKETS_PER_COLLECTION || vice.length < POCKETS_PER_COLLECTION) {
     throw new Error("Not enough Pittz were available to build the wheel");
   }
   return originals.flatMap((pitt, index) => [pitt, vice[index]]);
@@ -225,7 +227,7 @@ function PittzRoulette({ equippedPittz = null, walletPittz = [] }) {
         <div><span>BIGGEST WIN</span><strong>{stats.biggestPayout}</strong></div>
       </div>
 
-      {loading && <div className="roulette-loading">Rolling twelve fresh CryptoPittz onto the wheel...</div>}
+      {loading && <div className="roulette-loading">Rolling thirty fresh CryptoPittz onto the wheel...</div>}
       {error && <div className="roulette-loading error"><span>{error}</span><button type="button" onClick={loadNewWheel}>Try Again</button></div>}
 
       {!loading && !error && (
@@ -236,7 +238,7 @@ function PittzRoulette({ equippedPittz = null, walletPittz = [] }) {
               <div
                 className="roulette-wheel"
                 style={{ transform: `rotate(${rotation}deg)` }}
-                aria-label="Twelve-pocket Pittz Roulette wheel"
+                aria-label="Thirty-pocket Pittz Roulette wheel"
               >
                 {wheel.map((pitt, index) => (
                   <div
@@ -262,7 +264,7 @@ function PittzRoulette({ equippedPittz = null, walletPittz = [] }) {
                 <button className={bet.kind === "parity" && bet.value === "even" ? "active" : ""} type="button" onClick={() => selectBet("parity", "even")} disabled={spinning}>EVEN <small>1.75×</small></button>
               </div>
 
-              <div className="roulette-exact-heading"><span>OR PICK THE EXACT PITT</span><strong>10×</strong></div>
+              <div className="roulette-exact-heading"><span>OR PICK THE EXACT PITT</span><strong>{EXACT_MULTIPLIER}×</strong></div>
               <div className="roulette-exact-grid">
                 {wheel.map((pitt, index) => (
                   <button className={bet.kind === "exact" && bet.value === pitt.id ? "active" : ""} type="button" onClick={() => selectBet("exact", pitt.id)} disabled={spinning} title={pitt.name} key={pitt.id}>
@@ -293,7 +295,7 @@ function PittzRoulette({ equippedPittz = null, walletPittz = [] }) {
         </>
       )}
 
-      <details className="roulette-rules"><summary>🎡 Pittz Roulette Odds &amp; Rules</summary><p>Every wheel contains six Original and six Vice Pittz. Collection and odd/even bets pay 1.75×. Picking the exact winning Pitt pays 10×. All twelve pockets have an equal chance, and a New Pittz Wheel changes the artwork—not the odds.</p></details>
+      <details className="roulette-rules"><summary>🎡 Pittz Roulette Odds &amp; Rules</summary><p>Every wheel contains fifteen Original and fifteen Vice Pittz. Collection and odd/even bets pay 1.75×. Picking the exact winning Pitt pays {EXACT_MULTIPLIER}×. All thirty pockets have an equal chance, and a New Pittz Wheel changes the artwork—not the odds.</p></details>
       <p className="roulette-disclaimer"><strong>Game BONEZ disclaimer:</strong> these free in-game points are not $BONEZ, cryptocurrency, or anything of cash/token value. No purchase required.</p>
     </div>
   );

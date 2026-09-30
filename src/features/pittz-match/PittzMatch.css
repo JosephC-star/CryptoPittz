@@ -54,6 +54,46 @@
 
 .match-header button:disabled { opacity: 0.45; cursor: wait; }
 
+.match-difficulty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: -3px 0 14px;
+}
+
+.match-difficulty > span {
+  flex: 0 0 auto;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.5rem;
+  font-weight: 1000;
+  letter-spacing: 0.12em;
+}
+
+.match-difficulty > div {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+
+.match-difficulty button {
+  display: grid;
+  gap: 1px;
+  padding: 7px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(255, 255, 255, 0.62);
+  font: inherit;
+  cursor: pointer;
+}
+
+.match-difficulty button strong { font-size: 0.62rem; }
+.match-difficulty button small { color: rgba(255, 255, 255, 0.36); font-size: 0.46rem; }
+.match-difficulty button.active { border-color: #75f5ff; color: #fff; background: rgba(0, 229, 255, 0.1); box-shadow: 0 0 14px rgba(0, 229, 255, 0.2); }
+.match-difficulty button.active small { color: #75f5ff; }
+.match-difficulty button:disabled { opacity: 0.5; cursor: wait; }
+
 .match-dashboard {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -76,9 +116,9 @@
 
 .match-board {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--match-columns, 5), minmax(0, 1fr));
   gap: clamp(6px, 1vw, 10px);
-  max-width: 780px;
+  max-width: 900px;
   margin: 0 auto;
   perspective: 1200px;
 }
@@ -190,7 +230,11 @@
   .match-header { align-items: flex-start; }
   .match-header button { padding: 8px 10px; font-size: 0.58rem; }
   .match-dashboard { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .match-board { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .match-difficulty { display: block; }
+  .match-difficulty > span { display: block; margin-bottom: 6px; }
+  .match-difficulty > div { grid-template-columns: repeat(5, minmax(62px, 1fr)); overflow-x: auto; padding-bottom: 4px; }
+  .match-difficulty button { padding: 7px 5px; }
+  .match-board { grid-template-columns: repeat(var(--match-mobile-columns, 4), minmax(0, 1fr)); }
   .match-card-back, .match-card-front { border-radius: 11px; }
   .match-card-front small { padding: 5px 3px; font-size: 0.48rem; }
 }
