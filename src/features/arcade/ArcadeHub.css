@@ -679,3 +679,5 @@
     transition: none;
   }
 }
+
+.plinko-cabinet-art { margin: 16px 0 10px; color: #e29bff; font-size: 2.5rem; letter-spacing: .16em; text-shadow: 0 0 14px #d667ff; }

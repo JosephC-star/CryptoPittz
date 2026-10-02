@@ -9,7 +9,10 @@ const PittzMatch = lazy(() => import("../pittz-match/PittzMatch"));
 const Pittz21 = lazy(() => import("../pittz-21/Pittz21"));
 const PittzRoulette = lazy(() => import("../pittz-roulette/PittzRoulette"));
 
+const PittzPlinko = lazy(() => import("../pittz-plinko/PittzPlinko"));
+
 const GAME_LABELS = {
+  plinko: "PITTZ PLINKO",
   rush: "BONEZ RUSH",
   palace: "PITTZ PALACE",
   match: "PITTZ MEMORY",
@@ -72,7 +75,7 @@ function ArcadeHub({ address = "", nfts = [], nftsLoading = false, nftsError = "
             <div>
               <span>🐾 YOUR CABINET PITT</span>
               <strong>{equippedPittz.name || equippedPittz.identifier}</strong>
-              <small>Equipped across all five games</small>
+              <small>Equipped across all six games</small>
             </div>
             <label>
               <span>Switch Pittz</span>
@@ -202,6 +205,18 @@ function ArcadeHub({ address = "", nfts = [], nftsLoading = false, nftsError = "
           </div>
           <button type="button" onClick={() => openGame("roulette")}>SPIN PITTZ ROULETTE</button>
         </article>
+        <article className="arcade-cabinet plinko-cabinet">
+          <div className="cabinet-bulbs" aria-hidden="true" />
+          <div className="cabinet-screen">
+            <span className="cabinet-status live">★ NEW DROP</span>
+            <div className="plinko-cabinet-art" aria-hidden="true">🦴<br />⋰ • ⋱</div>
+            <h3>PITTZ PLINKO</h3>
+            <p>Send a Bonez ball through twelve neon rows and chase the edge payouts.</p>
+            <div className="cabinet-tags"><span>12 ROWS</span><span>3 RISK LEVELS</span><span>SHARED BONEZ</span></div>
+          </div>
+          <div className="cabinet-controls" aria-hidden="true"><i /><b /><i /></div>
+          <button type="button" onClick={() => openGame("plinko")}>DROP INTO PITTZ PLINKO</button>
+        </article>
       </div>
 
       {activeGame && (
@@ -214,6 +229,11 @@ function ArcadeHub({ address = "", nfts = [], nftsLoading = false, nftsError = "
             <button type="button" onClick={() => setActiveGame(null)}>✕ Exit Cabinet</button>
           </div>
 
+          {activeGame === "plinko" && (
+            <Suspense fallback={<div className="arcade-loading">Lighting the Plinko pegs...</div>}>
+              <PittzPlinko equippedPittz={equippedPittz} />
+            </Suspense>
+          )}
           {activeGame === "rush" && (
             <Suspense fallback={<div className="arcade-loading">Powering up BONEZ Rush...</div>}>
               <BonezRush embedded equippedPittz={equippedPittz} />
