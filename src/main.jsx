@@ -13,7 +13,7 @@ const config = {
   },
 
   dAppConfig: {
-    environment: EnvironmentsEnum.devnet,
+    environment: import.meta.env.VITE_OOX_TRANSACTIONS === "true" && import.meta.env.VITE_OOX_PREVIEW === "true" ? EnvironmentsEnum.mainnet : EnvironmentsEnum.devnet,
 
     providers: {
       walletConnect: {

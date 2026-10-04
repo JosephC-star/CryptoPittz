@@ -119,7 +119,7 @@ export default function NftDetailModal({
 
           {import.meta.env.VITE_OOX_PREVIEW === "true" && (
             <PurchasePreviewBoundary key={nft.identifier}><Suspense fallback={<p>Loading purchase preview…</p>}>
-              <OoxPurchasePreview key={nft.identifier} nft={nft} />
+              <OoxPurchasePreview key={nft.identifier} nft={nft} isOwned={isOwned} />
             </Suspense></PurchasePreviewBoundary>
           )}
 
