@@ -1,5 +1,11 @@
-import { lazy, Suspense, useEffect } from "react";
-const OoxPurchasePreview = lazy(() => import("../../features/oox/OoxPurchasePreview"));
+import { Component, lazy, Suspense, useEffect } from "react";
+import { loadPreview } from "../../features/oox/loadPreview";
+const OoxPurchasePreview = lazy(loadPreview);
+class PurchasePreviewBoundary extends Component {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() { return this.state.failed ? <p role="alert">Purchase preview could not load. You can still view this Pitt on OOX.</p> : this.props.children; }
+}
 
 import {
   decodePittzAttributes,
@@ -112,9 +118,9 @@ export default function NftDetailModal({
           </div>
 
           {import.meta.env.VITE_OOX_PREVIEW === "true" && (
-            <Suspense fallback={<p>Loading purchase preview…</p>}>
+            <PurchasePreviewBoundary key={nft.identifier}><Suspense fallback={<p>Loading purchase preview…</p>}>
               <OoxPurchasePreview key={nft.identifier} nft={nft} />
-            </Suspense>
+            </Suspense></PurchasePreviewBoundary>
           )}
 
           <div className="nft-detail-stats">
