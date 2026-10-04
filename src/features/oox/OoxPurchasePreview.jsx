@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Address } from '@multiversx/sdk-core';
 import { OOXClient, formatAmount } from '@oox-marketplace/sdk';
+import { readListingItems } from './listingResponse';
 import { CONTRACT, validateListing, validateQuote } from './validation';
 import './preview.css';
 const client = new OOXClient({ network: 'mainnet', marketplaceContract: CONTRACT });
@@ -18,10 +19,11 @@ export default function OoxPurchasePreview({ nft }) {
   const locked = useRef(false);
   useEffect(() => {
     let active = true;
-    client.api.getListings({ identifiers: [nft.identifier], size: 20 }).then(({ items }) => {
+    client.api.getListings({ identifiers: [nft.identifier], size: 20 }).then((page) => {
       if (!active) return;
+      const items = readListingItems(page);
       const match = items.find(item => item.priceType === 'fixed' && item.saleType === 'nft' && item.paymentToken === 'EGLD');
-      if (!match) { setMessage('No supported fixed-price EGLD listing found.'); return; }
+      if (!match) { setMessage(items.length ? 'OOX returned a listing, but this preview supports fixed-price EGLD NFT purchases only. Use View on OOX to check other sale types.' : 'OOX’s purchase API returned no listing for this Pitt. The Explorer sale badge may use different or older listing data. Check View on OOX; simulation is unavailable until the purchase API returns a listing.'); return; }
       validateListing(match, nft);
       setListing(match); setMessage('Listing loaded. No purchase can be sent from this preview.');
     }).catch(error => { if (active) setMessage(error.message); });
