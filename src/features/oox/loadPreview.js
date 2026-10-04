@@ -4,3 +4,8 @@ export async function loadPreview() {
   globalThis.Buffer ??= Buffer;
   return import.meta.env.VITE_OOX_TRANSACTIONS === 'true' ? import('./OoxTradePanel') : import('./OoxPurchasePreview');
 }
+
+export async function loadMyListings() {
+  globalThis.Buffer ??= Buffer;
+  return import('./MyListings');
+}

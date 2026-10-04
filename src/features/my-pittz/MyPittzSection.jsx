@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 
 import NftCard from "../../components/nft/NftCard";
 import { getBonezGeneration, getBonezWalletTotals } from "../../utils/bonezUtils";
 import { formatBonezUsd } from "../../utils/formatters";
 import { getPittzStats } from "../../utils/nftUtils";
 
+import { loadMyListings } from '../oox/loadPreview';
+const MyListings=lazy(loadMyListings);
+
 function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNft }) {
+  const [view,setView]=useState("wallet");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("rank");
   const [bloodlineFilter, setBloodlineFilter] = useState("all");
@@ -91,6 +95,11 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
         <span>Your CryptoPittz collection.</span>
       </div>
 
+      {import.meta.env.VITE_OOX_PREVIEW === 'true' && <div className="explorer-tabs my-pittz-tabs" aria-label="Wallet views">
+        <button className={`explorer-tab ${view==='wallet'?'active':''}`} onClick={()=>setView('wallet')}>In My Wallet</button>
+        <button className={`explorer-tab ${view==='listings'?'active':''}`} onClick={()=>setView('listings')}>My Listings</button>
+      </div>}
+      {view==='listings' ? <Suspense fallback={<p>Loading listings…</p>}><MyListings key={address||'disconnected'} address={address}/></Suspense> : <>
       <div className="explorer-tabs my-pittz-tabs">
         <button
           type="button"
@@ -266,6 +275,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
           )}
         </div>
       </div>
+      </>}
     </section>
   );
 }
