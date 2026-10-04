@@ -18,7 +18,7 @@ async function context() {
   if(import.meta.env.VITE_OOX_TRANSACTIONS!=='true'||import.meta.env.VITE_OOX_PREVIEW!=='true') throw Error('Owner testing is disabled.');
   const address=getAccount().address;
   Address.newFromBech32(address);
-  if(getNetworkConfig().chainID!=='1') throw Error('Connect a mainnet wallet.');
+  if(getNetworkConfig().network.chainId!=='1') throw Error('Connect a mainnet wallet.');
   const config=await client.api.getConfig();
   if(config.chainId!=='1'||config.network!=='mainnet'||config.marketplaceContract!==CONTRACT) throw Error('OOX contract/network mismatch.');
   const a=await json(`https://gateway.multiversx.com/address/${address}`);
@@ -58,7 +58,7 @@ export async function submit(review) {
   inFlight=true;
   try {
     if(Date.now()-review.created>60000) throw Error('Review expired. Prepare it again.');
-    if(getAccount().address!==review.address||getNetworkConfig().chainID!=='1') throw Error('Wallet or network changed.');
+    if(getAccount().address!==review.address||getNetworkConfig().network.chainId!=='1') throw Error('Wallet or network changed.');
     if(review.action==='buy') {
       const quote=await client.api.getQuote({buyer:review.address,auctionId:review.listing.auctionId});
       validateQuote(quote,review.listing,review.nft,review.address);
@@ -71,9 +71,9 @@ export async function submit(review) {
     if(signed?.length!==1) throw Error('Signing was cancelled.');
     // Providers may update nonce; all purchase/listing and payment fields must stay exact.
     checkTransaction(signed[0],review.expected);
-    if(getAccount().address!==review.address||getNetworkConfig().chainID!=='1') throw Error('Wallet/network changed before sending.');
+    if(getAccount().address!==review.address||getNetworkConfig().network.chainId!=='1') throw Error('Wallet/network changed before sending.');
     if(review.action==='buy') validateQuote(await client.api.getQuote({buyer:review.address,auctionId:review.listing.auctionId}),review.listing,review.nft,review.address);
-    if(getAccount().address!==review.address||getNetworkConfig().chainID!=='1') throw Error('Wallet/network changed before broadcast.');
+    if(getAccount().address!==review.address||getNetworkConfig().network.chainId!=='1') throw Error('Wallet/network changed before broadcast.');
     const manager=TransactionManager.getInstance();
     const sent=await manager.send(signed);
     let session;
