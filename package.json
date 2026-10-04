@@ -10,7 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@multiversx/sdk-core": "15.4.1",
     "@multiversx/sdk-dapp": "^5.7.2",
+    "@oox-marketplace/sdk": "0.1.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },

@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
+const OoxPurchasePreview = lazy(() => import("../../features/oox/OoxPurchasePreview"));
 
 import {
   decodePittzAttributes,
@@ -109,6 +110,12 @@ export default function NftDetailModal({
               🛒 View on OOX Marketplace ↗
             </a>
           </div>
+
+          {import.meta.env.VITE_OOX_PREVIEW === "true" && (
+            <Suspense fallback={<p>Loading purchase preview…</p>}>
+              <OoxPurchasePreview key={nft.identifier} nft={nft} />
+            </Suspense>
+          )}
 
           <div className="nft-detail-stats">
             {stats.rank && (

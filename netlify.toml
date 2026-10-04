@@ -1,0 +1,5 @@
+[context."feature/oox-purchase-preview".environment]
+  VITE_OOX_PREVIEW = "true"
+
+[context.deploy-preview.environment]
+  VITE_OOX_PREVIEW = "true"
