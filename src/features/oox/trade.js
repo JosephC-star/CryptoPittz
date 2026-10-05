@@ -15,7 +15,7 @@ export async function json(url) {
 export function hex(value) { const s=BigInt(value).toString(16); return s.padStart(Math.ceil(s.length/2)*2,'0'); }
 export function textHex(value) { return Array.from(new TextEncoder().encode(value),b=>b.toString(16).padStart(2,'0')).join(''); }
 async function context() {
-  if(import.meta.env.VITE_OOX_TRANSACTIONS!=='true'||import.meta.env.VITE_OOX_PREVIEW!=='true') throw Error('Owner testing is disabled.');
+  if(import.meta.env.VITE_OOX_TRANSACTIONS!=='true'||import.meta.env.VITE_OOX_PREVIEW!=='true') throw Error('Marketplace transactions are disabled.');
   const address=getAccount().address;
   Address.newFromBech32(address);
   if(getNetworkConfig().network.chainId!=='1') throw Error('Connect a mainnet wallet.');

@@ -1,3 +1,7 @@
+[context.production.environment]
+  VITE_OOX_PREVIEW = "true"
+  VITE_OOX_TRANSACTIONS = "true"
+
 [context."feature/oox-purchase-preview".environment]
   VITE_OOX_PREVIEW = "true"
   VITE_OOX_TRANSACTIONS = "true"
