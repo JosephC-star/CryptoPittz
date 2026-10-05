@@ -1,7 +1,6 @@
 import {
   decodePittzAttributes,
   getNftImage,
-  getNftMarketplace,
   getPittzStats,
 } from "../../utils/nftUtils";
 
@@ -59,7 +58,10 @@ export default function NftCard({
         )}
 
         {isOwned && <span className="owned-badge">OWNED ✓</span>}
-        {isExplorer && listing && <span className="listed-badge">FOR SALE</span>}
+        {isExplorer && listing && <>
+          <span className="listed-badge">FOR SALE</span>
+          <span className={`listing-marketplace-badge ${isOwned ? 'with-owned-badge' : ''}`} aria-label={`Listing marketplace: ${listing.marketplace || 'unverified'}`}>{listing.marketplace === undefined ? 'CHECKING' : listing.marketplace || 'UNVERIFIED'}</span>
+        </>}
       </div>
 
       <div className="wallet-nft-info">
@@ -69,19 +71,19 @@ export default function NftCard({
         {isExplorer && listing && (
           <div className="oox-listing">
             <div>
-              <span>OOX LISTING</span>
+              <span>{listing.marketplace ? `${listing.marketplace} LISTING` : "MARKETPLACE LISTING"}</span>
               <strong>
                 {formatListingPrice(listing)} {listing.paymentToken.split("-")[0]}
               </strong>
             </div>
-            <a
-              href={getNftMarketplace(nft)}
-              target="_blank"
-              rel="noreferrer"
-              onClick={(event) => event.stopPropagation()}
+            <button
+              type="button"
+              className="explorer-buy-button"
+              aria-label={`Buy ${nft.name || nft.identifier}`}
+              onClick={(event) => { event.stopPropagation(); onClick?.(); }}
             >
-              VIEW ON OOX ↗
-            </a>
+              BUY →
+            </button>
           </div>
         )}
 

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
+import { identifyListingMarkets } from "../../utils/listingMarketplace";
+
 export default function useOoxListings(collection) {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +25,10 @@ export default function useOoxListings(collection) {
         if (!response.ok) throw new Error("Unable to load OOX listings");
 
         const data = await response.json();
-        setListings(Array.isArray(data.listings) ? data.listings : []);
+        const rows = Array.isArray(data.listings) ? data.listings : [];
+        setListings(rows);
+        const identified = await identifyListingMarkets(rows, controller.signal);
+        if (!controller.signal.aborted) setListings(identified);
         setUpdatedAt(data.updatedAt || "");
       } catch (loadError) {
         if (loadError.name === "AbortError") return;
