@@ -1,16 +1,25 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 
 import NftCard from "../../components/nft/NftCard";
 import { getBonezGeneration, getBonezWalletTotals } from "../../utils/bonezUtils";
 import { formatBonezUsd } from "../../utils/formatters";
-import { getPittzStats } from "../../utils/nftUtils";
+import { getPittzStats, getPittzTraits } from "../../utils/nftUtils";
+import TraitFinder from "../traits/TraitFinder";
+
+const PITTZ_PER_PAGE = 40;
+
+import { loadMyListings } from '../oox/loadPreview';
+const MyListings=lazy(loadMyListings);
 
 function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNft }) {
+  const [view,setView]=useState("wallet");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("rank");
   const [bloodlineFilter, setBloodlineFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [collection, setCollection] = useState("original");
+  const [walletTraits, setWalletTraits] = useState({});
+  const [page, setPage] = useState(1);
 
   const ownedOriginalPittz = nfts.filter((nft) => nft.collection === "PITTZ-1a4c2d");
   const ownedVicePittz = nfts.filter((nft) => nft.collection === "PITTZVICE-c3ec94");
@@ -54,8 +63,12 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
         nft.identifier?.toLowerCase().includes(normalizedSearch);
       const matchesBloodline = bloodlineFilter === "all" || stats.bloodline === bloodlineFilter;
       const matchesType = typeFilter === "all" || stats.type === typeFilter;
+      const traits = getPittzTraits(nft.attributes);
+      const matchesTraits = Object.entries(walletTraits).every(([category, values]) =>
+        traits.some((item) => item.trait === category && values.includes(item.value)),
+      );
 
-      return matchesSearch && matchesBloodline && matchesType;
+      return matchesSearch && matchesBloodline && matchesType && matchesTraits;
     })
     .sort((a, b) => {
       const aStats = getPittzStats(a.attributes);
@@ -68,6 +81,12 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
       if (sortBy === "name") return (a.name || "").localeCompare(b.name || "");
       return 0;
     });
+  const totalPages = Math.max(1, Math.ceil(filteredNfts.length / PITTZ_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+  const visibleNfts = filteredNfts.slice(
+    (currentPage - 1) * PITTZ_PER_PAGE,
+    currentPage * PITTZ_PER_PAGE,
+  );
 
   const bonezWalletTotals = getBonezWalletTotals(nfts);
   const liveUsdPrice = Number(bonezUsdPrice);
@@ -82,6 +101,8 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
     setSortBy("rank");
     setBloodlineFilter("all");
     setTypeFilter("all");
+    setWalletTraits({});
+    setPage(1);
   }
 
   return (
@@ -91,11 +112,20 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
         <span>Your CryptoPittz collection.</span>
       </div>
 
+      {import.meta.env.VITE_OOX_PREVIEW === 'true' && <div className="explorer-tabs my-pittz-tabs" aria-label="Wallet views">
+        <button className={`explorer-tab ${view==='wallet'?'active':''}`} onClick={()=>setView('wallet')}>In My Wallet</button>
+        <button className={`explorer-tab ${view==='listings'?'active':''}`} onClick={()=>setView('listings')}>My Listings</button>
+      </div>}
+      {view==='listings' ? <Suspense fallback={<p>Loading listings…</p>}><MyListings key={address||'disconnected'} address={address}/></Suspense> : <>
       <div className="explorer-tabs my-pittz-tabs">
         <button
           type="button"
           className={`explorer-tab ${collection === "original" ? "active" : ""}`}
-          onClick={() => setCollection("original")}
+          onClick={() => {
+            setCollection("original");
+            setWalletTraits({});
+            setPage(1);
+          }}
         >
           Original Pittz
           <span>{ownedOriginalPittz.length}</span>
@@ -104,7 +134,11 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
         <button
           type="button"
           className={`explorer-tab ${collection === "vice" ? "active" : ""}`}
-          onClick={() => setCollection("vice")}
+          onClick={() => {
+            setCollection("vice");
+            setWalletTraits({});
+            setPage(1);
+          }}
         >
           Vice Pittz
           <span>{ownedVicePittz.length}</span>
@@ -207,16 +241,25 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                   type="text"
                   placeholder="Search Pittz..."
                   value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
+                  onChange={(event) => {
+                    setSearchTerm(event.target.value);
+                    setPage(1);
+                  }}
                 />
-                <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
+                <select value={sortBy} onChange={(event) => {
+                  setSortBy(event.target.value);
+                  setPage(1);
+                }}>
                   <option value="rank">Best Rank</option>
                   <option value="score">Highest Score</option>
                   <option value="name">Name</option>
                 </select>
                 <select
                   value={bloodlineFilter}
-                  onChange={(event) => setBloodlineFilter(event.target.value)}
+                  onChange={(event) => {
+                    setBloodlineFilter(event.target.value);
+                    setPage(1);
+                  }}
                 >
                   <option value="all">All Bloodlines</option>
                   {Object.keys(walletSummary.bloodlines).map((bloodline) => (
@@ -225,7 +268,10 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                     </option>
                   ))}
                 </select>
-                <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
+                <select value={typeFilter} onChange={(event) => {
+                  setTypeFilter(event.target.value);
+                  setPage(1);
+                }}>
                   <option value="all">All Types</option>
                   {Object.keys(walletSummary.types).map((type) => (
                     <option key={type} value={type}>
@@ -235,14 +281,29 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                 </select>
               </div>
 
+              <TraitFinder
+                id="my-pittz-traits"
+                nfts={activeOwnedPittz}
+                loading={loading}
+                selected={walletTraits}
+                title="🔎 Filter My Pittz by Traits"
+                description="Combine traits to search only the Pittz in your wallet"
+                indexLabel="YOUR WALLET INDEX"
+                onSelectedChange={(nextTraits) => {
+                  setWalletTraits(nextTraits);
+                  setPage(1);
+                }}
+              />
+
               <div className="pittz-results-bar">
                 <span>
-                  Showing {filteredNfts.length} of {activeOwnedPittz.length}{" "}
+                  Showing {visibleNfts.length} of {filteredNfts.length} matching{" "}
                   {collection === "vice" ? "Vice Pittz" : "Original Pittz"}
                 </span>
                 {(searchTerm ||
                   bloodlineFilter !== "all" ||
                   typeFilter !== "all" ||
+                  Object.keys(walletTraits).length > 0 ||
                   sortBy !== "rank") && (
                   <button className="reset-filters" type="button" onClick={resetFilters}>
                     ↻ Reset Filters
@@ -251,21 +312,42 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
               </div>
 
               <div className="wallet-nft-grid owned-nft-grid">
-                {filteredNfts.map((nft) => (
+                {visibleNfts.map((nft) => (
                   <NftCard
                     key={nft.identifier}
                     nft={nft}
                     bonez={getBonezGeneration(nft)}
                     isOwned
                     showTraits
-                    onClick={() => onOpenNft(nft, filteredNfts)}
+                    onClick={() => onOpenNft(nft, visibleNfts)}
                   />
                 ))}
               </div>
+
+              {totalPages > 1 && (
+                <nav className="my-pittz-pagination" aria-label="My Pittz pages">
+                  <button
+                    type="button"
+                    disabled={currentPage === 1}
+                    onClick={() => setPage((value) => Math.max(1, value - 1))}
+                  >
+                    ← Previous
+                  </button>
+                  <span>Page {currentPage} of {totalPages}</span>
+                  <button
+                    type="button"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
+                  >
+                    Next →
+                  </button>
+                </nav>
+              )}
             </>
           )}
         </div>
       </div>
+      </>}
     </section>
   );
 }

@@ -1,4 +1,11 @@
-import { useEffect } from "react";
+import { Component, lazy, Suspense, useEffect } from "react";
+import { loadPreview } from "../../features/oox/loadPreview";
+const OoxPurchasePreview = lazy(loadPreview);
+class PurchasePreviewBoundary extends Component {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() { return this.state.failed ? <p role="alert">Marketplace controls could not load. You can still view this Pitt on OOX.</p> : this.props.children; }
+}
 
 import {
   decodePittzAttributes,
@@ -109,6 +116,12 @@ export default function NftDetailModal({
               🛒 View on OOX Marketplace ↗
             </a>
           </div>
+
+          {import.meta.env.VITE_OOX_PREVIEW === "true" && (
+            <PurchasePreviewBoundary key={nft.identifier}><Suspense fallback={<p>Loading marketplace…</p>}>
+              <OoxPurchasePreview key={nft.identifier} nft={nft} isOwned={isOwned} />
+            </Suspense></PurchasePreviewBoundary>
+          )}
 
           <div className="nft-detail-stats">
             {stats.rank && (

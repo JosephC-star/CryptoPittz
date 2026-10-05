@@ -13,10 +13,19 @@ const config = {
   },
 
   dAppConfig: {
-    environment: EnvironmentsEnum.devnet,
+    environment: import.meta.env.VITE_OOX_TRANSACTIONS === "true" && import.meta.env.VITE_OOX_PREVIEW === "true" ? EnvironmentsEnum.mainnet : EnvironmentsEnum.devnet,
 
     providers: {
       walletConnect: {
+        walletConnectV2Options: {
+          metadata: {
+            name: "PittzStop",
+            description: "CryptoPittz explorer and marketplace",
+            url: window.location.origin,
+            icons: [],
+            redirect: { universal: window.location.origin + window.location.pathname },
+          },
+        },
         walletConnectV2ProjectId: "05f778b27cb238c8d234a60f23935297",
       },
     },
