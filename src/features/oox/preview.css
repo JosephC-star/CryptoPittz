@@ -7,21 +7,27 @@
 .pitt-trade-badges{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.pitt-trade-badges .pitt-sale-tag{margin-left:0}.pitt-marketplace-tag{display:inline-block;padding:5px 10px;border:1px solid #a98cff88;border-radius:20px;background:#9673ef20;color:#dbceff;font-size:10px;font-weight:800;letter-spacing:.1em}
 
 /* A confirmed purchase unlocks the artwork; this reveal never signs a transaction. */
-.pitt-burn-art{position:relative;overflow:hidden;border-radius:10px;aspect-ratio:1;isolation:isolate}
+@property --pitt-burn-radius{syntax:"<length>";inherits:true;initial-value:0px}
+.pitt-burn-art{--pitt-burn-radius:0px;position:relative;overflow:hidden;border-radius:10px;aspect-ratio:1;isolation:isolate}
 .pitt-burn-cover{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:0;background:radial-gradient(ellipse at 50% 75%,#301209 0%,#080808 65%);color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:25px;padding:20px;z-index:2}
 .pitt-burn-cover:focus-visible{outline:3px solid #37e8db;outline-offset:-5px}
 .pitt-burn-cover:disabled{cursor:default;opacity:1}
 .pitt-burn-motto{font-size:29px;font-weight:900;line-height:1.25;letter-spacing:.09em;color:#ffd391;text-shadow:0 0 9px #ff842b,0 0 24px #fa3f0c;animation:pitt-ember-breathe 2.4s ease-in-out infinite}
 .pitt-burn-prompt{font-size:12px;letter-spacing:.08em;color:#d7c3b0}
-.pitt-burn-art.burning .pitt-burn-cover{animation:pitt-cover-burn 3.2s linear forwards;pointer-events:none}
+.pitt-burn-art.burning{animation:pitt-center-burn 4.2s ease-in forwards}.pitt-burn-art.burning .pitt-burn-cover{pointer-events:none;-webkit-mask-image:radial-gradient(circle at center,transparent max(0px,calc(var(--pitt-burn-radius) - 3px)),#000 calc(var(--pitt-burn-radius) + 2px));mask-image:radial-gradient(circle at center,transparent max(0px,calc(var(--pitt-burn-radius) - 3px)),#000 calc(var(--pitt-burn-radius) + 2px))}
 .pitt-burn-art.burning .pitt-burn-motto,.pitt-burn-art.burning .pitt-burn-prompt{animation:pitt-burn-text .6s ease-out forwards}
-.pitt-burn-edge{position:absolute;left:-25%;top:100%;width:150%;height:8px;background:#fff2b8;box-shadow:0 0 10px 6px #ffad23,0 0 24px 12px #ff490c;border-radius:50%;transform:rotate(45deg);z-index:3;pointer-events:none;animation:pitt-fire-rise 3.2s linear forwards}
-.pitt-flame{position:absolute;left:calc(var(--f)*7%);bottom:0;width:22px;height:var(--height);border-radius:70% 20% 50% 50%;background:linear-gradient(to top,#fff4b9 5%,#ffc12d 40%,#ff5d10 75%,transparent);filter:drop-shadow(0 0 6px #ff6b16);transform-origin:center bottom;animation:pitt-flame-dance .27s ease-in-out infinite alternate;animation-delay:calc(var(--f)*-.07s)}
+.pitt-burn-edge{position:absolute;left:50%;top:50%;width:calc(var(--pitt-burn-radius)*2);height:calc(var(--pitt-burn-radius)*2);border:5px solid #ffbc54;border-radius:50%;transform:translate(-50%,-50%);box-shadow:inset 0 0 3px 2px #fff5c0,0 0 4px 3px #f86713,0 0 9px 7px #7b2a0b,0 0 2px 11px #24130c;z-index:3;pointer-events:none;animation:pitt-fire-lifetime 4.2s linear forwards}
+.pitt-flame{position:absolute;left:50%;top:50%;width:13px;height:var(--height);transform:translate(-50%,-50%) rotate(var(--angle)) translateY(calc(var(--pitt-burn-radius)*-1));transform-origin:center;opacity:.9}
+.pitt-flame:before,.pitt-flame:after{content:"";position:absolute;inset:0;border-radius:65% 15% 55% 45%;background:linear-gradient(to top,#fff8d0 0%,#ffd65e 24%,#ff861b 52%,#d93308 78%,transparent 100%);filter:drop-shadow(0 0 3px #ff7317);transform-origin:center bottom;animation:pitt-flame-dance .19s ease-in-out infinite alternate;animation-delay:calc(var(--f)*-.037s)}
+.pitt-flame:after{inset:35% 25% 0;background:linear-gradient(to top,#fffbe5,#ffde70 60%,transparent);animation-duration:.31s}
+.pitt-flying-embers{position:fixed;width:1px;height:1px;z-index:10000;pointer-events:none}
+.pitt-flying-embers i{position:absolute;width:var(--size);height:calc(var(--size)*1.7);border-radius:40%;background:#ffd79b;box-shadow:0 0 4px #ff9b25,0 0 10px #f54a0a;opacity:0;animation:pitt-ember-flight 2.4s var(--delay) ease-out both}
+@keyframes pitt-center-burn{0%{--pitt-burn-radius:0px}10%{--pitt-burn-radius:8px}100%{--pitt-burn-radius:215px}}
+@keyframes pitt-fire-lifetime{0%{opacity:0}5%,87%{opacity:1}100%{opacity:0}}
+@keyframes pitt-ember-flight{0%{opacity:0;transform:translate(0,0) scale(.5)}10%{opacity:1}65%{opacity:.75}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(180deg) scale(.2)}}
 .pitt-skip-reveal{margin:16px auto 0;background:transparent;border:0;color:#cbbab0;font:inherit;font-size:12px;text-decoration:underline;text-underline-offset:4px;cursor:pointer;padding:8px}
 .pitt-skip-reveal:focus-visible{outline:2px solid #37e8db;border-radius:6px}
 @keyframes pitt-ember-breathe{0%,100%{opacity:.82;text-shadow:0 0 7px #ff842b,0 0 16px #fa3f0c}50%{opacity:1;text-shadow:0 0 12px #ffb23b,0 0 32px #fa3f0c}}
-@keyframes pitt-cover-burn{0%{clip-path:polygon(0 0,100% 0,100% 200%,0 100%)}50%{clip-path:polygon(0 0,100% 0,100% 100%,0 0)}100%{clip-path:polygon(0 0,100% 0,100% 0,0 -100%)}}
-@keyframes pitt-fire-rise{0%{top:150%;opacity:0}4%{opacity:1}92%{opacity:1}100%{top:-50%;opacity:0}}
 @keyframes pitt-flame-dance{from{transform:skewX(-12deg) scaleY(.8)}to{transform:skewX(15deg) scaleY(1.15)}}
 @keyframes pitt-burn-text{to{opacity:0;transform:translateY(-8px)}}
-@media(prefers-reduced-motion:reduce){.pitt-burn-motto{animation:none}.pitt-burn-edge{display:none}.pitt-burn-art.burning .pitt-burn-cover{animation:none;visibility:hidden}}
+@media(prefers-reduced-motion:reduce){.pitt-burn-motto{animation:none}.pitt-burn-edge{display:none}.pitt-burn-art.burning{animation:none}.pitt-flying-embers{display:none}.pitt-burn-art.burning .pitt-burn-cover{visibility:hidden}}
