@@ -7,3 +7,10 @@
 
 [context.deploy-preview.environment]
   VITE_OOX_PREVIEW = "true"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "frame-ancestors 'self'"

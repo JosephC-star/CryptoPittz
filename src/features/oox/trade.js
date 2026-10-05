@@ -27,6 +27,7 @@ async function context() {
   return {address,account};
 }
 export async function prepare(action,nft,listing,price,days) {
+  if(!['buy','list'].includes(action)) throw Error('Unsupported marketplace action.');
   const {address,account}=await context();
   let tx,expected,amount=0n;
   if(action==='buy') {
@@ -57,7 +58,8 @@ export async function submit(review) {
   if(inFlight) throw Error('Another marketplace transaction is in progress.');
   inFlight=true;
   try {
-    if(Date.now()-review.created>60000) throw Error('Review expired. Prepare it again.');
+    if(!review || !['buy','list'].includes(review.action)) throw Error('Unsupported marketplace action.');
+    if(!Number.isFinite(review.created)||review.created>Date.now()||Date.now()-review.created>60000) throw Error('Review expired. Prepare it again.');
     if(getAccount().address!==review.address||getNetworkConfig().network.chainId!=='1') throw Error('Wallet or network changed.');
     if(review.action==='buy') {
       const quote=await client.api.getQuote({buyer:review.address,auctionId:review.listing.auctionId});

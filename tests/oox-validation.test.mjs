@@ -18,3 +18,15 @@ for (const [nonce, suffix] of [[644, '0284'], [256, '0100'], [4095, '0fff'], [40
 }
 test('reject wrong collection', () => assert.throws(() => validateListing({ ...listing, collection: 'PITTZVICE-c3ec94' }, nft, 'buyer')));
 test('reject different identifier', () => assert.throws(() => validateListing({ ...listing, identifier: 'PITTZ-1a4c2d-02' }, nft, 'buyer')));
+
+for (const [name, changed] of Object.entries({
+  missingStart: {startTime: undefined}, missingDeadline: {deadline: undefined},
+  nanStart: {startTime: NaN}, infiniteDeadline: {deadline: Infinity},
+  fractionalStart: {startTime: 0.5}, negativeStart: {startTime: -1},
+  stringDeadline: {deadline: '9999999999'}, reversedWindow: {startTime: 100, deadline: 99},
+  stringActive: {isActive: 'false'}, numericPrice: {price: 1},
+  futureStart: {startTime: 9999999998}, unsafeDeadline: {deadline: Number.MAX_SAFE_INTEGER + 1}
+})) {
+  test(`reject malformed listing ${name}`, () => assert.throws(() => validateListing({...listing, ...changed}, nft, 'buyer')));
+}
+test('reject truthy non-boolean purchasability', () => assert.throws(() => validateQuote({...quote, purchasable: 'false'}, listing, nft, 'buyer')));
