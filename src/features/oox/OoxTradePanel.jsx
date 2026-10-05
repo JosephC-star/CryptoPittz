@@ -59,7 +59,7 @@ export default function OoxTradePanel({nft,isOwned}) {
   if(!canBuy&&!canList&&!purchase&&!sent)return null;
   return <section className="oox-preview pitt-trade-panel" aria-label="OOX purchase">
     {confirmed&&purchase&&<PurchaseCelebration nft={purchase.nft} hash={purchase.hash}/>}
-    <div className="oox-purchase-heading"><span className="oox-market-label">🐾 PITTZSTOP · OOX</span><span className="pitt-sale-tag">{canBuy?"FOR SALE":"YOUR PITT"}</span><h3>{canBuy?"Bring this Pitt home":"Find this Pitt a new pack"}</h3></div>
+    <div className="oox-purchase-heading"><div className="pitt-trade-badges"><span className="pitt-sale-tag">{canBuy?"FOR SALE":"YOUR PITT"}</span><span className="pitt-marketplace-tag" aria-label="Marketplace: OOX">OOX</span></div><span className="oox-market-label">🐾 PITTZSTOP</span><h3>{canBuy?"Bring this Pittz home":"Find this Pittz a new pack"}</h3></div>
     <p className="pitt-trade-note">{canBuy?"Review the price and network fee before approving in your wallet.":"Listing transfers this Pitt into the OOX marketplace contract. Network fees apply."}</p>
     {!account.address?<p>Connect your wallet using the site’s Connect Wallet button.</p>:<p>Wallet: {account.address.slice(0,10)}…{account.address.slice(-6)}</p>}
     {canBuy&&<><p className="oox-price"><strong>{formatAmount(listing.price,18)} EGLD</strong></p><button className="btn primary" disabled={!account.address||busy||sent} onClick={()=>run('buy')}>🐾 Review purchase →</button></>}

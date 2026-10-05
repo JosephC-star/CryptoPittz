@@ -6691,3 +6691,20 @@ header::after {
     font-size: 9px;
   }
 }
+
+/* Keep the Bonez label and tier readable in narrow wallet cards. */
+.wallet-nft-card .bonez-generation-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  min-width: 0;
+}
+.wallet-nft-card .bonez-generation-header span,
+.wallet-nft-card .bonez-generation-header strong {
+  display: block;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
