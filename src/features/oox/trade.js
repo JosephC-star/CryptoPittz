@@ -6,6 +6,7 @@ import { getAccountProvider } from '@multiversx/sdk-dapp/out/providers/helpers/a
 import { TransactionManager } from '@multiversx/sdk-dapp/out/managers/TransactionManager/TransactionManager';
 import { CONTRACT, validateQuote } from './validation';
 import { checkTransaction } from './transactionValidation';
+import { watchWalletHandoff } from './walletHandoff';
 export const client = new OOXClient({ network: 'mainnet', marketplaceContract: CONTRACT });
 export async function json(url) {
   const r=await fetch(url,{signal:AbortSignal.timeout(15000)});
@@ -54,7 +55,7 @@ export async function prepare(action,nft,listing,price,days) {
   return {tx,expected,payload,address,nft,listing,action,created:Date.now(),feeCap:feeCap.toString()};
 }
 let inFlight=false;
-export async function submit(review) {
+export async function submit(review, onWalletReady = () => {}) {
   if(inFlight) throw Error('Another marketplace transaction is in progress.');
   inFlight=true;
   try {
@@ -69,7 +70,11 @@ export async function submit(review) {
       if(owned.identifier!==review.nft.identifier||owned.type!=='NonFungibleESDT') throw Error('This Pitt is no longer available in the test wallet.');
     }
     checkTransaction(review.tx,review.expected);
-    const signed=await getAccountProvider().signTransactions([review.tx]);
+    const provider=getAccountProvider();
+    const stopHandoff=watchWalletHandoff(provider,onWalletReady);
+    let signed;
+    try { signed=await provider.signTransactions([review.tx]); }
+    finally { stopHandoff(); onWalletReady(null); }
     if(signed?.length!==1) throw Error('Signing was cancelled.');
     // Providers may update nonce; all purchase/listing and payment fields must stay exact.
     checkTransaction(signed[0],review.expected);

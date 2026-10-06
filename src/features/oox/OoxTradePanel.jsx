@@ -12,6 +12,7 @@ export default function OoxTradePanel({nft,isOwned}) {
   const [listing,setListing]=useState(null),[message,setMessage]=useState('Checking OOX…');
   const [price,setPrice]=useState(''),[days,setDays]=useState(7),[review,setReview]=useState(null),[busy,setBusy]=useState(false),[sent,setSent]=useState(false);
   const lock=useRef(false);
+  const [walletLink,setWalletLink]=useState(null);
   const [purchase,setPurchase]=useState(null),[confirmed,setConfirmed]=useState(false),[checkAttempt,setCheckAttempt]=useState(0);
   useEffect(()=>{
     if(!purchase)return;
@@ -51,7 +52,7 @@ export default function OoxTradePanel({nft,isOwned}) {
   async function confirm(){
     if(lock.current)return;lock.current=true;setBusy(true);
     const selected=review;setReview(null);
-    try{setMessage('Approve the exact transaction in your wallet.');const result=await submit(selected);setSent(true);if(selected.action==='buy'){const hash=result.sent?.[0]?.hash;if(/^[a-f0-9]{64}$/i.test(hash||''))setPurchase({hash,address:selected.address,identifier:selected.nft.identifier,expected:selected.expected,nft:selected.nft});}setMessage(`Submitted to mainnet; settlement is pending. Check your wallet/explorer before retrying. Tracking: ${result.session||'see wallet history'}`);}
+    try{setMessage('Approve the exact transaction in your wallet.');const result=await submit(selected,setWalletLink);setSent(true);if(selected.action==='buy'){const hash=result.sent?.[0]?.hash;if(/^[a-f0-9]{64}$/i.test(hash||''))setPurchase({hash,address:selected.address,identifier:selected.nft.identifier,expected:selected.expected,nft:selected.nft});}setMessage(`Submitted to mainnet; settlement is pending. Check your wallet/explorer before retrying. Tracking: ${result.session||'see wallet history'}`);}
     catch(e){setMessage(`Transaction did not complete: ${e.message} If signing or sending began, check wallet history before retrying.`)}finally{lock.current=false;setBusy(false)}
   }
   const canBuy=Boolean(listing)&&listing.seller!==account.address&&!isOwned;
@@ -66,6 +67,7 @@ export default function OoxTradePanel({nft,isOwned}) {
     {canList&&<><h3>Sell / List on OOX</h3><label>Fixed price in EGLD<input value={price} disabled={busy||sent} onChange={e=>{setPrice(e.target.value);setReview(null)}} inputMode="decimal" placeholder="0.1"/></label><label>Listing duration<select value={days} disabled={busy||sent} onChange={e=>{setDays(Number(e.target.value));setReview(null)}}><option value={1}>1 day</option><option value={7}>7 days</option><option value={30}>30 days</option></select></label><button className="btn primary" disabled={busy||sent||!price} onClick={()=>run('list')}>Review listing</button></>}
     {review&&review.address===account.address&&<div><h3>Confirm {review.action==='buy'?'purchase':'listing'}</h3><p>{nft.name} · {nft.identifier}</p><p>{review.price} EGLD{review.action==='list'?` · ${review.days} days`:''}</p><p>Maximum network fee allowance: {formatAmount(review.feeCap,18)} EGLD. Marketplace fees and royalties may reduce listing proceeds.</p><p>OOX contract: {CONTRACT}</p><button className="btn primary" disabled={busy} onClick={confirm}>Sign & send {review.action==='buy'?'purchase':'listing'}</button><button className="btn" disabled={busy} onClick={()=>setReview(null)}>Cancel review</button><details><summary>Exact transaction</summary><pre>{JSON.stringify(review.payload,null,2)}</pre></details></div>}
     <p role="status">{message}</p>
+    {walletLink&&busy&&<div><p>Your signing request is ready in xPortal. If it did not open automatically, tap below. This opens the same request.</p><a className="btn primary" href={walletLink} target={walletLink.startsWith('https:')?'_blank':undefined} rel="noopener noreferrer">Open xPortal →</a></div>}
     {purchase&&!confirmed&&<><a href={`https://explorer.multiversx.com/transactions/${purchase.hash}`} target="_blank" rel="noopener noreferrer">View transaction ↗</a><button className="btn" onClick={()=>setCheckAttempt(x=>x+1)}>Check purchase status</button></>}
   </section>;
 }
