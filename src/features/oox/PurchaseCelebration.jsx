@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { getNftImage } from '../../utils/nftUtils';
 import { drawPaperBurn, REVEAL_DURATION } from './paperBurn';
@@ -7,9 +7,20 @@ export default function PurchaseCelebration({ nft, hash }) {
   return <BurnCelebration key={`${nft.identifier}:${hash}`} nft={nft} hash={hash} />;
 }
 function BurnCelebration({ nft, hash }) {
+  const [open,setOpen]=useState(true);
+  const dialog=useRef(null),titleId=useId();
   const [reveal,setReveal]=useState('covered'),[origin,setOrigin]=useState({x:0,y:0});
   const [exporting,setExporting]=useState(false),[progress,setProgress]=useState(0),[exportError,setExportError]=useState('');
   const canvas=useRef(null),job=useRef(null),downloadUrl=useRef(null);
+  useEffect(()=>{
+    const node=dialog.current;
+    if(!open){node?.close();return;}
+    const previousOverflow=document.body.style.overflow;
+    document.body.style.overflow='hidden';
+    node.showModal();
+    return()=>{node.close();document.body.style.overflow=previousOverflow;};
+  },[open]);
+  const dismiss=()=>{if(reveal==='burning')setReveal('revealed');setOpen(false);};
   useEffect(()=>()=>{job.current?.abort();if(downloadUrl.current)URL.revokeObjectURL(downloadUrl.current);},[]);
   useEffect(()=>{
     if(reveal!=='burning')return;
@@ -39,11 +50,15 @@ function BurnCelebration({ nft, hash }) {
     }catch(error){if(!controller.signal.aborted)setExportError(error.name==='SecurityError'?'The artwork server blocked GIF export. You can still replay your reveal.':'GIF export could not complete. Please try again.');}
     finally{if(!controller.signal.aborted){setExporting(false);job.current=null;}}
   };
-  return <div className={`pitt-purchase-party paper-reveal ${reveal}`}>
-    {(reveal==='burning'||reveal==='revealed')&&createPortal(<div className="pitt-flying-embers" key={reveal} style={{left:origin.x,top:origin.y}} aria-hidden="true">
+  return <>
+    {!open&&<button className="btn primary" onClick={()=>setOpen(true)}>View your purchased Pittz ✨</button>}
+    {createPortal(<dialog ref={dialog} className="pitt-reveal-dialog" aria-labelledby={titleId} onCancel={event=>{event.preventDefault();event.stopPropagation();dismiss();}} onClick={event=>event.stopPropagation()} onKeyDown={event=>event.stopPropagation()}>
+    <div className={`pitt-purchase-party paper-reveal ${reveal}`}>
+    <button className="pitt-reveal-close" onClick={dismiss} aria-label="Close purchase reveal" autoFocus>×</button>
+    {(reveal==='burning'||reveal==='revealed')&&<div className="pitt-flying-embers" key={reveal} style={{left:origin.x,top:origin.y}} aria-hidden="true">
       {Array.from({length:reveal==='burning'?76:52},(_,i)=><i className={reveal==='revealed'?'finale':''} key={i} style={{'--dx':`${(i*83)%760-380}px`,'--dy':`${-100-(i*47)%530}px`,'--delay':`${reveal==='burning'?(i%14)*.15:0}s`,'--size':`${1.5+i%4*.7}px`}}/>)}
-    </div>,document.body)}
-    <p className="pitt-party-eyebrow">WELCOME TO YOUR PACK</p><h3>You just bought…</h3>
+    </div>}
+    <p className="pitt-party-eyebrow">WELCOME TO YOUR PACK</p><h3 id={titleId}>You just bought…</h3>
     <div className="pitt-party-frame"><div className={`pitt-burn-art ${reveal}`}>
       <img src={getNftImage(nft)} alt={nft.name}/>
       {reveal!=='revealed'&&<><canvas className="paper-burn-canvas" ref={canvas} aria-hidden="true"/>
@@ -59,5 +74,7 @@ function BurnCelebration({ nft, hash }) {
     <p className="pitt-share-note">Download your GIF, then attach it to your X post. No wallet address or purchase price is included.</p>
     {exportError&&<p role="status">{exportError}</p>}
     <a className="btn primary" href={`https://explorer.multiversx.com/transactions/${hash}`} target="_blank" rel="noopener noreferrer">View confirmed purchase ↗</a>
-  </div>;
+  </div>
+  </dialog>,document.body)}
+  </>;
 }

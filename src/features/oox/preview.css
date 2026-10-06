@@ -41,3 +41,16 @@
 @keyframes pack-spark{0%{opacity:0;transform:translate(0,0) scale(.5)}8%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.1)}}
 .pitt-reveal-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:18px 0}.pitt-reveal-actions .btn{font-size:12px;padding:10px 12px;cursor:pointer}.pitt-reveal-actions button:disabled{opacity:.55;cursor:wait}.pitt-share-note{font-size:11px;line-height:1.5;color:#aebbd0}.paper-reveal.revealed > p[aria-live]{color:#8bf2da;font-weight:700}.paper-reveal .paper-burn-canvas{z-index:1}.paper-reveal .pitt-burn-cover{z-index:2}
 @media(prefers-reduced-motion:reduce){.paper-reveal .pitt-party-frame,.paper-reveal h4,.paper-reveal p{animation:none!important}.pitt-flying-embers{display:none}}
+
+/* The confirmed acquisition takes center stage above the NFT detail card. */
+.pitt-reveal-dialog{box-sizing:border-box;width:100vw;max-width:none;height:100dvh;max-height:none;margin:0;padding:max(20px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));border:0;background:transparent;color:#fff;overflow-y:auto;overscroll-behavior:contain}
+.pitt-reveal-dialog::backdrop{background:rgba(3,5,13,.94);backdrop-filter:blur(14px)}
+.pitt-reveal-dialog .pitt-purchase-party{box-sizing:border-box;width:min(100%,640px);margin:0 auto;padding:36px 24px 28px;overflow:visible;box-shadow:0 0 100px #ff50d625}
+.pitt-reveal-dialog .pitt-party-frame{width:min(100%,420px);max-width:420px;box-sizing:border-box}
+.pitt-reveal-dialog .pitt-party-eyebrow{margin-top:12px}
+.pitt-reveal-dialog .pitt-purchase-party h3{font-size:clamp(28px,5vw,42px)}
+.pitt-reveal-close{position:absolute;right:10px;top:10px;width:40px;height:40px;border:1px solid #ffffff40;border-radius:50%;background:#0b1020;color:#fff;font-size:26px;cursor:pointer;z-index:4}
+.pitt-reveal-close:focus-visible{outline:3px solid #37e8db;outline-offset:3px}
+.pitt-reveal-dialog .pitt-reveal-actions .btn{font-size:14px;padding:12px 16px;min-height:44px}
+@media(min-width:700px) and (min-height:900px){.pitt-reveal-dialog .pitt-purchase-party{margin:4vh auto}}
+@media(max-width:480px){.pitt-reveal-dialog{padding:12px 10px}.pitt-reveal-dialog .pitt-purchase-party{padding:40px 16px 24px}.pitt-reveal-dialog .pitt-reveal-actions{gap:8px}.pitt-reveal-dialog .pitt-reveal-actions .btn{flex:1 1 130px}}
