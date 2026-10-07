@@ -6,6 +6,7 @@ import { ProviderTypeEnum } from '@multiversx/sdk-dapp/out/providers/types/provi
 import { getAccountProvider } from '@multiversx/sdk-dapp/out/providers/helpers/accountProvider';
 import { BONEZ, WEGLD, atomic, human, minimum, MAX_AGE } from './validation';
 import { addressHex, getJson, reviewSwap, submitSwap, verifyQuote } from './transactions';
+import { fetchSwapQuote } from './quote';
 import './swap.css';
 const logo='/images/cryptopittz-bonez-transparent.png';
 export default function BonezSwap() {
@@ -58,7 +59,7 @@ export default function BonezSwap() {
     lock.current=true;setBusy(true);setStatus('Finding a live route through JEX…');
     try{
       const value=atomic(amount.trim(),inDecimals);
-      const data=await getJson('/.netlify/functions/bonez-quote?'+new URLSearchParams({input,amount:value}));
+      const data={quote:await fetchSwapQuote(input,value)};
       verifyQuote(data.quote,input,value);
       minimum(data.quote,slippage);
       if(id!==generation.current)return;

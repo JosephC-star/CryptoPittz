@@ -34,3 +34,16 @@ test('simulation accepts successful shard format and rejects any failed shard or
  assert.throws(()=>assertSimulation({code:'successful',data:{result:{status:'success',logs:{events:[{identifier:'signalError'}]}}}}));
  assert.throws(()=>assertSimulation({code:'successful',data:{result:{}}}));
 });
+
+import {fetchSwapQuote} from '../src/features/bonez-swap/quote.js';
+test('quote service fallback keeps exact token direction and amount, without broadcasting',async()=>{
+ const calls=[];
+ const q=fixture('BONEZ');
+ const result=await fetchSwapQuote('BONEZ','1000000',async url=>{
+   calls.push(url);
+   return calls.length===1?{ok:false,json:async()=>({error:'temporary'})}:{ok:true,json:async()=>({static:q})};
+ });
+ assert.equal(result,q);assert.equal(calls.length,2);
+ const request=new URL(calls[1]);assert.equal(request.origin,'https://agg-api.jexchange.io');assert.equal(request.pathname,'/evaluate');
+ assert.equal(request.searchParams.get('token_in'),BONEZ);assert.equal(request.searchParams.get('token_out'),WEGLD);assert.equal(request.searchParams.get('amount_in'),'1000000');
+});
