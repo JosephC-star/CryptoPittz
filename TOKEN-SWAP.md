@@ -24,3 +24,5 @@ The original supplied HTM-f582f4, XOXNO-12a831, ZPAY-f22360, ASH-a642d4, ITHEUM-
 Quotes are live and pair/amount dependent. A listed token does not guarantee a route to every other token. No-route responses never enable signing. EGLD and WEGLD represent the same routing asset: the direct EGLD ↔ WEGLD conversion requires wallet wrap/unwrap and is explicitly excluded from aggregator swaps.
 
 Transactions are locally constructed for the pinned JEX router, with exact selected input/output token IDs, minimum output, checked route serialization, wallet balances and gas cap. Native EGLD wrapping/unwrapping gas is added only for native input/output. Every swap requires a successful unsigned network simulation before signing.
+
+EGLD/WEGLD ↔ ASH uses a direct-route quote because the tested AshSwap multi-hop route failed unsigned simulation, while the direct xExchange route passed. Other token pairs keep the normal three-hop search.
