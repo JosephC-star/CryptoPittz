@@ -14,7 +14,7 @@ test('amounts stay exact above floating point precision and respect token decima
  assert.equal(human('10000000000000000',18),'0.01');assert.equal(human('1000000',6),'1');
  for(const s of ['0','-1','1e3','NaN','Infinity','1.0000001'])assert.throws(()=>atomic(s,6));
 });
-for(const input of ['EGLD','BONEZ'])test(input+' produces exact payment, recipient, minimum and route',()=>{
+for(const input of ['EGLD',BONEZ])test(input+' produces exact payment, recipient, minimum and route',()=>{
  const q=fixture(input);assert.equal(validateQuote(q,input,'1000000',addressHex),q);
  const tx=transactionSpec({q,input,amount:'1000000',slippage:50,address:sender,created:1000},addressHex,1001);
  assert.equal(tx.receiver,ROUTER);assert.equal(tx.value,input==='EGLD'?'1000000':'0');assert.equal(tx.gasLimit,85000000);
@@ -38,12 +38,38 @@ test('simulation accepts successful shard format and rejects any failed shard or
 import {fetchSwapQuote} from '../src/features/bonez-swap/quote.js';
 test('quote service fallback keeps exact token direction and amount, without broadcasting',async()=>{
  const calls=[];
- const q=fixture('BONEZ');
- const result=await fetchSwapQuote('BONEZ','1000000',async url=>{
+ const q=fixture(BONEZ);
+ const result=await fetchSwapQuote(BONEZ,'1000000',async url=>{
    calls.push(url);
    return calls.length===1?{ok:false,json:async()=>({error:'temporary'})}:{ok:true,json:async()=>({static:q})};
  });
  assert.equal(result,q);assert.equal(calls.length,2);
  const request=new URL(calls[1]);assert.equal(request.origin,'https://agg-api.jexchange.io');assert.equal(request.pathname,'/evaluate');
  assert.equal(request.searchParams.get('token_in'),BONEZ);assert.equal(request.searchParams.get('token_out'),WEGLD);assert.equal(request.searchParams.get('amount_in'),'1000000');
+});
+import {TOKENS,getToken,validatePair,quoteParams} from '../src/features/bonez-swap/tokens.js';
+test('all token IDs are unique and unusual decimals stay exact',()=>{
+ assert.equal(TOKENS.length,14);assert.equal(new Set(TOKENS.map(t=>t.id)).size,14);
+ for(const id of ['ROAR-e5185d','HODL-b8bd81','REWARD-cf6eac']){
+  const t=getToken(id);assert.equal(human(atomic('123.12345678',t.decimals),t.decimals),'123.12345678');
+ }
+ assert.throws(()=>getToken('HTM-f582f4'));assert.throws(()=>validatePair('EGLD','WEGLD-bd4d79'));
+});
+test('token-to-token transactions spend the selected token and do not add wrap gas',()=>{
+ const input='HODL-b8bd81',output='REWARD-cf6eac';
+ const q=fixture();const nested=s=>s.length.toString(16).padStart(8,'0')+textHex(s);
+ q.route={token_in:input,token_out:output,hops:[{token_in:input,token_out:output,pool:{sc_address:contract,type:'jexchange_lp',tokens_in:[input],tokens_out:[output]}}]};
+ q.route_payload=nested(input)+'00000001'+addressHex(contract)+'06'+nested(output);
+ q.amounts_and_routes_payload=hex(q.amount_in)+'@'+q.route_payload;
+ const review={q,input,output,amount:q.amount_in,slippage:50,address:sender,created:1000};
+ const spec=transactionSpec(review,addressHex,1001);
+ assert.equal(spec.value,'0');assert.equal(spec.gasLimit,75000000);
+ assert.ok(spec.data.startsWith('ESDTTransfer@'+textHex(input)+'@'+hex(q.amount_in)));
+ assert.ok(spec.data.includes('@'+textHex(output)+'@'+hex('497500')+'@'));
+ assert.throws(()=>transactionSpec({...review,output:'ROAR-e5185d'},addressHex,1001));
+});
+test('quote requests preserve arbitrary supported pairs and native wrapping semantics',()=>{
+ const p=quoteParams('EGLD','ROAR-e5185d','10000000000000000');assert.equal(p.get('token_in'),WEGLD);assert.equal(p.get('token_out'),'ROAR-e5185d');
+ const t=quoteParams('HODL-b8bd81','REWARD-cf6eac','100000000');assert.equal(t.get('token_in'),'HODL-b8bd81');assert.equal(t.get('token_out'),'REWARD-cf6eac');
+ assert.throws(()=>quoteParams('EGLD','EGLD','1'));assert.throws(()=>quoteParams('HTM-f582f4',BONEZ,'1'));
 });
