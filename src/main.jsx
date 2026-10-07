@@ -1,11 +1,12 @@
-import { StrictMode } from "react";
+import { StrictMode, Suspense, lazy } from "react";
 import { createRoot } from "react-dom/client";
 
 import { initApp } from "@multiversx/sdk-dapp/out/methods/initApp/initApp";
 import { EnvironmentsEnum } from "@multiversx/sdk-dapp/out/types/enums.types";
 
 import "./index.css";
-import App from "./App.jsx";
+const App = lazy(() => import("./App.jsx"));
+const BonezSwap = lazy(() => import("./features/bonez-swap/BonezSwap.jsx"));
 
 const config = {
   storage: {
@@ -13,7 +14,7 @@ const config = {
   },
 
   dAppConfig: {
-    environment: import.meta.env.VITE_OOX_TRANSACTIONS === "true" && import.meta.env.VITE_OOX_PREVIEW === "true" ? EnvironmentsEnum.mainnet : EnvironmentsEnum.devnet,
+    environment: (window.location.pathname.replace(/\/$/, "") === "/bonez-swap" || (import.meta.env.VITE_OOX_TRANSACTIONS === "true" && import.meta.env.VITE_OOX_PREVIEW === "true")) ? EnvironmentsEnum.mainnet : EnvironmentsEnum.devnet,
 
     providers: {
       walletConnect: {
@@ -36,7 +37,9 @@ initApp(config)
   .then(() => {
     createRoot(document.getElementById("root")).render(
       <StrictMode>
-        <App />
+        <Suspense fallback={<p style={{padding:"24px",color:"#e9c77a"}}>Loading PittzStop…</p>}>
+          {window.location.pathname.replace(/\/$/, "") === "/bonez-swap" ? <BonezSwap /> : <App />}
+        </Suspense>
       </StrictMode>,
     );
   })
