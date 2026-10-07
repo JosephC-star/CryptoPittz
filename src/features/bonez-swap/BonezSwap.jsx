@@ -11,8 +11,10 @@ import { getToken } from './tokens';
 import TokenPicker from './TokenPicker';
 import './swap.css';
 const logo='/images/cryptopittz-bonez-transparent.png';
-function displayAmount(raw, decimals) {
-  const exact = human(raw, decimals);
+function displayAmount(raw, decimals, roundUp = false) {
+  const unit = 10n ** BigInt(Math.max(0, decimals - 4));
+  const value = roundUp && decimals > 4 ? ((BigInt(raw) + unit - 1n) / unit) * unit : BigInt(raw);
+  const exact = human(value, decimals);
   const [whole, fraction = ''] = exact.split('.');
   if (BigInt(raw) > 0n && whole === '0' && !/[1-9]/.test(fraction.slice(0, 4))) return '<0.0001';
   return whole + '.' + fraction.slice(0, 4).padEnd(4, '0');
@@ -109,7 +111,7 @@ export default function BonezSwap() {
     {quote&&<div id="details"><div><span>Minimum received</span><strong>{displayAmount(minimum(quote.q,slippage),outDecimals)} {receiveToken.symbol}</strong></div><div><span>Aggregator fee</span><strong>{displayAmount(quote.q.fee_amount,getToken(quote.q.fee_token).decimals)} {getToken(quote.q.fee_token).symbol}</strong></div><div><span>Estimated network fee</span><strong>{displayAmount(quote.q.estimated_tx_fee_egld,18)} EGLD</strong></div><div><span>Route</span><strong>{[quote.q.route.token_in,...quote.q.route.hops.map(h=>h.token_out)].map(t=>t.split('-')[0]).join(' → ')}</strong></div></div>}
     <button className="gold-button" type="submit" disabled={busy}>{busy?'Please wait…':quote?'Refresh quote':'Get live quote'}<span>↗</span></button>
     {quote&&!review&&<button className="gold-button swap-action" type="button" disabled={busy} onClick={account.address?prepare:connect}>{account.address?'Review swap':'Connect wallet to swap'} <span>→</span></button>}
-    {review&&<div className="swap-review"><h3>Confirm your swap</h3><p>You pay <strong>{displayAmount(review.amount,inDecimals)} {payToken.symbol}</strong></p><p>You receive at least <strong>{displayAmount(minimum(review.q,review.slippage),outDecimals)} {receiveToken.symbol}</strong></p><p>Maximum network fee <strong>{displayAmount(review.feeCap,18)} EGLD</strong></p><small>Network fees apply even if the swap fails.</small><button type="button" className="gold-button swap-action" disabled={busy} onClick={sign}>Approve in wallet <span>→</span></button><button type="button" className="cancel-review" disabled={busy} onClick={()=>setReview(null)}>Back</button></div>}
+    {review&&<div className="swap-review"><h3>Confirm your swap</h3><p>You pay <strong>{displayAmount(review.amount,inDecimals)} {payToken.symbol}</strong></p><p>You receive at least <strong>{displayAmount(minimum(review.q,review.slippage),outDecimals)} {receiveToken.symbol}</strong></p><p>Maximum network fee <strong>{displayAmount(review.feeCap,18,true)} EGLD</strong></p><small>Network fees apply even if the swap fails. Your wallet shows exact amounts.</small><button type="button" className="gold-button swap-action" disabled={busy} onClick={sign}>Approve in wallet <span>→</span></button><button type="button" className="cancel-review" disabled={busy} onClick={()=>setReview(null)}>Back</button></div>}
     <p id="status" role="status" aria-live="polite">{status}</p>
     {sent?.hash&&<a className="transaction-link" href={`https://explorer.multiversx.com/transactions/${sent.hash}`} target="_blank" rel="noreferrer">{confirmed?'✦ Swap confirmed':'View your transaction'} ↗</a>}
     </form><div className="card-foot"><span>✦</span> PittzStop Swap · MultiversX mainnet<p>Real tokens. Separate from your game Bonez balance.</p></div></section></main>
