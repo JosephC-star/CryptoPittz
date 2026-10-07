@@ -73,3 +73,7 @@ test('quote requests preserve arbitrary supported pairs and native wrapping sema
  const t=quoteParams('HODL-b8bd81','REWARD-cf6eac','100000000');assert.equal(t.get('token_in'),'HODL-b8bd81');assert.equal(t.get('token_out'),'REWARD-cf6eac');
  assert.throws(()=>quoteParams('EGLD','EGLD','1'));assert.throws(()=>quoteParams('HTM-f582f4',BONEZ,'1'));
 });
+
+test('native and wrapped EGLD use the verified direct ASH route in both directions',()=>{
+ for(const native of ['EGLD',WEGLD])for(const [input,output] of [[native,'ASH-a642d1'],['ASH-a642d1',native]])assert.equal(quoteParams(input,output,'1000000').get('max_hops'),'1');
+});
