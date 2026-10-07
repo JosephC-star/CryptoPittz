@@ -9,13 +9,14 @@ body:has(.bonez-page){margin:0;background:#0d0c0a}
 @media(min-width:801px){.bonez-page main{grid-template-columns:minmax(0,1fr) minmax(0,460px)}}
 @media(max-width:420px){.amount-row input,.amount-row output{font-size:24px}.amount-row{gap:8px}.token-picker-button{padding:7px 8px;font-size:11px}}
 
-/* Bright arcade gold bones fade out above the floating BONEZ coin. */
+/* Metallic gold bones tumble and accelerate, fading above the BONEZ coin. */
 .bonez-page .story{position:relative;isolation:isolate}
-.gold-bone-rain{position:absolute;top:-160px;left:0;width:100%;height:430px;overflow:hidden;pointer-events:none;z-index:-1;mask-image:linear-gradient(to bottom,transparent,black 12%,black 65%,transparent 95%);-webkit-mask-image:linear-gradient(to bottom,transparent,black 12%,black 48%,transparent 95%)}
-.gold-bone-drop{position:absolute;left:var(--bone-x);top:-24px;width:calc(var(--bone-size) * 2.8);color:#ffd324;filter:drop-shadow(0 0 5px #ffcf3299) drop-shadow(0 0 12px #ffb70055);animation:gold-bone-fall var(--bone-duration) linear var(--bone-delay) infinite;will-change:transform;opacity:0}
-.gold-bone-drop svg{display:block;width:100%;height:auto;stroke:#fff09a;stroke-width:1.2;paint-order:stroke fill}.gold-bone-drop svg path{filter:drop-shadow(0 2px 0 #a86900)}
+.gold-bone-rain{position:absolute;top:-160px;left:0;width:100%;height:430px;--bone-fall-distance:430px;overflow:hidden;pointer-events:none;z-index:-1;mask-image:linear-gradient(to bottom,transparent,black 12%,black 65%,transparent 95%);-webkit-mask-image:linear-gradient(to bottom,transparent,black 12%,black 65%,transparent 95%)}
+.gold-bone-drop{position:absolute;left:var(--bone-x);top:-24px;width:calc(var(--bone-size) * 2.8);color:#ffd324;filter:drop-shadow(0 2px 2px #0009) drop-shadow(0 0 7px #ffc82977);animation:gold-bone-fall var(--bone-duration) cubic-bezier(.42,0,.8,.65) var(--bone-delay) infinite;will-change:transform;opacity:0}
+.gold-bone-drop svg{display:block;width:100%;height:auto;overflow:visible;stroke:#a66a12;stroke-width:.8;animation:gold-bone-tumble var(--bone-duration) linear var(--bone-delay) infinite}.gold-bone-drop .bone-metal-highlight{fill:none;stroke:#fff5c2;stroke-width:1.3;stroke-linecap:round;opacity:.8}
 .gold-bone-drop i{position:absolute;right:-7px;top:-6px;font-size:12px;font-style:normal;color:#fff0bc;animation:gold-bone-twinkle 3.7s ease-in-out var(--bone-delay) infinite}
-@keyframes gold-bone-fall{0%{transform:translate3d(0,0,0) rotate(0);opacity:0}15%{opacity:1}55%{opacity:.85}90%,100%{transform:translate3d(18px,430px,0) rotate(var(--bone-turn));opacity:0}}
+@keyframes gold-bone-fall{0%{transform:translate3d(0,-20px,0);opacity:0}12%{opacity:1}65%{opacity:.95}100%{transform:translate3d(var(--bone-drift),var(--bone-fall-distance),0);opacity:0}}
+@keyframes gold-bone-tumble{from{transform:rotate(var(--bone-angle))}to{transform:rotate(calc(var(--bone-angle) + var(--bone-turn)))}}
 @keyframes gold-bone-twinkle{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:.9;transform:scale(1.2)}}
-@media(max-width:800px){.gold-bone-rain{height:370px}.gold-bone-drop:nth-child(3n){display:none}}
+@media(max-width:800px){.gold-bone-rain{height:370px;--bone-fall-distance:370px}.gold-bone-drop:nth-child(3n){display:none}}
 @media(prefers-reduced-motion:reduce){.gold-bone-rain{display:none}}
