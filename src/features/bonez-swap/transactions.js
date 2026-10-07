@@ -4,9 +4,10 @@ import { getAccount } from '@multiversx/sdk-dapp/out/methods/account/getAccount'
 import { getNetworkConfig } from '@multiversx/sdk-dapp/out/methods/network/getNetworkConfig';
 import { getAccountProvider } from '@multiversx/sdk-dapp/out/providers/helpers/accountProvider';
 import { TransactionManager } from '@multiversx/sdk-dapp/out/managers/TransactionManager/TransactionManager';
-import { BONEZ, transactionSpec, validateQuote, assertSimulation } from './validation.js';
+import {  transactionSpec, validateQuote, assertSimulation } from './validation.js';
+import { getToken } from './tokens.js';
 export function addressHex(address){return Array.from(Address.newFromBech32(address).getPublicKey(),b=>b.toString(16).padStart(2,'0')).join('');}
-export function verifyQuote(q,input,amount){return validateQuote(q,input,amount,addressHex);}
+export function verifyQuote(q,input,amount,output){return validateQuote(q,input,amount,addressHex,output);}
 export async function getJson(url,signal,allowMissing=false){
   const response=await fetch(url,{signal:signal||AbortSignal.timeout(15000),cache:'no-store'});
   if(allowMissing&&response.status===404)return null;
@@ -36,9 +37,9 @@ async function checkFunds(address,review){
   if(account.isGuarded)throw Error('Guarded wallets are not supported for this swap yet.');
   const feeCap=BigInt(review.spec.gasLimit)*BigInt(review.spec.gasPrice);
   if(BigInt(account.balance)<BigInt(review.spec.value)+feeCap)throw Error('Insufficient EGLD for the swap and its maximum network fee.');
-  if(review.input==='BONEZ'){
-    const token=await getJson(`https://api.multiversx.com/accounts/${address}/tokens/${BONEZ}`,undefined,true);
-    if(BigInt(token?.balance||'0')<BigInt(review.amount))throw Error('Insufficient BONEZ balance.');
+  if(review.input!=='EGLD'){
+    const token=await getJson(`https://api.multiversx.com/accounts/${address}/tokens/${getToken(review.input).id}`,undefined,true);
+    if(BigInt(token?.balance||'0')<BigInt(review.amount))throw Error('Insufficient '+getToken(review.input).symbol+' balance.');
   }
   return account;
 }

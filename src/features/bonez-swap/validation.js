@@ -1,3 +1,4 @@
+import { routingToken, validatePair } from './tokens.js';
 export const BONEZ = 'BONEZ-ff9a73';
 export const WEGLD = 'WEGLD-bd4d79';
 export const ROUTER = 'erd1qqqqqqqqqqqqqpgq360nakqgsp5zkmguptucpjy6n4n3du7e5snsd2swzq';
@@ -18,10 +19,11 @@ export function human(raw, decimals) {
 export function hex(raw) { const s=BigInt(raw).toString(16);return s.padStart(Math.ceil(s.length/2)*2,'0'); }
 export function textHex(s) {return Array.from(new TextEncoder().encode(s),b=>b.toString(16).padStart(2,'0')).join('');}
 const nestedText=s=>(textHex(s).length/2).toString(16).padStart(8,'0')+textHex(s);
-const types={onedex:4,xexchange:5,jexchange_lp:6};
-// Restrict this initial integration to the regular swap pool types observed in live BONEZ routes.
-export function validateQuote(q, input, amount, addressHex) {
-  const tokenIn=input==='EGLD'?WEGLD:BONEZ, tokenOut=input==='EGLD'?BONEZ:WEGLD;
+const types={ashswap_stablepool:1,ashswap_v2:2,onedex:4,xexchange:5,jexchange_lp:6,jexchange_stablepool:12,jexchange:13,opendex_lp:15};
+// Restrict this initial integration to the regular swap pool types observed in the JEX router ABI.
+export function validateQuote(q, input, amount, addressHex, output = input === 'EGLD' ? BONEZ : 'EGLD') {
+  validatePair(input,output);
+  const tokenIn=routingToken(input), tokenOut=routingToken(output);
   if (!q || q.amount_in!==amount || !/^\d+$/.test(q.net_amount_out) || BigInt(q.net_amount_out)<=0n) throw Error('Quote amount mismatch.');
   const route=q.route, hops=route?.hops;
   if(route?.token_in!==tokenIn || route?.token_out!==tokenOut || !Array.isArray(hops) || !hops.length || hops.length>4) throw Error('Unexpected swap route.');
@@ -37,7 +39,7 @@ export function validateQuote(q, input, amount, addressHex) {
   }
   if(token!==tokenOut || q.route_payload!==payload || q.amounts_and_routes_payload!==hex(amount)+'@'+payload) throw Error('Quote route payload mismatch.');
   if(!Number.isSafeInteger(Number(q.estimated_gas)) || Number(q.estimated_gas)<10000000 || Number(q.estimated_gas)>200000000) throw Error('Unsupported gas estimate.');
-  if(!/^\d+$/.test(q.fee_amount) || ![WEGLD,BONEZ].includes(q.fee_token) || !/^\d+$/.test(q.estimated_tx_fee_egld)) throw Error('Invalid fee quote.');
+  if(!/^\d+$/.test(q.fee_amount) || ![tokenIn,tokenOut,WEGLD].includes(q.fee_token) || !/^\d+$/.test(q.estimated_tx_fee_egld)) throw Error('Invalid fee quote.');
   return q;
 }
 export function minimum(q, slippage) {
@@ -46,14 +48,14 @@ export function minimum(q, slippage) {
   if(min<=0n) throw Error('Amount is too small to protect with minimum output.');
   return min.toString();
 }
-export function transactionSpec({q,input,amount,slippage,address,created},addressHex,now=Date.now()) {
+export function transactionSpec({q,input,output=input==='EGLD'?BONEZ:'EGLD',amount,slippage,address,created},addressHex,now=Date.now()) {
   if(!Number.isFinite(created)||created>now||now-created>MAX_AGE) throw Error('Quote expired. Get a fresh quote.');
-  validateQuote(q,input,amount,addressHex);
+  validateQuote(q,input,amount,addressHex,output);
   addressHex(address);
-  const out=input==='EGLD'?BONEZ:'EGLD';
+  const out=output;
   const args=[textHex(out),hex(minimum(q,slippage)),q.amounts_and_routes_payload].join('@');
-  const data=input==='EGLD'?'aggregate@'+args:'ESDTTransfer@'+textHex(BONEZ)+'@'+hex(amount)+'@'+textHex('aggregate')+'@'+args;
-  return {sender:address,receiver:ROUTER,value:input==='EGLD'?amount:'0',gasLimit:Number(q.estimated_gas)+10000000,gasPrice:1000000000,chainID:'1',version:2,data};
+  const data=input==='EGLD'?'aggregate@'+args:'ESDTTransfer@'+textHex(input)+'@'+hex(amount)+'@'+textHex('aggregate')+'@'+args;
+  return {sender:address,receiver:ROUTER,value:input==='EGLD'?amount:'0',gasLimit:Number(q.estimated_gas)+(input==='EGLD'||output==='EGLD'?10000000:0),gasPrice:1000000000,chainID:'1',version:2,data};
 }
 export function assertSimulation(data) {
   const result=data?.data?.result;
