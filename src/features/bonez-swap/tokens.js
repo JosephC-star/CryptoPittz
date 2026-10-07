@@ -25,5 +25,7 @@ export function validatePair(input,output){
 export function quoteParams(input,output,amount){
  validatePair(input,output);
  if(!/^\d{1,40}$/.test(amount)||BigInt(amount)<=0n)throw Error('Enter a positive amount.');
- return new URLSearchParams({token_in:routingToken(input),token_out:routingToken(output),amount_in:amount,with_dyn_routing:'false',max_hops:'3'});
+ // The live multi-hop AshSwap route failed simulation; the direct xExchange route passed.
+ const directAsh=[input,output].includes('ASH-a642d1')&&[routingToken(input),routingToken(output)].includes('WEGLD-bd4d79');
+ return new URLSearchParams({token_in:routingToken(input),token_out:routingToken(output),amount_in:amount,with_dyn_routing:'false',max_hops:directAsh?'1':'3'});
 }
