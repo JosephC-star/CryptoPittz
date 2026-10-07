@@ -9,13 +9,13 @@ body:has(.bonez-page){margin:0;background:#0d0c0a}
 @media(min-width:801px){.bonez-page main{grid-template-columns:minmax(0,1fr) minmax(0,460px)}}
 @media(max-width:420px){.amount-row input,.amount-row output{font-size:24px}.amount-row{gap:8px}.token-picker-button{padding:7px 8px;font-size:11px}}
 
-/* A quiet gold shower fades out above the floating BONEZ coin. */
+/* Bright arcade gold bones fade out above the floating BONEZ coin. */
 .bonez-page .story{position:relative;isolation:isolate}
-.gold-bone-rain{position:absolute;top:-160px;left:0;width:100%;height:430px;overflow:hidden;pointer-events:none;z-index:-1;mask-image:linear-gradient(to bottom,transparent,black 12%,black 48%,transparent 95%);-webkit-mask-image:linear-gradient(to bottom,transparent,black 12%,black 48%,transparent 95%)}
-.gold-bone-drop{position:absolute;left:var(--bone-x);top:-24px;width:var(--bone-size);color:#e9c77a;filter:drop-shadow(0 0 3px #dba94155);animation:gold-bone-fall var(--bone-duration) linear var(--bone-delay) infinite;will-change:transform;opacity:0}
-.gold-bone-drop svg{display:block;width:100%;height:auto}
-.gold-bone-drop i{position:absolute;right:-5px;top:-4px;font-size:7px;font-style:normal;color:#fff0bc;animation:gold-bone-twinkle 3.7s ease-in-out var(--bone-delay) infinite}
-@keyframes gold-bone-fall{0%{transform:translate3d(0,0,0) rotate(0);opacity:0}15%{opacity:.32}55%{opacity:.24}90%,100%{transform:translate3d(18px,430px,0) rotate(var(--bone-turn));opacity:0}}
+.gold-bone-rain{position:absolute;top:-160px;left:0;width:100%;height:430px;overflow:hidden;pointer-events:none;z-index:-1;mask-image:linear-gradient(to bottom,transparent,black 12%,black 65%,transparent 95%);-webkit-mask-image:linear-gradient(to bottom,transparent,black 12%,black 48%,transparent 95%)}
+.gold-bone-drop{position:absolute;left:var(--bone-x);top:-24px;width:calc(var(--bone-size) * 2.8);color:#ffd324;filter:drop-shadow(0 0 5px #ffcf3299) drop-shadow(0 0 12px #ffb70055);animation:gold-bone-fall var(--bone-duration) linear var(--bone-delay) infinite;will-change:transform;opacity:0}
+.gold-bone-drop svg{display:block;width:100%;height:auto;stroke:#fff09a;stroke-width:1.2;paint-order:stroke fill}.gold-bone-drop svg path{filter:drop-shadow(0 2px 0 #a86900)}
+.gold-bone-drop i{position:absolute;right:-7px;top:-6px;font-size:12px;font-style:normal;color:#fff0bc;animation:gold-bone-twinkle 3.7s ease-in-out var(--bone-delay) infinite}
+@keyframes gold-bone-fall{0%{transform:translate3d(0,0,0) rotate(0);opacity:0}15%{opacity:1}55%{opacity:.85}90%,100%{transform:translate3d(18px,430px,0) rotate(var(--bone-turn));opacity:0}}
 @keyframes gold-bone-twinkle{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:.9;transform:scale(1.2)}}
 @media(max-width:800px){.gold-bone-rain{height:370px}.gold-bone-drop:nth-child(3n){display:none}}
 @media(prefers-reduced-motion:reduce){.gold-bone-rain{display:none}}
