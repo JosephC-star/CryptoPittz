@@ -410,11 +410,9 @@ function App() {
                   </a>
 
                   <a
-                    href="https://xexchange.com/trade?firstToken=EGLD&secondToken=BONEZ-ff9a73"
-                    target="_blank"
-                    rel="noreferrer"
+                    href="/bonez-swap/"
                   >
-                    Swap BONEZ ↗
+                    Swap BONEZ →
                   </a>
 
                   <a
@@ -557,12 +555,10 @@ function App() {
                 </a>
 
                 <a
-                  href="https://xexchange.com/trade?firstToken=EGLD&secondToken=BONEZ-ff9a73"
-                  target="_blank"
-                  rel="noreferrer"
+                  href="/bonez-swap/"
                   onClick={closeMobileMenu}
                 >
-                  Swap BONEZ ↗
+                  Swap BONEZ →
                 </a>
 
                 <a
@@ -826,6 +822,12 @@ function App() {
             </div>
             <div className="playground-release-art" aria-hidden="true"><span>🦴</span><strong>PITTZ<br/>PLAYGROUND</strong><span>👾</span></div>
           </section>
+
+          <a href="/bonez-swap/" style={{display:"block",padding:"28px",margin:"24px 0",border:"1px solid #c6a65b66",borderRadius:"20px",background:"linear-gradient(110deg,#21190c,#131117)",color:"#efd38c",textDecoration:"none"}}>
+            <span style={{fontSize:"12px",letterSpacing:"2px"}}>BONEZ · THE CURRENCY OF THE PITTZ</span>
+            <h2 style={{margin:"10px 0"}}>You earn, we burn!</h2>
+            <span>Explore BONEZ Swap · Live quotes available →</span>
+          </a>
 
           <BonezMarketSection
             market={bonezMarket}
@@ -1141,11 +1143,9 @@ function App() {
 
                     <a
                       className="btn primary"
-                      href="https://xexchange.com/trade?firstToken=EGLD&secondToken=BONEZ-ff9a73"
-                      target="_blank"
-                      rel="noreferrer"
+                      href="/bonez-swap/"
                     >
-                      Swap BONEZ ↗
+                      Swap BONEZ →
                     </a>
                   </div>
 
