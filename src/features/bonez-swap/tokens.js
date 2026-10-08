@@ -5,6 +5,7 @@ export const TOKENS = Object.freeze([
  {id:'WEGLD-bd4d79',symbol:'WEGLD',name:'Wrapped EGLD',decimals:18},
  {id:'MEX-455c57',symbol:'MEX',name:'xExchange',decimals:18},
  {id:'HTM-f51d55',symbol:'HTM',name:'Hatom',decimals:18},
+ {id:'ONX-3e51c8',symbol:'ONX',name:'OnionX · OOX',decimals:18},
  {id:'XOXNO-c1293a',symbol:'XOXNO',name:'XOXNO',decimals:18},
  {id:'ZPAY-247875',symbol:'ZPAY',name:'ZoidPay',decimals:18},
  {id:'ASH-a642d1',symbol:'ASH',name:'AshSwap',decimals:18},
