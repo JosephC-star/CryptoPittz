@@ -826,7 +826,7 @@ function App() {
           <a href="/bonez-swap/" style={{display:"block",padding:"28px",margin:"24px 0",border:"1px solid #c6a65b66",borderRadius:"20px",background:"linear-gradient(110deg,#21190c,#131117)",color:"#efd38c",textDecoration:"none"}}>
             <span style={{fontSize:"12px",letterSpacing:"2px"}}>BONEZ · THE CURRENCY OF THE PITTZ</span>
             <h2 style={{margin:"10px 0"}}>You earn, we burn!</h2>
-            <span>Swap BONEZ and more · Choose from 14 currencies →</span>
+            <span>Swap BONEZ and more · Choose from 15 currencies →</span>
           </a>
 
           <BonezMarketSection
