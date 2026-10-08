@@ -5,8 +5,9 @@ import {validateListing} from './validation.js';
 import PurchaseCelebration from '../oox/PurchaseCelebration';
 import {purchaseConfirmed} from '../oox/purchaseConfirmation';
 import '../oox/preview.css';
+import { compactNftPrice } from '../../utils/nftPrice';
 function amount(raw){const n=BigInt(raw),whole=n/10n**18n,fraction=(n%10n**18n).toString().padStart(18,'0').replace(/0+$/,'');return whole.toString()+(fraction?'.'+fraction:'');}
-export default function XoxnoPurchasePanel({nft}){
+export default function XoxnoPurchasePanel({nft,onAvailabilityChanged}){
  const account=useGetAccount(),lock=useRef(false);
  const [listing,setListing]=useState(null),[review,setReview]=useState(null),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[purchase,setPurchase]=useState(null),[confirmed,setConfirmed]=useState(false),[submitted,setSubmitted]=useState(false),[refresh,setRefresh]=useState(0),[checkAttempt,setCheckAttempt]=useState(0),[known,setKnown]=useState(false);
  useEffect(()=>{
@@ -53,13 +54,14 @@ export default function XoxnoPurchasePanel({nft}){
    setMessage(e.message+' If signing or sending began, check wallet history before retrying.');
   }finally{lock.current=false;setBusy(false);}
  }
+ const canBuy=Boolean(listing)&&listing.seller!==account.address;
+ useEffect(()=>{onAvailabilityChanged?.(canBuy);},[canBuy,onAvailabilityChanged]);
  if(!known&&!purchase&&!submitted)return null;
- const canBuy=listing&&listing.seller!==account.address;
  return <section className="oox-preview pitt-trade-panel" aria-label="XOXNO purchase">
   {confirmed&&purchase&&<PurchaseCelebration nft={nft} hash={purchase.hash}/>}
   <div className="oox-purchase-heading"><div className="pitt-trade-badges"><span className="pitt-sale-tag">{confirmed?'YOUR PITT':'FOR SALE'}</span><span className="pitt-marketplace-tag" aria-label="Marketplace: XOXNO">XOXNO</span></div><span className="oox-market-label">🐾 THE PITTZSTOP</span><h3>Bring this Pittz home</h3></div>
   <p className="pitt-trade-note">Buy this XOXNO listing here. Review the price and network fee, then approve in your wallet.</p>
-  {listing&&<p className="oox-price"><strong>{amount(listing.price)} EGLD</strong></p>}
+  {listing&&<p className="oox-price"><strong title={`${amount(listing.price)} EGLD`}>{compactNftPrice(listing.price,true)} EGLD</strong></p>}
   {!account.address&&<p>Connect your wallet using the site’s Connect Wallet button.</p>}
   {listing?.seller===account.address&&<p>This is your XOXNO listing.</p>}
   {canBuy&&!submitted&&<button className="btn primary" disabled={!account.address||busy} onClick={reviewPurchase}>🐾 Review XOXNO purchase →</button>}

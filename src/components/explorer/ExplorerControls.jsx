@@ -122,7 +122,7 @@ export default function ExplorerControls({
 
         <div className={`explorer-sale-filter ${sale === "listed" ? "active" : ""}`}>
           <div>
-            <span>OOX Marketplace</span>
+            <span>OOX + XOXNO</span>
             <strong>
               {listingsLoading
                 ? "Checking listings..."

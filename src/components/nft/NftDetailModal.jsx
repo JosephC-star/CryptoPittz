@@ -1,4 +1,4 @@
-import { Component, lazy, Suspense, useEffect } from "react";
+import { Component, lazy, Suspense, useEffect, useState, useCallback } from "react";
 import { loadPreview } from "../../features/oox/loadPreview";
 const OoxPurchasePreview = lazy(loadPreview);
 class PurchasePreviewBoundary extends Component {
@@ -23,6 +23,8 @@ export default function NftDetailModal({
   onPrevious,
   onNext,
 }) {
+  const [purchaseAvailability,setPurchaseAvailability]=useState(null);
+  const onPurchaseAvailable=useCallback((identifier,available)=>setPurchaseAvailability({identifier,available}),[]);
   useEffect(() => {
     if (!nft) return undefined;
 
@@ -106,7 +108,7 @@ export default function NftDetailModal({
             </div>
           </div>
 
-          <div className="nft-detail-actions">
+          {!(purchaseAvailability?.identifier===nft.identifier&&purchaseAvailability.available)&&<div className="nft-detail-actions">
             <a
               className="btn primary"
               href={getNftMarketplace(nft)}
@@ -115,11 +117,11 @@ export default function NftDetailModal({
             >
               🛒 View on OOX Marketplace ↗
             </a>
-          </div>
+          </div>}
 
           {import.meta.env.VITE_OOX_PREVIEW === "true" && (
             <PurchasePreviewBoundary key={nft.identifier}><Suspense fallback={<p>Loading marketplace…</p>}>
-              <OoxPurchasePreview key={nft.identifier} nft={nft} isOwned={isOwned} />
+              <OoxPurchasePreview key={nft.identifier} nft={nft} isOwned={isOwned} onPurchaseAvailable={onPurchaseAvailable} />
             </Suspense></PurchasePreviewBoundary>
           )}
 

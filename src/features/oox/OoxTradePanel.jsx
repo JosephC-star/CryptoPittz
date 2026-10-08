@@ -5,9 +5,10 @@ import { client, json, prepare, submit } from './trade';
 import { readListingItems } from './listingResponse';
 import { CONTRACT, validateListing } from './validation';
 import './preview.css';
+import { compactNftPrice } from '../../utils/nftPrice';
 import PurchaseCelebration from './PurchaseCelebration';
 import { purchaseConfirmed } from './purchaseConfirmation';
-export default function OoxTradePanel({nft,isOwned}) {
+export default function OoxTradePanel({nft,isOwned,onAvailabilityChanged}) {
   const account=useGetAccount();
   const [listing,setListing]=useState(null),[message,setMessage]=useState('Checking OOX…');
   const [price,setPrice]=useState(''),[days,setDays]=useState(7),[review,setReview]=useState(null),[busy,setBusy]=useState(false),[sent,setSent]=useState(false);
@@ -55,6 +56,7 @@ export default function OoxTradePanel({nft,isOwned}) {
     catch(e){setMessage(`Transaction did not complete: ${e.message} If signing or sending began, check wallet history before retrying.`)}finally{lock.current=false;setBusy(false)}
   }
   const canBuy=Boolean(listing)&&listing.seller!==account.address&&!isOwned;
+  useEffect(()=>{onAvailabilityChanged?.(canBuy);},[canBuy,onAvailabilityChanged]);
   const canList=Boolean(isOwned&&account.address);
   if(!canBuy&&!canList&&!purchase&&!sent)return null;
   return <section className="oox-preview pitt-trade-panel" aria-label="OOX purchase">
@@ -62,7 +64,7 @@ export default function OoxTradePanel({nft,isOwned}) {
     <div className="oox-purchase-heading"><div className="pitt-trade-badges"><span className="pitt-sale-tag">{canBuy?"FOR SALE":"YOUR PITT"}</span><span className="pitt-marketplace-tag" aria-label="Marketplace: OOX">OOX</span></div><span className="oox-market-label">🐾 PITTZSTOP</span><h3>{canBuy?"Bring this Pittz home":"Find this Pittz a new pack"}</h3></div>
     <p className="pitt-trade-note">{canBuy?"Review the price and network fee before approving in your wallet.":"Listing transfers this Pitt into the OOX marketplace contract. Network fees apply."}</p>
     {!account.address?<p>Connect your wallet using the site’s Connect Wallet button.</p>:<p>Wallet: {account.address.slice(0,10)}…{account.address.slice(-6)}</p>}
-    {canBuy&&<><p className="oox-price"><strong>{formatAmount(listing.price,18)} EGLD</strong></p><button className="btn primary" disabled={!account.address||busy||sent} onClick={()=>run('buy')}>🐾 Review purchase →</button></>}
+    {canBuy&&<><p className="oox-price"><strong title={`${formatAmount(listing.price,18)} EGLD`}>{compactNftPrice(listing.price,true)} EGLD</strong></p><button className="btn primary" disabled={!account.address||busy||sent} onClick={()=>run('buy')}>🐾 Review purchase →</button></>}
     {canList&&<><h3>Sell / List on OOX</h3><label>Fixed price in EGLD<input value={price} disabled={busy||sent} onChange={e=>{setPrice(e.target.value);setReview(null)}} inputMode="decimal" placeholder="0.1"/></label><label>Listing duration<select value={days} disabled={busy||sent} onChange={e=>{setDays(Number(e.target.value));setReview(null)}}><option value={1}>1 day</option><option value={7}>7 days</option><option value={30}>30 days</option></select></label><button className="btn primary" disabled={busy||sent||!price} onClick={()=>run('list')}>Review listing</button></>}
     {review&&review.address===account.address&&<div><h3>Confirm {review.action==='buy'?'purchase':'listing'}</h3><p>{nft.name} · {nft.identifier}</p><p>{review.price} EGLD{review.action==='list'?` · ${review.days} days`:''}</p><p>Maximum network fee allowance: {formatAmount(review.feeCap,18)} EGLD. Marketplace fees and royalties may reduce listing proceeds.</p><p>OOX contract: {CONTRACT}</p><button className="btn primary" disabled={busy} onClick={confirm}>Sign & send {review.action==='buy'?'purchase':'listing'}</button><button className="btn" disabled={busy} onClick={()=>setReview(null)}>Cancel review</button><details><summary>Exact transaction</summary><pre>{JSON.stringify(review.payload,null,2)}</pre></details></div>}
     <p role="status">{message}</p>

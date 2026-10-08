@@ -4,12 +4,8 @@ import {
   getPittzStats,
 } from "../../utils/nftUtils";
 
-function formatListingPrice(listing) {
-  const price = Number(listing?.price);
-  if (!Number.isFinite(price)) return listing?.price || "";
-  if (price >= 1000) return price.toLocaleString(undefined, { maximumFractionDigits: 2 });
-  return price.toLocaleString(undefined, { maximumFractionDigits: 4 });
-}
+import { compactNftPrice } from '../../utils/nftPrice';
+function formatListingPrice(listing) { return compactNftPrice(listing?.price ?? ''); }
 
 export default function NftCard({
   nft,
