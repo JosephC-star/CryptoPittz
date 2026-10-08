@@ -7,7 +7,7 @@
   VITE_OOX_TRANSACTIONS = "true"
 
 [context.deploy-preview]
-  command = 'if [ "$HEAD" = "feature/oox-purchase-preview" ]; then VITE_OOX_PREVIEW=true VITE_OOX_TRANSACTIONS=true npm run build; else VITE_OOX_TRANSACTIONS=false npm run build; fi'
+  command = 'if [ "$HEAD" = "feature/oox-purchase-preview" ] || [ "$HEAD" = "feature/xoxno-purchases" ]; then VITE_OOX_PREVIEW=true VITE_OOX_TRANSACTIONS=true npm run build; else VITE_OOX_TRANSACTIONS=false npm run build; fi'
 
 [context.deploy-preview.environment]
   VITE_OOX_PREVIEW = "true"
