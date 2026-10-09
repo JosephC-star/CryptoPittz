@@ -5,8 +5,8 @@ const BonezLiquidity=lazy(()=>import('../bonez-liquidity/BonezLiquidity.jsx'));
 const BonezSwap=lazy(()=>import('../bonez-swap/BonezSwap.jsx'));
 const services=[
  {id:'swap',name:'Token Swap',eyebrow:'MOVE WITH THE PACK',description:'Find your next move. Swap BONEZ and 15 more currencies without leaving The PittzStop.',action:'Enter the exchange',status:'Open now'},
- {id:'liquidity',name:'Liquidity Pool',eyebrow:'FUEL THE ECOSYSTEM',description:'The next chapter for BONEZ liquidity. Pool access and LP buying, together in one place.',action:'Add liquidity',status:'Open in preview'},
- {id:'staking',name:'BONEZ Staking',eyebrow:'PUT YOUR BONEZ TO WORK',description:'Put your BONEZ to work on OneDEX. Stake, claim rewards, and manage your position from the pack’s golden home.',action:'Start staking',status:'Open in preview'}
+ {id:'liquidity',name:'Liquidity Pool',eyebrow:'FUEL THE ECOSYSTEM',description:'The next chapter for BONEZ liquidity. Pool access and LP buying, together in one place.',action:'Add liquidity',status:'Open now'},
+ {id:'staking',name:'BONEZ Staking',eyebrow:'PUT YOUR BONEZ TO WORK',description:'Put your BONEZ to work on OneDEX. Stake, claim rewards, and manage your position from the pack’s golden home.',action:'Start staking',status:'Open now'}
 ];
 function ServiceArt({type}){
  const goldId=useId();
