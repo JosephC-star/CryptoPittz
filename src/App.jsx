@@ -820,9 +820,11 @@ function App() {
           </section>
 
           <a href="/financial-district/" style={{display:"block",padding:"28px",margin:"24px 0",border:"1px solid #c6a65b66",borderRadius:"20px",background:"linear-gradient(110deg,#21190c,#131117)",color:"#efd38c",textDecoration:"none"}}>
-            <span style={{fontSize:"12px",letterSpacing:"2px"}}>BONEZ · THE CURRENCY OF THE PITTZ</span>
-            <h2 style={{margin:"10px 0"}}>You earn, we burn!</h2>
-            <span>Swap BONEZ and more · Choose from 15 currencies →</span>
+            <span style={{fontSize:"12px",letterSpacing:"2px"}}>THE PACK’S GOLDEN QUARTER</span>
+            <h2 style={{margin:"10px 0"}}>Pittz Financial District</h2>
+            <p style={{margin:"0 0 14px",lineHeight:"1.7",color:"#d1c3a5"}}>One home for your next move. Swap 16 currencies, add BONEZ + WEGLD liquidity on xExchange, and stake BONEZ on OneDEX—all through your connected wallet.</p>
+            <span style={{display:"block",fontSize:"13px",marginBottom:"14px"}}>You earn, we burn!</span>
+            <span style={{fontWeight:"600"}}>Enter the Financial District →</span>
           </a>
 
           <BonezMarketSection
@@ -1126,11 +1128,11 @@ function App() {
                   <div className="ecosystem-card">
                     <div className="ecosystem-icon">🦴</div>
 
-                    <h3>BONEZ</h3>
+                    <h3>Pittz Financial District</h3>
 
                     <p>
-                      Enter the Pittz Financial District to swap BONEZ and other currencies,
-                      with staking and liquidity services coming next.
+                      Swap tokens, add BONEZ + WEGLD liquidity, and stake BONEZ.
+                      Manage your currencies, pool deposits, and staking rewards in one golden home.
                     </p>
 
                     <a
