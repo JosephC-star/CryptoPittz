@@ -6,6 +6,7 @@ import { getAccountProvider } from '@multiversx/sdk-dapp/out/providers/helpers/a
 import { TransactionManager } from '@multiversx/sdk-dapp/out/managers/TransactionManager/TransactionManager';
 import {  transactionSpec, validateQuote, assertSimulation } from './validation.js';
 import { getToken } from './tokens.js';
+import { guardianForAccount, withGuardian, assertGuardianUnchanged, checkSwapPayload, GUARDIAN_GAS } from './guarded.js';
 export function addressHex(address){return Array.from(Address.newFromBech32(address).getPublicKey(),b=>b.toString(16).padStart(2,'0')).join('');}
 export function verifyQuote(q,input,amount,output){return validateQuote(q,input,amount,addressHex,output);}
 export async function getJson(url,signal,allowMissing=false){
@@ -22,20 +23,17 @@ function context(address){
   return current;
 }
 export function buildTransaction(spec,nonce){
-  return new Transaction({sender:Address.newFromBech32(spec.sender),receiver:Address.newFromBech32(spec.receiver),nonce:BigInt(nonce),value:BigInt(spec.value),gasLimit:BigInt(spec.gasLimit),gasPrice:BigInt(spec.gasPrice),chainID:spec.chainID,version:spec.version,data:new TextEncoder().encode(spec.data)});
+  return new Transaction({sender:Address.newFromBech32(spec.sender),receiver:Address.newFromBech32(spec.receiver),nonce:BigInt(nonce),value:BigInt(spec.value),gasLimit:BigInt(spec.gasLimit),gasPrice:BigInt(spec.gasPrice),chainID:spec.chainID,version:spec.version,...(spec.guardian?{guardian:Address.newFromBech32(spec.guardian),options:spec.options}:{}),data:new TextEncoder().encode(spec.data)});
 }
-export function checkTransaction(tx,spec){
-  const p=tx.toSendable();
-  const expected={...spec,data:btoa(spec.data)};
-  for(const [key,value] of Object.entries(expected))if(p[key]!==value)throw Error('Transaction verification failed: '+key+'.');
-  if(p.guardian||p.relayer||p.options||p.senderUsername||p.receiverUsername)throw Error('Unsupported transaction configuration.');
-  return p;
+export function checkTransaction(tx,spec,signed=false){
+  return checkSwapPayload(tx.toSendable(),spec,signed);
 }
 async function checkFunds(address,review){
-  const account=await getJson(`https://api.multiversx.com/accounts/${address}`);
+  const account=await getJson(`https://api.multiversx.com/accounts/${address}?withGuardianInfo=true`);
   if(!Number.isSafeInteger(account.nonce))throw Error('Unable to verify wallet nonce.');
-  if(account.isGuarded)throw Error('Guarded wallets are not supported for this swap yet.');
-  const feeCap=BigInt(review.spec.gasLimit)*BigInt(review.spec.gasPrice);
+  const guardian=guardianForAccount(account,addressHex);
+  if(Object.hasOwn(review,'guardian'))assertGuardianUnchanged(account,review.guardian,addressHex);
+  const feeCap=BigInt(review.spec.gasLimit+(!Object.hasOwn(review,'guardian')&&guardian?GUARDIAN_GAS:0))*BigInt(review.spec.gasPrice);
   if(BigInt(account.balance)<BigInt(review.spec.value)+feeCap)throw Error('Insufficient EGLD for the swap and its maximum network fee.');
   if(review.input!=='EGLD'){
     const token=await getJson(`https://api.multiversx.com/accounts/${address}/tokens/${getToken(review.input).id}`,undefined,true);
@@ -44,7 +42,7 @@ async function checkFunds(address,review){
   return account;
 }
 export async function simulate(tx){
-  const payload={...tx.toSendable(),signature:'0'.repeat(128)};
+  const payload={...tx.toSendable(),signature:'0'.repeat(128),...(tx.guardian?.toBech32()&&tx.options&2?{guardianSignature:'0'.repeat(128)}:{})};
   const r=await fetch('https://api.multiversx.com/transaction/simulate?checkSignature=false',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:AbortSignal.timeout(15000)});
   const data=await r.json();
   if(!r.ok)throw Error('Swap simulation is unavailable. Please try again.');
@@ -55,7 +53,10 @@ export async function reviewSwap(quote){
   const spec=transactionSpec({...quote,address},addressHex);
   const result={...quote,address,spec,feeCap:(BigInt(spec.gasLimit)*BigInt(spec.gasPrice)).toString()};
   const account=await checkFunds(address,result);
-  const tx=buildTransaction(spec,account.nonce);checkTransaction(tx,spec);
+  result.guardian=guardianForAccount(account,addressHex);
+  result.spec=withGuardian(spec,result.guardian);
+  result.feeCap=(BigInt(result.spec.gasLimit)*BigInt(result.spec.gasPrice)).toString();
+  const tx=buildTransaction(result.spec,account.nonce);checkTransaction(tx,result.spec);
   await simulate(tx);context(address);
   transactionSpec(result,addressHex);
   return result;
@@ -66,7 +67,7 @@ export async function submitSwap(review){
   inFlight=true;let broadcastStarted=false;
   try{
     context(review.address);
-    const spec=transactionSpec(review,addressHex);
+    const spec=withGuardian(transactionSpec(review,addressHex),review.guardian);
     if(JSON.stringify(spec)!==JSON.stringify(review.spec))throw Error('Swap review changed. Get a fresh quote.');
     const account=await checkFunds(review.address,review);
     const tx=buildTransaction(spec,account.nonce);checkTransaction(tx,spec);
@@ -74,7 +75,7 @@ export async function submitSwap(review){
     transactionSpec(review,addressHex);
     const signed=await getAccountProvider().signTransactions([tx]);
     if(signed?.length!==1)throw Error('Signing was cancelled.');
-    checkTransaction(signed[0],spec);context(review.address);
+    checkTransaction(signed[0],spec,true);context(review.address);
     // Allow time in xPortal after signing began; the signed minimum output still protects execution.
     if(Date.now()-review.created>180000)throw Error('Signing took too long. Get a fresh quote.');
     const latest=await checkFunds(review.address,review);

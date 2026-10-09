@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { guardianForAccount, withGuardian, assertGuardianUnchanged, checkSwapPayload } from '../src/features/bonez-swap/guarded.js';
+const guardian='active-guardian';
+const base={sender:'wallet',receiver:'router',value:'5',gasLimit:10000000,gasPrice:1000000000,version:2,chainID:'1',data:'aggregate@minimum'};
+const spec=withGuardian(base,guardian);
+const signed={...spec,data:btoa(spec.data),signature:'a'.repeat(128),guardianSignature:'b'.repeat(128)};
+test('guardian gas is included without modifying swap terms',()=>{assert.equal(spec.gasLimit,10050000);assert.equal(spec.value,base.value);assert.equal(spec.data,base.data);assert.equal(withGuardian(base,null),base);});
+test('requires an active guardian for guarded accounts',()=>{assert.throws(()=>guardianForAccount({isGuarded:true},()=>{}),/active guardian/);assert.equal(guardianForAccount({isGuarded:true,activeGuardianAddress:guardian},()=>{}),guardian);});
+test('detects guardian changes and protection being disabled',()=>{for(const account of [{isGuarded:false},{isGuarded:true,activeGuardianAddress:'different'}])assert.throws(()=>assertGuardianUnchanged(account,guardian,()=>{}),/protection changed/);});
+test('accepts guardian signatures with either supported signing option',()=>{for(const options of [2,3])assert.equal(checkSwapPayload({...signed,options},spec,true).guardian,guardian);});
+test('rejects missing guardian approval',()=>{for(const guardianSignature of [undefined,'','0'.repeat(128)])assert.throws(()=>checkSwapPayload({...signed,guardianSignature},spec,true),/Guardian approval/);});
+test('rejects modified payment, payload, destination, gas, guardian and options',()=>{for(const [key,value] of Object.entries({value:'6',data:btoa('changed'),receiver:'other',gasLimit:99999999,guardian:'other',options:1}))assert.throws(()=>checkSwapPayload({...signed,[key]:value},spec,true));});
+test('unguarded accounts reject unexpected guardian fields',()=>{assert.throws(()=>checkSwapPayload({...base,data:btoa(base.data),guardian},base));assert.equal(checkSwapPayload({...base,data:btoa(base.data),signature:'a'.repeat(128)},base,true).receiver,'router');});
+test('rejects relayers and incomplete sender signatures',()=>{assert.throws(()=>checkSwapPayload({...signed,relayer:'other'},spec,true));assert.throws(()=>checkSwapPayload({...signed,signature:''},spec,true));});
