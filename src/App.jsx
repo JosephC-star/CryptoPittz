@@ -1129,8 +1129,8 @@ function App() {
                     <h3>BONEZ</h3>
 
                     <p>
-                      Swap EGLD for BONEZ on xExchange and access the token used within the
-                      CryptoPittz ecosystem.
+                      Enter the Pittz Financial District to swap BONEZ and other currencies,
+                      with staking and liquidity services coming next.
                     </p>
 
                     <a
