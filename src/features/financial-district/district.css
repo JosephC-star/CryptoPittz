@@ -22,15 +22,16 @@ body:has(.financial-district){margin:0;background:#0b0b09}
 .district-art-staking .district-emblem-bonez{width:37px;height:37px;top:calc(50% + 5px);filter:drop-shadow(0 0 6px #efba5c55)}
 .district-orbit{animation:district-orbit-drift 18s linear infinite}.district-orbit:after{content:'✦';position:absolute;left:19%;top:7%;font-size:13px;color:#ffe8a5;filter:drop-shadow(0 0 5px #efbe68)}
 .district-orbit-second{width:180px;height:145px;border-color:#bc984522;animation-direction:reverse;animation-duration:24s;animation-delay:-7s}.district-orbit-second:after{left:75%;top:12%;font-size:8px}
-.district-pool-coin{width:130px;height:130px;padding:7px;border-radius:50%;background:linear-gradient(135deg,#fff1b5,#9e6822 26%,#f8d477 52%,#ad772a 76%,#ffe4a0);box-shadow:0 0 0 2px #ad7e36,0 0 0 5px #d0a14b33,0 12px 28px #0008,0 0 35px #dca94030}
-.district-pool-face{position:relative;overflow:hidden;width:100%;height:100%;border-radius:50%;border:1px solid #ffe6a16b;background:radial-gradient(circle at 35% 30%,#544020,#14120e 75%);box-shadow:inset 0 0 16px #0009}
-.district-art .district-pool-bonez,.district-art .district-pool-mvx{position:absolute;width:94px;height:94px;left:50%;top:50%;transform:translate(-50%,-50%);object-fit:contain}
-.district-art .district-pool-bonez{mask-image:linear-gradient(to right,#000 0%,#000 46%,transparent 55%);z-index:2}
-.district-art .district-pool-mvx{mask-image:linear-gradient(to right,transparent 45%,#000 54%,#000 100%);filter:drop-shadow(0 0 6px #23f7dd44);z-index:2}
-.district-pool-seam{position:absolute;inset:13% auto 13% 50%;width:1px;background:linear-gradient(transparent,#ffe7a080,transparent);z-index:3}
 @keyframes district-emblem-float{0%,100%{transform:translateY(5px) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)}}
 @keyframes district-orbit-drift{from{transform:rotate(-27deg)}to{transform:rotate(333deg)}}
 @media(prefers-reduced-motion:reduce){.financial-district .district-emblem,.financial-district .district-orbit{animation:none}}
 
-/* Keep the crossed bones alone on the pool coin; trim the source logo's outer arcs. */
-.district-art .district-pool-bonez{clip-path:polygon(50% 34%,40% 24%,39% 16%,35% 10%,28% 7%,22% 10%,18% 17%,18% 22%,11% 24%,7% 30%,8% 37%,13% 42%,24% 42%,36% 50%,24% 58%,13% 58%,8% 63%,7% 70%,11% 76%,18% 78%,18% 83%,22% 90%,28% 93%,35% 90%,39% 84%,40% 76%,50% 66%,64% 50%)}
+
+.district-pool-artwork{width:190px;height:174px;padding:4px;border-radius:23px;background:linear-gradient(135deg,#fff1b5,#9e6822 26%,#f8d477 52%,#ad772a 76%,#ffe4a0);box-shadow:0 0 0 2px #ad7e3655,0 12px 28px #0008,0 0 35px #dca94025}
+.district-pool-artwork-window{position:relative;width:100%;height:100%;overflow:hidden;border-radius:19px;background:#050910}
+.district-art .district-pool-artwork img{position:absolute;inset:0;width:100%;height:auto;max-width:none;object-fit:contain;z-index:1}
+.district-pool-flow{position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(132deg,transparent 28%,#20efdf00 36%,#8dfff333 45%,#f493ff22 50%,transparent 59%);background-size:250% 250%;mix-blend-mode:screen;animation:district-osmosis 6s ease-in-out infinite}
+.district-pool-pulse{position:absolute;left:47%;top:43%;width:32px;height:32px;border-radius:50%;background:radial-gradient(circle,#4cfff530,transparent 70%);z-index:2;pointer-events:none;animation:district-merge-pulse 6s ease-in-out infinite}
+@keyframes district-osmosis{0%,100%{background-position:100% 100%;opacity:0}20%{opacity:.2}55%{background-position:0% 0%;opacity:.85}80%{opacity:0}}
+@keyframes district-merge-pulse{0%,100%{transform:scale(.7);opacity:.2}50%{transform:scale(1.8);opacity:.8}}
+@media(prefers-reduced-motion:reduce){.district-pool-flow,.district-pool-pulse{display:none}}
