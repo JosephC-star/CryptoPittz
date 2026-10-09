@@ -408,9 +408,9 @@ function App() {
                   </a>
 
                   <a
-                    href="/bonez-swap/"
+                    href="/financial-district/"
                   >
-                    Swap tokens →
+                    Financial District →
                   </a>
 
                   <a
@@ -551,10 +551,10 @@ function App() {
                 </a>
 
                 <a
-                  href="/bonez-swap/"
+                  href="/financial-district/"
                   onClick={closeMobileMenu}
                 >
-                  Swap tokens →
+                  Financial District →
                 </a>
 
                 <a
@@ -819,7 +819,7 @@ function App() {
             <div className="playground-release-art" aria-hidden="true"><span>🦴</span><strong>PITTZ<br/>PLAYGROUND</strong><span>👾</span></div>
           </section>
 
-          <a href="/bonez-swap/" style={{display:"block",padding:"28px",margin:"24px 0",border:"1px solid #c6a65b66",borderRadius:"20px",background:"linear-gradient(110deg,#21190c,#131117)",color:"#efd38c",textDecoration:"none"}}>
+          <a href="/financial-district/" style={{display:"block",padding:"28px",margin:"24px 0",border:"1px solid #c6a65b66",borderRadius:"20px",background:"linear-gradient(110deg,#21190c,#131117)",color:"#efd38c",textDecoration:"none"}}>
             <span style={{fontSize:"12px",letterSpacing:"2px"}}>BONEZ · THE CURRENCY OF THE PITTZ</span>
             <h2 style={{margin:"10px 0"}}>You earn, we burn!</h2>
             <span>Swap BONEZ and more · Choose from 15 currencies →</span>
@@ -1135,9 +1135,9 @@ function App() {
 
                     <a
                       className="btn primary"
-                      href="/bonez-swap/"
+                      href="/financial-district/"
                     >
-                      Swap tokens →
+                      Financial District →
                     </a>
                   </div>
 
