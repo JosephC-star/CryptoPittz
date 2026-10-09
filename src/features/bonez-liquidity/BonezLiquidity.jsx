@@ -9,7 +9,7 @@ import { liquidityQuote,LP,PAIR } from './validation.js';
 import { fetchPool,fetchLiquidityBalances,prepareLiquidity,submitLiquidity } from './transactions.js';
 import '../bonez-swap/swap.css';
 import './liquidity.css';
-const compact=(raw,decimals)=>{const [whole,part='']=human(raw,decimals).split('.');return whole+'.'+part.slice(0,4).padEnd(4,'0');};
+const compact=(raw,decimals)=>{const [whole,part='']=human(raw,decimals).split('.');if(BigInt(raw)>0n&&whole==='0'&&!/[1-9]/.test(part.slice(0,4)))return '<0.0001';return whole+'.'+part.slice(0,4).padEnd(4,'0');};
 export default function BonezLiquidity({onBusyChange}){
  const account=useGetAccount(),anchor=useRef(null),lock=useRef(false);
  const [pool,setPool]=useState(null),[balances,setBalances]=useState(null),[amount,setAmount]=useState('1000'),[slippage,setSlippage]=useState(50),[review,setReview]=useState(null),[busy,setBusy]=useState(false),[overlay,setOverlay]=useState(false),[sent,setSent]=useState(null),[status,setStatus]=useState('Loading the verified BONEZ pool…'),[confirmed,setConfirmed]=useState(false);

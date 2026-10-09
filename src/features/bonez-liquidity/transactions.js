@@ -27,8 +27,9 @@ export async function prepareLiquidity(pool,amount,slippage){
  const tx=buildTransaction(spec,b.account.nonce);checkTransaction(tx,spec);await simulate(tx);context(address);
  return {address,terms,spec,guardian,created:Date.now(),feeCap:(BigInt(spec.gasLimit)*BigInt(spec.gasPrice)).toString()};
 }
-let inFlight=false;
+let inFlight=false,submissionUncertain=false;
 export async function submitLiquidity(review){
+ if(submissionUncertain)throw Error('Check the previous deposit in your wallet history, then reload this page before trying again.');
  if(inFlight)throw Error('Another liquidity deposit is in progress.');
  inFlight=true;let broadcast=false;
  try{
@@ -47,5 +48,5 @@ export async function submitLiquidity(review){
   const manager=TransactionManager.getInstance();broadcast=true;const sent=await manager.send(signed);
   try{await manager.track(sent);}catch{/* Never repeat a sent deposit because tracking failed. */}
   const hash=sent?.[0]?.hash;return {hash:typeof hash==='string'&&/^[a-f0-9]{64}$/.test(hash)?hash:null};
- }catch(e){if(broadcast)throw Error('Submission status is uncertain. Check your wallet history before making another deposit.');throw e;}finally{inFlight=false;}
+ }catch(e){if(broadcast){submissionUncertain=true;throw Error('Submission status is uncertain. Check your wallet history before making another deposit.');}throw e;}finally{inFlight=false;}
 }
