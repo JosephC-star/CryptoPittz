@@ -33,7 +33,7 @@ function App() {
   const [explorerBloodline, setExplorerBloodline] = useState("all");
   const [explorerType, setExplorerType] = useState("all");
   const [explorerTraits, setExplorerTraits] = useState({});
-  const [explorerSale, setExplorerSale] = useState("all");
+  const [explorerSale, setExplorerSale] = useState(() => new URLSearchParams(window.location.search).get("sale") === "listed" ? "listed" : "all");
   const [randomPittLoading, setRandomPittLoading] = useState(false);
   const [randomPittError, setRandomPittError] = useState("");
   const [randomPittMode, setRandomPittMode] = useState("surprise");
@@ -402,11 +402,9 @@ function App() {
                   </a>
 
                   <a
-                    href="https://www.oox.art/marketplace/collections/PITTZ-1a4c2d"
-                    target="_blank"
-                    rel="noreferrer"
+                    href="/?sale=listed&collection=original#explorer"
                   >
-                    Marketplace ↗
+                    Marketplace →
                   </a>
 
                   <a
@@ -546,12 +544,10 @@ function App() {
                 </a>
 
                 <a
-                  href="https://www.oox.art/marketplace/collections/PITTZ-1a4c2d"
-                  target="_blank"
-                  rel="noreferrer"
+                  href="/?sale=listed&collection=original#explorer"
                   onClick={closeMobileMenu}
                 >
-                  Marketplace ↗
+                  Marketplace →
                 </a>
 
                 <a
@@ -1107,26 +1103,22 @@ function App() {
                     <h3>Marketplace</h3>
 
                     <p>
-                      Browse, buy, and explore both CryptoPittz collections on the OOX marketplace.
+                      Browse Pittz for sale from OOX and XOXNO, right here at The PittzStop.
                     </p>
 
                     <div className="ecosystem-actions">
                       <a
                         className="btn primary"
-                        href="https://www.oox.art/marketplace/collections/PITTZ-1a4c2d"
-                        target="_blank"
-                        rel="noreferrer"
+                        href="/?sale=listed&collection=original#explorer"
                       >
-                        Original Pittz ↗
+                        Original Pittz for sale →
                       </a>
 
                       <a
                         className="btn"
-                        href="https://www.oox.art/marketplace/collections/PITTZVICE-c3ec94"
-                        target="_blank"
-                        rel="noreferrer"
+                        href="/?sale=listed&collection=vice#explorer"
                       >
-                        Vice Pittz ↗
+                        Vice Pittz for sale →
                       </a>
                     </div>
                   </div>
