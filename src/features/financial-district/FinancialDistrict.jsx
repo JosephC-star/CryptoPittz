@@ -1,14 +1,30 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useId, useRef, useState } from 'react';
 import './district.css';
 const BonezLiquidity=lazy(()=>import('../bonez-liquidity/BonezLiquidity.jsx'));
 const BonezSwap=lazy(()=>import('../bonez-swap/BonezSwap.jsx'));
 const services=[
  {id:'swap',name:'Token Swap',eyebrow:'MOVE WITH THE PACK',description:'Find your next move. Swap BONEZ and 15 more currencies without leaving The PittzStop.',action:'Enter the exchange',status:'Open now'},
  {id:'staking',name:'BONEZ Staking',eyebrow:'PUT YOUR BONEZ TO WORK',description:'A new home for staking BONEZ. Built for the pack, with every detail clear before you commit.',action:'Explore staking',status:'Coming soon'},
- {id:'liquidity',name:'Liquidity Pools',eyebrow:'FUEL THE ECOSYSTEM',description:'The next chapter for BONEZ liquidity. Pool access and LP buying, together in one place.',action:'Add liquidity',status:'Open in preview'}
+ {id:'liquidity',name:'Liquidity Pool',eyebrow:'FUEL THE ECOSYSTEM',description:'The next chapter for BONEZ liquidity. Pool access and LP buying, together in one place.',action:'Add liquidity',status:'Open in preview'}
 ];
 function ServiceArt({type}){
- return <div className={'district-art district-art-'+type} aria-hidden="true"><div className="district-orbit"/><svg viewBox="0 0 200 160" fill="none"><defs><linearGradient id={'district-gold-'+type} x2="1" y2="1"><stop stopColor="#fff2bf"/><stop offset=".45" stopColor="#dab15b"/><stop offset="1" stopColor="#7b4d16"/></linearGradient></defs><g stroke={'url(#district-gold-'+type+')'} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">{type==='swap'?<><path d="M47 60C67 23 132 23 153 61M153 61l-4-23m4 23-23-5M153 100C132 137 68 137 47 99M47 99l4 23m-4-23 23 5"/><circle cx="100" cy="80" r="31"/></>:type==='staking'?<><rect x="47" y="38" width="106" height="94" rx="16"/><rect x="57" y="48" width="86" height="74" rx="9"/><circle cx="100" cy="85" r="24"/><path d="M100 61v12m0 24v12M76 85h12m24 0h12M37 137h126"/></>:<><circle cx="72" cy="76" r="36"/><circle cx="128" cy="92" r="36"/><path d="M60 123h80M71 133h59M72 61v30m-8-23h12m-12 16h12M128 77v30m-8-23h12m-12 16h12"/></>}</g></svg>{type==='swap'&&<img src="/images/cryptopittz-bonez-transparent.png" alt=""/>}<span className="district-art-spark">✦</span></div>;
+ const goldId=useId();
+ return <div className={'district-art district-art-'+type} aria-hidden="true">
+  <div className="district-orbit"/><div className="district-orbit district-orbit-second"/>
+  <div className="district-emblem">
+   {type==='liquidity'?<div className="district-pool-coin">
+    <div className="district-pool-face">
+     <img className="district-pool-bonez" src="/images/cryptopittz-bonez-transparent.png" alt=""/>
+     <svg className="district-pool-mvx" viewBox="0 0 100 100" fill="#23f7dd"><path d="M14 20 50 37 86 20 94 37 66 50 94 63 86 80 50 63 14 80 6 63 34 50 6 37Z"/></svg>
+     <span className="district-pool-seam"/>
+    </div>
+   </div>:<>
+    <svg viewBox="0 0 200 160" fill="none"><defs><linearGradient id={goldId} x2="1" y2="1"><stop stopColor="#fff2bf"/><stop offset=".45" stopColor="#dab15b"/><stop offset="1" stopColor="#7b4d16"/></linearGradient></defs><g stroke={'url(#'+goldId+')'} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">{type==='swap'?<><path d="M47 60C67 23 132 23 153 61M153 61l-4-23m4 23-23-5M153 100C132 137 68 137 47 99M47 99l4 23m-4-23 23 5"/><circle cx="100" cy="80" r="31"/></>:<><rect x="47" y="38" width="106" height="94" rx="16"/><rect x="57" y="48" width="86" height="74" rx="9"/><circle cx="100" cy="85" r="24"/><path d="M37 137h126"/></>}</g></svg>
+    <img className="district-emblem-bonez" src="/images/cryptopittz-bonez-transparent.png" alt=""/>
+   </>}
+  </div>
+  <span className="district-art-spark">✦</span>
+ </div>;
 }
 export default function FinancialDistrict(){
  const [selected,setSelected]=useState(null),[busy,setBusy]=useState(false);

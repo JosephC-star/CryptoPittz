@@ -14,3 +14,20 @@ body:has(.financial-district){margin:0;background:#0b0b09}
 @media(prefers-reduced-motion:reduce){.financial-district *{animation:none!important;transition:none!important}}
 
 .district-hero{overflow:hidden;isolation:isolate}.district-hero>:not(.district-bone-rain){position:relative;z-index:1}.district-bone-rain{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden;mask-image:linear-gradient(to bottom,#000 0%,#000 35%,transparent 93%)}.district-falling-bone{position:absolute;top:-50px;left:var(--drop-x);width:var(--drop-size);animation:district-bone-fall var(--drop-duration) var(--drop-delay) infinite;filter:drop-shadow(0 0 6px #ffd14c65)}.district-falling-bone svg{display:block;width:100%;transform:rotate(var(--drop-rotation))}.district-falling-bone i{position:absolute;right:-7px;top:-6px;color:#ffeda7;font-size:10px;font-style:normal;animation:district-twinkle 2s ease-in-out infinite}@keyframes district-bone-fall{0%{transform:translateY(-20px) rotate(0);opacity:0;animation-timing-function:cubic-bezier(.4,0,.85,.6)}12%{opacity:.95}60%{opacity:.8}100%{transform:translateY(460px) rotate(var(--drop-turn));opacity:0}}@media(max-width:650px){.district-falling-bone{width:calc(var(--drop-size)*.8)}@keyframes district-bone-fall{0%{transform:translateY(-20px) rotate(0);opacity:0;animation-timing-function:cubic-bezier(.4,0,.85,.6)}12%{opacity:.9}55%{opacity:.75}100%{transform:translateY(390px) rotate(var(--drop-turn));opacity:0}}}@media(prefers-reduced-motion:reduce){.district-bone-rain{display:none}}
+
+/* Shared galaxy motion keeps the emblems upright while their gold orbits drift. */
+.district-emblem{position:relative;width:190px;height:160px;display:grid;place-items:center;z-index:1;animation:district-emblem-float 7s ease-in-out infinite}
+.district-art-staking .district-emblem{animation-delay:-2.3s}.district-art-liquidity .district-emblem{animation-delay:-4.6s}
+.district-art .district-emblem-bonez{width:46px;height:46px;left:50%;top:50%;transform:translate(-50%,-50%)}
+.district-art-staking .district-emblem-bonez{width:37px;height:37px;top:calc(50% + 5px);filter:drop-shadow(0 0 6px #efba5c55)}
+.district-orbit{animation:district-orbit-drift 18s linear infinite}.district-orbit:after{content:'✦';position:absolute;left:19%;top:7%;font-size:13px;color:#ffe8a5;filter:drop-shadow(0 0 5px #efbe68)}
+.district-orbit-second{width:180px;height:145px;border-color:#bc984522;animation-direction:reverse;animation-duration:24s;animation-delay:-7s}.district-orbit-second:after{left:75%;top:12%;font-size:8px}
+.district-pool-coin{width:130px;height:130px;padding:7px;border-radius:50%;background:linear-gradient(135deg,#fff1b5,#9e6822 26%,#f8d477 52%,#ad772a 76%,#ffe4a0);box-shadow:0 0 0 2px #ad7e36,0 0 0 5px #d0a14b33,0 12px 28px #0008,0 0 35px #dca94030}
+.district-pool-face{position:relative;overflow:hidden;width:100%;height:100%;border-radius:50%;border:1px solid #ffe6a16b;background:radial-gradient(circle at 35% 30%,#544020,#14120e 75%);box-shadow:inset 0 0 16px #0009}
+.district-art .district-pool-bonez,.district-art .district-pool-mvx{position:absolute;width:94px;height:94px;left:50%;top:50%;transform:translate(-50%,-50%);object-fit:contain}
+.district-art .district-pool-bonez{mask-image:linear-gradient(to right,#000 0%,#000 46%,transparent 55%);z-index:2}
+.district-art .district-pool-mvx{mask-image:linear-gradient(to right,transparent 45%,#000 54%,#000 100%);filter:drop-shadow(0 0 6px #23f7dd44);z-index:2}
+.district-pool-seam{position:absolute;inset:13% auto 13% 50%;width:1px;background:linear-gradient(transparent,#ffe7a080,transparent);z-index:3}
+@keyframes district-emblem-float{0%,100%{transform:translateY(5px) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)}}
+@keyframes district-orbit-drift{from{transform:rotate(-27deg)}to{transform:rotate(333deg)}}
+@media(prefers-reduced-motion:reduce){.financial-district .district-emblem,.financial-district .district-orbit{animation:none}}
