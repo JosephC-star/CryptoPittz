@@ -49,7 +49,8 @@ test('quote service fallback keeps exact token direction and amount, without bro
 });
 import {TOKENS,getToken,validatePair,quoteParams} from '../src/features/bonez-swap/tokens.js';
 test('all token IDs are unique and unusual decimals stay exact',()=>{
- assert.equal(TOKENS.length,15);assert.equal(new Set(TOKENS.map(t=>t.id)).size,15);
+ assert.equal(TOKENS.length,16);assert.equal(new Set(TOKENS.map(t=>t.id)).size,16);
+ assert.equal(getToken("USDC-c76f1f").decimals,6);assert.equal(atomic("1.123456",6),"1123456");assert.throws(()=>atomic("1.1234567",6));
  for(const id of ['ROAR-e5185d','HODL-b8bd81','REWARD-cf6eac']){
   const t=getToken(id);assert.equal(human(atomic('123.12345678',t.decimals),t.decimals),'123.12345678');
  }

@@ -1,6 +1,7 @@
 // Mainnet identifiers and decimals checked against MultiversX API and JEX's token feed.
 export const TOKENS = Object.freeze([
  {id:'EGLD',symbol:'EGLD',name:'MultiversX',decimals:18},
+ {id:'USDC-c76f1f',symbol:'USDC',name:'Wrapped USDC',decimals:6},
  {id:'BONEZ-ff9a73',symbol:'BONEZ',name:'CryptoPittz BONEZ',decimals:6},
  {id:'WEGLD-bd4d79',symbol:'WEGLD',name:'Wrapped EGLD',decimals:18},
  {id:'MEX-455c57',symbol:'MEX',name:'xExchange',decimals:18},

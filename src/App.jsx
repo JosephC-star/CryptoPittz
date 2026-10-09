@@ -33,7 +33,7 @@ function App() {
   const [explorerBloodline, setExplorerBloodline] = useState("all");
   const [explorerType, setExplorerType] = useState("all");
   const [explorerTraits, setExplorerTraits] = useState({});
-  const [explorerSale, setExplorerSale] = useState("all");
+  const [explorerSale, setExplorerSale] = useState(() => new URLSearchParams(window.location.search).get("sale") === "listed" ? "listed" : "all");
   const [randomPittLoading, setRandomPittLoading] = useState(false);
   const [randomPittError, setRandomPittError] = useState("");
   const [randomPittMode, setRandomPittMode] = useState("surprise");
@@ -402,17 +402,15 @@ function App() {
                   </a>
 
                   <a
-                    href="https://www.oox.art/marketplace/collections/PITTZ-1a4c2d"
-                    target="_blank"
-                    rel="noreferrer"
+                    href="/?sale=listed&collection=original#explorer"
                   >
-                    Marketplace ↗
+                    Marketplace →
                   </a>
 
                   <a
-                    href="/bonez-swap/"
+                    href="/financial-district/"
                   >
-                    Swap tokens →
+                    Financial District →
                   </a>
 
                   <a
@@ -546,19 +544,17 @@ function App() {
                 </a>
 
                 <a
-                  href="https://www.oox.art/marketplace/collections/PITTZ-1a4c2d"
-                  target="_blank"
-                  rel="noreferrer"
+                  href="/?sale=listed&collection=original#explorer"
                   onClick={closeMobileMenu}
                 >
-                  Marketplace ↗
+                  Marketplace →
                 </a>
 
                 <a
-                  href="/bonez-swap/"
+                  href="/financial-district/"
                   onClick={closeMobileMenu}
                 >
-                  Swap tokens →
+                  Financial District →
                 </a>
 
                 <a
@@ -823,7 +819,7 @@ function App() {
             <div className="playground-release-art" aria-hidden="true"><span>🦴</span><strong>PITTZ<br/>PLAYGROUND</strong><span>👾</span></div>
           </section>
 
-          <a href="/bonez-swap/" style={{display:"block",padding:"28px",margin:"24px 0",border:"1px solid #c6a65b66",borderRadius:"20px",background:"linear-gradient(110deg,#21190c,#131117)",color:"#efd38c",textDecoration:"none"}}>
+          <a href="/financial-district/" style={{display:"block",padding:"28px",margin:"24px 0",border:"1px solid #c6a65b66",borderRadius:"20px",background:"linear-gradient(110deg,#21190c,#131117)",color:"#efd38c",textDecoration:"none"}}>
             <span style={{fontSize:"12px",letterSpacing:"2px"}}>BONEZ · THE CURRENCY OF THE PITTZ</span>
             <h2 style={{margin:"10px 0"}}>You earn, we burn!</h2>
             <span>Swap BONEZ and more · Choose from 15 currencies →</span>
@@ -1107,26 +1103,22 @@ function App() {
                     <h3>Marketplace</h3>
 
                     <p>
-                      Browse, buy, and explore both CryptoPittz collections on the OOX marketplace.
+                      Browse Pittz for sale from OOX and XOXNO, right here at The PittzStop.
                     </p>
 
                     <div className="ecosystem-actions">
                       <a
                         className="btn primary"
-                        href="https://www.oox.art/marketplace/collections/PITTZ-1a4c2d"
-                        target="_blank"
-                        rel="noreferrer"
+                        href="/?sale=listed&collection=original#explorer"
                       >
-                        Original Pittz ↗
+                        Original Pittz for sale →
                       </a>
 
                       <a
                         className="btn"
-                        href="https://www.oox.art/marketplace/collections/PITTZVICE-c3ec94"
-                        target="_blank"
-                        rel="noreferrer"
+                        href="/?sale=listed&collection=vice#explorer"
                       >
-                        Vice Pittz ↗
+                        Vice Pittz for sale →
                       </a>
                     </div>
                   </div>
@@ -1137,15 +1129,15 @@ function App() {
                     <h3>BONEZ</h3>
 
                     <p>
-                      Swap EGLD for BONEZ on xExchange and access the token used within the
-                      CryptoPittz ecosystem.
+                      Enter the Pittz Financial District to swap BONEZ and other currencies,
+                      with staking and liquidity services coming next.
                     </p>
 
                     <a
                       className="btn primary"
-                      href="/bonez-swap/"
+                      href="/financial-district/"
                     >
-                      Swap tokens →
+                      Financial District →
                     </a>
                   </div>
 

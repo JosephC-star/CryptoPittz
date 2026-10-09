@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { EXPLORER_COLLECTIONS } from "../../config/collections";
 
 export default function useExplorerData(pageSize) {
-  const [collection, setCollection] = useState("original");
+  const [collection, setCollection] = useState(() => new URLSearchParams(window.location.search).get("collection") === "vice" ? "vice" : "original");
   const [page, setPage] = useState(0);
   const [pageNfts, setPageNfts] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
