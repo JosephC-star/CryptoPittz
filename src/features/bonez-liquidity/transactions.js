@@ -4,6 +4,7 @@ import { getAccountProvider } from '@multiversx/sdk-dapp/out/providers/helpers/a
 import { TransactionManager } from '@multiversx/sdk-dapp/out/managers/TransactionManager/TransactionManager';
 import { addressHex,getJson,buildTransaction,checkTransaction,simulate } from '../bonez-swap/transactions.js';
 import { guardianForAccount,withGuardian,assertGuardianUnchanged } from '../bonez-swap/guarded.js';
+import { waitForWallet } from './walletResponse.js';
 import { FIRST,SECOND,LP,validatePool,liquidityQuote,liquiditySpec,assertCurrentRatio } from './validation.js';
 export async function fetchPool(){return validatePool((await getJson('/.netlify/functions/bonez-pool')).pool);}
 function context(expected){const a=getAccount().address;if(!a||expected&&a!==expected)throw Error('Connect your wallet and get a fresh liquidity quote.');if(getNetworkConfig().network.chainId!=='1')throw Error('Connect a mainnet wallet.');return a;}
@@ -28,7 +29,7 @@ export async function prepareLiquidity(pool,amount,slippage){
  return {address,terms,spec,guardian,created:Date.now(),feeCap:(BigInt(spec.gasLimit)*BigInt(spec.gasPrice)).toString()};
 }
 let inFlight=false,submissionUncertain=false;
-export async function submitLiquidity(review){
+export async function submitLiquidity(review,onProgress=()=>{}){
  if(submissionUncertain)throw Error('Check the previous deposit in your wallet history, then reload this page before trying again.');
  if(inFlight)throw Error('Another liquidity deposit is in progress.');
  inFlight=true;let broadcast=false;
@@ -40,13 +41,19 @@ export async function submitLiquidity(review){
   const b=await funds(review.address,review.terms,review.guardian),tx=buildTransaction(spec,b.account.nonce);checkTransaction(tx,spec);
   await simulate(tx);context(review.address);
   if(Date.now()-review.created>60000)throw Error('Liquidity review expired. Get a fresh quote.');
-  const signed=await getAccountProvider().signTransactions([tx]);if(signed?.length!==1)throw Error('Signing was cancelled.');
+  onProgress('Waiting for xPortal’s signed response. Approve the deposit in your wallet.');
+  const provider=getAccountProvider();
+  const signed=await waitForWallet(()=>provider.signTransactions([tx]),{onTimeout:()=>provider.getProvider?.()?.cancelAction?.()});if(signed?.length!==1)throw Error('Signing was cancelled.');
+  onProgress('Wallet approval received. Verifying the signed deposit…');
   checkTransaction(signed[0],spec,true);context(review.address);
   if(Date.now()-review.created>240000)throw Error('Signing took too long. Get a fresh liquidity quote.');
   const latest=await funds(review.address,review.terms,review.guardian);assertCurrentRatio(await fetchPool(),review.terms);
   if(BigInt(latest.account.nonce)!==signed[0].nonce)throw Error('Wallet nonce changed. Get a fresh quote.');
+  onProgress('Sending the approved deposit to MultiversX…');
   const manager=TransactionManager.getInstance();broadcast=true;const sent=await manager.send(signed);
-  try{await manager.track(sent);}catch{/* Never repeat a sent deposit because tracking failed. */}
-  const hash=sent?.[0]?.hash;return {hash:typeof hash==='string'&&/^[a-f0-9]{64}$/.test(hash)?hash:null};
+  const hash=sent?.[0]?.hash,validHash=typeof hash==='string'&&/^[a-f0-9]{64}$/.test(hash)?hash:null;
+  if(!validHash)submissionUncertain=true;
+  void manager.track(sent).catch(()=>{});
+  return {hash:validHash};
  }catch(e){if(broadcast){submissionUncertain=true;throw Error('Submission status is uncertain. Check your wallet history before making another deposit.');}throw e;}finally{inFlight=false;}
 }
