@@ -21,6 +21,16 @@ function FurnaceScene({ firing, expanded }) {
     {['left', 'right'].map(side => <div className={`burn-flight-bank burn-flight-${side}`} key={side} aria-hidden="true">{Array.from({length:5}, (_, i) => <svg className="burn-flight-bone" key={i} style={{ '--bone-n': i, '--bone-turn': `${i*43}deg`, '--bone-spread': `${(i-2)*8}px` }} viewBox="0 0 64 32"><path fill="#ffe2a0" stroke="#b67b31" strokeWidth="2" d="M16 10C13 1 3 1 3 8C3 12 6 14 7 16C6 18 3 20 3 24C3 31 13 31 16 22C25 20 39 20 48 22C51 31 61 31 61 24C61 20 58 18 57 16C58 14 61 12 61 8C61 1 51 1 48 10C39 12 25 12 16 10Z"/><path fill="none" stroke="#fff8de" strokeWidth="2" d="M18 13Q32 16 46 13"/></svg>)}</div>)}
     <div className="burn-steam burn-steam-left" /><div className="burn-steam burn-steam-right" />
     <div className="burn-embers" aria-hidden="true">{Array.from({ length: 22 }, (_, i) => <i key={i} style={{ '--i': i }} />)}</div>
+    <div className="furnace-machinery" aria-hidden="true">
+      {['left','right'].map(side => <div className={`furnace-instrument furnace-instrument-${side}`} key={side}>
+        <div className="furnace-gauge"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#211816" stroke="#d8a45d" strokeWidth="7"/><circle cx="50" cy="50" r="36" fill="#eedcb3"/><path d="M22 67A33 33 0 0 1 72 26" fill="none" stroke="#96734b" strokeWidth="4"/><path d="M72 26A33 33 0 0 1 81 64" fill="none" stroke="#bd4627" strokeWidth="4"/>{[0,1,2,3,4,5,6].map(i => <path key={i} d="M50 18v6" transform={`rotate(${i*35-105} 50 50)`} stroke="#634226" strokeWidth="2"/>)}<g className="furnace-gauge-needle"><path d="M50 55V22" stroke="#c8381b" strokeWidth="3" strokeLinecap="round"/><circle cx="50" cy="50" r="5" fill="#604325"/></g></svg><small>PRESSURE</small></div>
+        <span className="furnace-warning" />
+        <div className="furnace-valve"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="36" fill="#24150c" stroke="#b9803e" strokeWidth="8"/><circle cx="50" cy="50" r="29" fill="none" stroke="#f3c985" strokeWidth="2"/>{[0,90,180,270].map(a => <path key={a} d="M50 20v30" transform={`rotate(${a} 50 50)`} stroke="#d6a357" strokeWidth="7"/>)}<circle cx="50" cy="50" r="10" fill="#bf883f" stroke="#ffdc95" strokeWidth="2"/></svg></div>
+        <div className="furnace-vent"><i/><i/><i/></div>
+      </div>)}
+    </div>
+    {['left','right'].map(side => <div className={`furnace-impact furnace-impact-${side}`} key={side} aria-hidden="true">{Array.from({length:12}, (_, i) => <i key={i} style={{ '--spark-x': `${Math.cos(i * 2.4) * (24+i*3)}px`, '--spark-y': `${-25-(i%5)*15}px`, '--spark-turn': `${i*31}deg` }} />)}<span className="furnace-impact-flash"/></div>)}
+    <div className="furnace-impact-reflection" aria-hidden="true" />
     <div className="burn-scene-vignette" />
     <span className="burn-scene-label">{firing ? 'FURNACE PREVIEW · NO TOKENS SPENT' : 'THE PACK’S INCINERATOR'}</span>
   </div>;

@@ -84,3 +84,27 @@
 /* Exclude the neighboring frame’s stray toe at the bottom-left of the return pose.
    The golden worker’s own paws and complete shovel remain inside this silhouette. */
 .pittensor-page .burn-worker-right [data-pose="5"]{clip-path:polygon(0 0,100% 0,100% 100%,7% 100%,7% 84%,0 84%)}
+
+/* Machinery and impacts use the same clock as the shovel delivery. */
+.furnace-machinery{position:absolute;inset:0;z-index:2;pointer-events:none}
+.furnace-instrument{position:absolute;top:24%;width:10%;min-width:40px;max-width:85px}
+.furnace-instrument-left{left:5%}.furnace-instrument-right{right:5%}
+.furnace-gauge{position:relative;filter:drop-shadow(0 2px 4px #0009)}.furnace-gauge svg{display:block;width:100%;height:auto}.furnace-gauge small{position:absolute;left:0;right:0;bottom:23%;text-align:center;font-size:clamp(4px,.55vw,7px);color:#624522;letter-spacing:.5px;font-weight:800}
+.furnace-gauge-needle{transform-origin:50px 50px;animation:furnace-pressure var(--worker-cycle) ease-in-out infinite}
+.furnace-warning{display:block;margin:7px auto;width:8px;height:8px;border-radius:50%;background:#ec6219;border:1px solid #e6b463;box-shadow:0 0 9px #ff4d19;animation:furnace-warning-pulse var(--worker-cycle) ease-in-out infinite}
+.furnace-valve{width:80%;margin:7px auto 0;filter:drop-shadow(0 2px 3px #000a)}.furnace-valve svg{display:block;width:100%;height:auto;animation:furnace-valve-turn var(--worker-cycle) ease-in-out infinite}
+.furnace-vent{position:relative;height:10px}.furnace-vent i{position:absolute;left:25%;bottom:0;width:40px;height:16px;border-radius:50%;background:radial-gradient(ellipse,#d5cfe38c,transparent 70%);filter:blur(4px);opacity:0;animation:furnace-vent-puff var(--worker-cycle) ease-out infinite}.furnace-vent i:nth-child(2){left:40%;width:48px}.furnace-vent i:nth-child(3){left:10%;width:36px}
+.furnace-instrument-right .furnace-gauge-needle,.furnace-instrument-right .furnace-warning,.furnace-instrument-right .furnace-valve svg,.furnace-instrument-right .furnace-vent i{animation-delay:calc(var(--worker-cycle)*-.5)}
+.furnace-impact{position:absolute;left:50%;top:76%;width:1px;height:1px;z-index:5;pointer-events:none}.furnace-impact i{position:absolute;width:3px;height:7px;border-radius:50%;background:#fff2b0;box-shadow:0 0 5px #ff8d20;opacity:0;animation:furnace-impact-spark var(--worker-cycle) linear infinite}
+.furnace-impact-right i,.furnace-impact-right .furnace-impact-flash{animation-delay:calc(var(--worker-cycle)*-.5)}
+.furnace-impact-flash{position:absolute;left:-30px;top:-25px;width:60px;height:50px;border-radius:50%;background:radial-gradient(ellipse,#fff7bb99,#ff6a1822,transparent 70%);opacity:0;mix-blend-mode:screen;animation:furnace-impact-pop var(--worker-cycle) ease-out infinite}
+.furnace-impact-reflection{position:absolute;inset:18% 27% 10%;z-index:2;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(ellipse at 50% 80%,#ff8d3040,transparent 68%);opacity:0;animation:furnace-reflection var(--worker-cycle) ease-out infinite}
+@keyframes furnace-pressure{0%,100%{transform:rotate(-55deg)}40%{transform:rotate(-15deg)}64%{transform:rotate(30deg)}78%{transform:rotate(65deg)}86%{transform:rotate(20deg)}}
+@keyframes furnace-warning-pulse{0%,60%,100%{opacity:.4;box-shadow:0 0 4px #ff4d19}77%,83%{opacity:1;box-shadow:0 0 16px #ff9a39}}
+@keyframes furnace-valve-turn{0%,65%,100%{transform:rotate(0)}80%,90%{transform:rotate(80deg)}}
+@keyframes furnace-vent-puff{0%,78%,100%{opacity:0;transform:translate(0,0) scale(.4)}82%{opacity:.7}95%{opacity:0;transform:translate(35px,-35px) scale(2.1)}}
+@keyframes furnace-impact-spark{0%,76%,100%{opacity:0;transform:translate(0,0) rotate(var(--spark-turn)) scale(.5)}78%{opacity:1;transform:translate(0,0) rotate(var(--spark-turn)) scale(1)}88%{opacity:.8;transform:translate(calc(var(--spark-x)*.7),var(--spark-y)) rotate(var(--spark-turn)) scale(.8)}96%{opacity:0;transform:translate(var(--spark-x),calc(var(--spark-y) + 15px)) rotate(var(--spark-turn)) scale(.3)}}
+@keyframes furnace-impact-pop{0%,76%,88%,100%{opacity:0;transform:scale(.5)}79%{opacity:.9;transform:scale(1.2)}83%{opacity:.35;transform:scale(1.5)}}
+@keyframes furnace-reflection{0%,26%,76%,100%{opacity:0}29%,79%{opacity:.65}36%,86%{opacity:.1}}
+@media(max-width:600px){.furnace-instrument{top:21%;width:10%;min-width:30px}.furnace-instrument-left{left:3%}.furnace-instrument-right{right:3%}.furnace-warning{width:6px;height:6px;margin:4px auto}.furnace-impact i:nth-child(n+9){display:none}}
+@media(prefers-reduced-motion:reduce){.furnace-gauge-needle{transform:rotate(-15deg)}.furnace-impact,.furnace-vent,.furnace-impact-reflection{display:none}.furnace-warning{animation:none!important;opacity:.5}}
