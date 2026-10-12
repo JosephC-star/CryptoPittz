@@ -12,6 +12,7 @@ import ExplorerControls from "./components/explorer/ExplorerControls";
 import ExplorerPagination from "./components/explorer/ExplorerPagination";
 import NftCard from "./components/nft/NftCard";
 import NftDetailModal from "./components/nft/NftDetailModal";
+import BonezBurner from "./features/bonez-burn/BonezBurner";
 import BonezMarketSection from "./features/bonez-market/BonezMarketSection";
 import useBonezMarket from "./features/bonez-market/useBonezMarket";
 import useExplorerData from "./features/explorer/useExplorerData";
@@ -826,6 +827,8 @@ function App() {
             <span style={{display:"block",fontSize:"13px",marginBottom:"14px"}}>You earn, we burn!</span>
             <span style={{fontWeight:"600"}}>Enter the Financial District →</span>
           </a>
+
+          <BonezBurner address={account.address} onConnect={connectWallet} />
 
           <BonezMarketSection
             market={bonezMarket}
