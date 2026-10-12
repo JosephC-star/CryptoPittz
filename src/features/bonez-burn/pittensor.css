@@ -80,3 +80,7 @@
 @keyframes neon-lamp-flicker{0%,23%,28%,59%,65%,100%{opacity:.55}24%,60%{opacity:.32}26%,62%{opacity:.7}45%,85%{opacity:.62}}
 @keyframes gold-metal-glint{0%,16%{background-position:130% 0;opacity:.1}45%,60%{opacity:.6}82%,100%{background-position:-40% 0;opacity:.1}}
 @media(prefers-reduced-motion:reduce){.furnace-lights i,.furnace-gold-sheen{animation:none!important}.furnace-lights i{opacity:.4}.furnace-gold-sheen{opacity:.25}}
+
+/* Exclude the neighboring frame’s stray toe at the bottom-left of the return pose.
+   The golden worker’s own paws and complete shovel remain inside this silhouette. */
+.pittensor-page .burn-worker-right [data-pose="5"]{clip-path:polygon(0 0,100% 0,100% 100%,7% 100%,7% 84%,0 84%)}
