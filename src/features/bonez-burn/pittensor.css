@@ -65,3 +65,18 @@
 @keyframes gold-firelight{0%,100%{filter:brightness(.94) saturate(1.05)}50%{filter:brightness(1.04) saturate(1.15)}}
 @media(prefers-reduced-motion:reduce){.pittensor-page .burn-smooth-pose{animation:none!important;opacity:0}.pittensor-page .burn-smooth-pose:nth-child(3){opacity:1}.burn-flight-bank{display:none}}
 .pittensor-page .burn-firing .burn-worker-right .burn-smooth-pose{animation-delay:calc((var(--pose) - 6)*var(--worker-cycle)/6 - var(--worker-cycle)*.5)}
+
+/* Keep the artwork's vivid exposure; animate localized glow instead of dimming it. */
+.pittensor-page .burn-room{filter:brightness(1.03) saturate(1.18) contrast(1.04);animation:gold-firelight 7s ease-in-out infinite}
+@keyframes gold-firelight{0%,100%{filter:brightness(1.03) saturate(1.18) contrast(1.04)}50%{filter:brightness(1.08) saturate(1.23) contrast(1.04)}}
+.pittensor-page .burn-worker{filter:saturate(1.12) drop-shadow(0 0 4px #ffab3126)}
+.pittensor-page .burn-scene-vignette{box-shadow:inset 0 -26px 38px #150b1999,inset 0 0 25px #08040833}
+.furnace-lights{position:absolute;inset:0;pointer-events:none;z-index:2;mix-blend-mode:screen}
+.furnace-lights i{position:absolute;width:34%;height:43%;border-radius:50%;filter:blur(14px);opacity:.5;animation:neon-lamp-flicker 7.7s linear infinite}
+.furnace-light-magenta{left:-8%;top:2%;background:radial-gradient(ellipse,#ff49da85,#e820bf33 38%,transparent 68%)}
+.furnace-light-violet{right:-7%;top:5%;background:radial-gradient(ellipse,#ff88ff70,#9e2ee333 38%,transparent 68%);animation-delay:-3.2s!important}
+.furnace-light-green{right:0%;top:28%;background:radial-gradient(ellipse,#49ff8470,#19d96922 38%,transparent 68%);animation-delay:-5.6s!important}
+.furnace-gold-sheen{position:absolute;left:29%;top:14%;width:43%;height:33%;border-radius:40%;z-index:2;pointer-events:none;mix-blend-mode:screen;background:linear-gradient(115deg,transparent 35%,#ffe3a20a 44%,#fff9d43d 49%,#ffe3a20a 54%,transparent 64%);background-size:300% 100%;opacity:.45;animation:gold-metal-glint 10s ease-in-out infinite}
+@keyframes neon-lamp-flicker{0%,23%,28%,59%,65%,100%{opacity:.55}24%,60%{opacity:.32}26%,62%{opacity:.7}45%,85%{opacity:.62}}
+@keyframes gold-metal-glint{0%,16%{background-position:130% 0;opacity:.1}45%,60%{opacity:.6}82%,100%{background-position:-40% 0;opacity:.1}}
+@media(prefers-reduced-motion:reduce){.furnace-lights i,.furnace-gold-sheen{animation:none!important}.furnace-lights i{opacity:.4}.furnace-gold-sheen{opacity:.25}}
