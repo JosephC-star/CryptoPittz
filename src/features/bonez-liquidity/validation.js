@@ -31,3 +31,28 @@ export function liquiditySpec(address,terms,addressHex){
  const args=[pairHex,'02',textHex(FIRST),'00',hex(terms.first),textHex(SECOND),'00',hex(terms.second),textHex('addLiquidity'),hex(terms.minFirst),hex(terms.minSecond)];
  return {sender:address,receiver:address,value:'0',gasLimit:30000000,gasPrice:1000000000,version:2,chainID:'1',data:'MultiESDTNFTTransfer@'+args.join('@')};
 }
+
+export function liquidityPosition(pool, balance){
+ validatePool(pool);
+ if(!/^\d{1,80}$/.test(balance||''))throw Error('Unable to verify LP balance.');
+ const lp=BigInt(balance),supply=BigInt(pool.totalSupply);
+ if(lp>supply)throw Error('LP balance exceeds the verified pool supply.');
+ return {lp:balance,first:(lp*BigInt(pool.firstReserve)/supply).toString(),second:(lp*BigInt(pool.secondReserve)/supply).toString(),share:(lp*100000000n/supply).toString()};
+}
+export function withdrawalQuote(pool,amount,slippage=50){
+ const p=liquidityPosition(pool,amount);
+ if(BigInt(amount)<=0n||BigInt(amount)+1000n>BigInt(pool.totalSupply)||![50,100,200].includes(slippage))throw Error('Choose a valid LP amount and slippage tolerance.');
+ const minFirst=BigInt(p.first)*BigInt(10000-slippage)/10000n,minSecond=BigInt(p.second)*BigInt(10000-slippage)/10000n;
+ if(minFirst<=0n||minSecond<=0n)throw Error('Amount is too small to withdraw safely.');
+ return {lp:amount,first:p.first,second:p.second,minFirst:minFirst.toString(),minSecond:minSecond.toString(),slippage};
+}
+export function assertWithdrawalRatio(pool,terms){
+ const p=liquidityPosition(pool,terms.lp);
+ if(BigInt(terms.lp)+1000n>BigInt(pool.totalSupply)||BigInt(p.first)<BigInt(terms.minFirst)||BigInt(p.second)<BigInt(terms.minSecond))throw Error('Withdrawal estimate moved beyond your slippage limit. Review again.');
+}
+export function withdrawalSpec(address,terms,addressHex){
+ addressHex(address);addressHex(PAIR);
+ for(const key of ['lp','first','second','minFirst','minSecond'])if(!/^\d{1,80}$/.test(terms[key]||'')||BigInt(terms[key])<=0n)throw Error('Invalid withdrawal amount.');
+ if(BigInt(terms.minFirst)>BigInt(terms.first)||BigInt(terms.minSecond)>BigInt(terms.second))throw Error('Invalid withdrawal limits.');
+ return {sender:address,receiver:PAIR,value:'0',gasLimit:30000000,gasPrice:1000000000,version:2,chainID:'1',data:['ESDTTransfer',textHex(LP),hex(terms.lp),textHex('removeLiquidity'),hex(terms.minFirst),hex(terms.minSecond)].join('@')};
+}
