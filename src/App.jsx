@@ -12,7 +12,7 @@ import ExplorerControls from "./components/explorer/ExplorerControls";
 import ExplorerPagination from "./components/explorer/ExplorerPagination";
 import NftCard from "./components/nft/NftCard";
 import NftDetailModal from "./components/nft/NftDetailModal";
-import BonezBurner from "./features/bonez-burn/BonezBurner";
+import "./features/bonez-burn/pittensor.css";
 import BonezMarketSection from "./features/bonez-market/BonezMarketSection";
 import useBonezMarket from "./features/bonez-market/useBonezMarket";
 import useExplorerData from "./features/explorer/useExplorerData";
@@ -397,6 +397,7 @@ function App() {
 
                 <div className="dropdown" role="menu">
                   <a href="#join">CryptoPittz Ecosystem</a>
+                  <a href="/pittensor/">Pittensor →</a>
 
                   <a href="https://discord.gg/PP8S8DX9t" target="_blank" rel="noreferrer">
                     Discord ↗
@@ -828,7 +829,10 @@ function App() {
             <span style={{fontWeight:"600"}}>Enter the Financial District →</span>
           </a>
 
-          <BonezBurner address={account.address} onConnect={connectWallet} />
+          <a className="pittensor-entrance" href="/pittensor/">
+            <div><small>THE PACK’S INDUSTRIAL HEART</small><h2>Pittensor</h2><p>You earn, we burn! Step inside the pack’s furnace room.</p><strong>Enter Pittensor →</strong></div>
+            <div className="pittensor-entrance-art" aria-hidden="true" />
+          </a>
 
           <BonezMarketSection
             market={bonezMarket}

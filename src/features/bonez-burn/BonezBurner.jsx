@@ -12,8 +12,8 @@ function FurnaceScene({ firing, expanded }) {
   return <div className={`burn-scene ${firing ? 'burn-firing' : ''} ${expanded ? 'burn-scene-expanded' : ''}`} role="img" aria-label="Two neon Pittz workers shoveling bones into an industrial furnace with fire, embers and steam">
     <div className="burn-room" />
     <div className="burn-fire"><i /><i /><i /></div>
-    <div className="burn-plaque">BONEZ BURNER<small>YOU EARN, WE BURN</small></div>
-    <div className="burn-worker burn-worker-left" /><div className="burn-worker burn-worker-right" />
+    <div className="burn-plaque">PITTENSOR<small>YOU EARN, WE BURN!</small></div>
+    <div className="burn-worker burn-worker-left">{[0,1,2].map(i => <span className={`burn-pose burn-pose-${i}`} key={i} style={{ backgroundImage: `url(/images/bonez-burn/left-pose-${i}.webp)` }} />)}</div><div className="burn-worker burn-worker-right">{[0,1,2].map(i => <span className={`burn-pose burn-pose-${i}`} key={i} style={{ backgroundImage: `url(/images/bonez-burn/right-pose-${i}.webp)` }} />)}</div>
     <div className="burn-bones" aria-hidden="true">{Array.from({ length: 12 }, (_, i) => <span key={i} style={{ '--i': i }}>🦴</span>)}</div>
     <div className="burn-feed burn-feed-left" aria-hidden="true">🦴</div><div className="burn-feed burn-feed-right" aria-hidden="true">🦴</div>
     <div className="burn-steam burn-steam-left" /><div className="burn-steam burn-steam-right" />
@@ -22,7 +22,7 @@ function FurnaceScene({ firing, expanded }) {
     <span className="burn-scene-label">{firing ? 'FURNACE PREVIEW · NO TOKENS SPENT' : 'THE PACK’S INCINERATOR'}</span>
   </div>;
 }
-export default function BonezBurner({ address, onConnect }) {
+export default function BonezBurner({ address, onConnect, onFireChange, dedicated = false }) {
   const [expanded, setExpanded] = useState(false);
   const [firing, setFiring] = useState(false);
   const [amount, setAmount] = useState('');
@@ -55,6 +55,7 @@ export default function BonezBurner({ address, onConnect }) {
     }
     void load(); return () => controller.abort();
   }, [address, refresh]);
+  useEffect(() => { onFireChange?.(firing); }, [firing, onFireChange]);
   function preview() {
     clearTimeout(timer.current); setFiring(true);
     timer.current = setTimeout(() => setFiring(false), 6500);
@@ -67,10 +68,10 @@ export default function BonezBurner({ address, onConnect }) {
     }
   }
   return <section id="bonez-burner" className={`burner ${expanded ? 'burner-open' : ''}`}>
-    <div className="burner-header"><div><span className="burn-eyebrow">THE PACK’S INDUSTRIAL QUARTER</span><h2>BONEZ Burner</h2><p>Feed the furnace. Fuel the legend.</p></div><span className="burner-status"><i /> FURNACE ONLINE <small>Burn connection in development</small></span></div>
+    <div className="burner-header"><div><span className="burn-eyebrow">THE PACK’S INDUSTRIAL QUARTER</span><h2>{dedicated ? "The Furnace Room" : "Pittensor"}</h2><p>Feed the furnace. Fuel the legend.</p></div><span className="burner-status"><i /> FURNACE ONLINE <small>Burn connection in development</small></span></div>
     <div className="burner-layout">
-      <div className="burner-showcase"><FurnaceScene firing={firing} expanded={expanded} /><div className="burn-scene-actions"><button type="button" onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>{expanded ? 'Close furnace room ↑' : 'Enter the furnace room →'}</button><button type="button" onClick={preview} disabled={firing}>{firing ? 'Furnace firing…' : 'Preview the fire 🔥'}</button></div></div>
-      <div className="burn-control"><span className="burn-eyebrow">FURNACE CONTROL</span><h3>You earn, we burn.</h3><p>Real BONEZ. Permanent destruction. Every completed burn will have an on-chain receipt.</p>
+      <div className="burner-showcase"><FurnaceScene firing={firing} expanded={expanded} /><div className="burn-scene-actions"><button type="button" onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>{expanded ? 'Close furnace room ↑' : 'Expand the furnace room →'}</button><button type="button" onClick={preview} disabled={firing}>{firing ? 'Furnace firing…' : 'Preview the fire 🔥'}</button></div></div>
+      <div className="burn-control"><span className="burn-eyebrow">FURNACE CONTROL</span><h3>You earn, we burn!</h3><p>Real BONEZ. Permanent destruction. Every completed burn will have an on-chain receipt.</p>
         <div className="burn-wallet"><span>Your wallet BONEZ</span><strong>{address ? balance === null ? 'Loading…' : display(bonezHuman(balance)) : 'Connect to view'}</strong><small>Only liquid tokens in your wallet</small></div>
         <label htmlFor="burn-amount">Amount of BONEZ</label><div className="burn-input"><input id="burn-amount" type="text" inputMode="decimal" value={amount} onChange={e => changeAmount(e.target.value)} placeholder="0.00" autoComplete="off" aria-describedby="burn-input-error burn-route-note" /><span>BONEZ</span></div>
         <div className="burn-percent">{[10,25,50].map(n => <button key={n} type="button" disabled={balance === null || BigInt(balance || '0') === 0n} onClick={() => changeAmount(bonezHuman(BigInt(balance) * BigInt(n) / 100n))}>{n}%</button>)}</div>
