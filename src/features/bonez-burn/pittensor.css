@@ -17,3 +17,31 @@
 @keyframes worker-breathe{0%,100%{transform:translateY(0)}25%{transform:translateY(3px)}60%{transform:translateY(-2px)}}
 @media(max-width:900px){.pittensor-page .burner-open .burn-worker{width:48%;height:auto}}
 @media(prefers-reduced-motion:reduce){.burn-pose-0{opacity:0}.burn-pose-1{opacity:1}.burn-pose-2{opacity:0}}
+
+/* Eased pose blends and a continuous planted-body motion soften each shovel cycle. */
+.pittensor-page .burn-worker{animation:worker-weight-shift 6.8s cubic-bezier(.45,0,.35,1) infinite;will-change:transform}
+.pittensor-page .burn-worker-right{animation-delay:-3.4s}
+.pittensor-page .burn-pose{animation-duration:6.8s;animation-timing-function:cubic-bezier(.4,0,.6,1);will-change:opacity}
+.pittensor-page .burn-worker-right .burn-pose{animation-delay:-3.4s}
+.pittensor-page .burn-feed{animation-duration:6.8s}.pittensor-page .burn-feed-right{animation-delay:-3.4s}
+@keyframes worker-scoop{0%,17%,100%{opacity:1}29%,89%{opacity:0}97%{opacity:1}}
+@keyframes worker-carry{0%,17%{opacity:0}29%,40%{opacity:1}52%,67%{opacity:0}79%,89%{opacity:1}97%,100%{opacity:0}}
+@keyframes worker-tip{0%,40%{opacity:0}52%,67%{opacity:1}79%,100%{opacity:0}}
+@keyframes worker-weight-shift{0%,100%{transform:translate(0,0) rotate(0)}19%{transform:translate(1px,4px) rotate(.6deg)}39%{transform:translate(-1px,-2px) rotate(-.5deg)}59%{transform:translate(3px,-3px) rotate(-1deg)}80%{transform:translate(1px,0) rotate(.2deg)}}
+.burn-flare{position:absolute;left:35%;top:29%;width:30%;height:41%;z-index:2;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(ellipse at 50% 80%,#fff9c784,#ffb52c55 32%,#ff5e151f 55%,transparent 72%);transform-origin:50% 90%;animation:furnace-flare 3.4s ease-in-out infinite}
+.burn-flare i{position:absolute;bottom:0;left:25%;width:50%;height:90%;border-radius:50%;background:radial-gradient(ellipse at bottom,#fff7caaa,#ffad3366 25%,transparent 65%);filter:blur(7px);animation:flare-tongue 1.7s ease-in-out infinite alternate}
+.burn-flare i:nth-child(2){left:5%;width:80%;height:70%;animation-delay:-.8s}
+.pittensor-page .burn-fire i{animation-timing-function:cubic-bezier(.4,0,.6,1);animation-duration:1.8s;filter:blur(2px)}
+.burn-smoke{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden}
+.burn-smoke i{position:absolute;left:var(--smoke-x);top:45%;width:var(--smoke-size);height:var(--smoke-size);border-radius:48%;background:radial-gradient(ellipse,#bba79c42,#70687526 45%,transparent 72%);filter:blur(9px);opacity:0;animation:furnace-smoke 8s ease-out infinite;animation-delay:var(--smoke-delay);will-change:transform,opacity}
+.pittensor-page .burn-firing .burn-flare{animation:overdrive-flare 1.2s ease-in-out infinite}
+.pittensor-page .burn-firing .burn-smoke i{animation-duration:5s;background:radial-gradient(ellipse,#d7bcb956,#786f7d35 45%,transparent 72%)}
+/* Keep the preview energetic while giving each pose time to blend. */
+.pittensor-page .burn-firing .burn-pose,.pittensor-page .burn-firing .burn-worker,.pittensor-page .burn-firing .burn-feed{animation-duration:3.6s}
+.pittensor-page .burn-firing .burn-worker-right,.pittensor-page .burn-firing .burn-worker-right .burn-pose,.pittensor-page .burn-firing .burn-feed-right{animation-delay:-1.8s}
+@keyframes furnace-flare{0%,28%,100%{opacity:.28;transform:scale(.93,.9)}48%{opacity:.9;transform:scale(1.06,1.15)}68%{opacity:.5;transform:scale(1,1.02)}}
+@keyframes flare-tongue{from{transform:scale(.9,.85) rotate(-7deg);opacity:.5}to{transform:scale(1.1,1.13) rotate(8deg);opacity:.85}}
+@keyframes overdrive-flare{0%,100%{opacity:.6;transform:scale(1,1.04)}50%{opacity:1;transform:scale(1.18,1.28)}}
+@keyframes furnace-smoke{0%{opacity:0;transform:translate(-50%,15px) scale(.45)}15%{opacity:.5}45%{opacity:.35}100%{opacity:0;transform:translate(calc(-50% + var(--smoke-drift)),-230px) scale(2.5)}}
+@media(max-width:600px){.burn-smoke i{filter:blur(7px)}.burn-smoke i:nth-child(n+7){display:none}}
+@media(prefers-reduced-motion:reduce){.pittensor-page .burn-worker,.pittensor-page .burn-pose,.burn-flare,.burn-flare i,.burn-smoke i{animation:none!important;will-change:auto}.burn-smoke{display:none}.burn-flare{opacity:.4}.burn-pose-0,.burn-pose-2{opacity:0}.burn-pose-1{opacity:1}}

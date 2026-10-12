@@ -12,6 +12,8 @@ function FurnaceScene({ firing, expanded }) {
   return <div className={`burn-scene ${firing ? 'burn-firing' : ''} ${expanded ? 'burn-scene-expanded' : ''}`} role="img" aria-label="Two neon Pittz workers shoveling bones into an industrial furnace with fire, embers and steam">
     <div className="burn-room" />
     <div className="burn-fire"><i /><i /><i /></div>
+    <div className="burn-flare" aria-hidden="true"><i /><i /></div>
+    <div className="burn-smoke" aria-hidden="true">{Array.from({ length: 9 }, (_, i) => <i key={i} style={{ '--smoke-delay': `${-i * .9}s`, '--smoke-x': `${36 + (i % 4) * 8}%`, '--smoke-drift': `${(i % 2 ? 1 : -1) * (18 + i * 5)}px`, '--smoke-size': `${48 + (i % 3) * 22}px` }} />)}</div>
     <div className="burn-plaque">PITTENSOR<small>YOU EARN, WE BURN!</small></div>
     <div className="burn-worker burn-worker-left">{[0,1,2].map(i => <span className={`burn-pose burn-pose-${i}`} key={i} style={{ backgroundImage: `url(/images/bonez-burn/left-pose-${i}.webp)` }} />)}</div><div className="burn-worker burn-worker-right">{[0,1,2].map(i => <span className={`burn-pose burn-pose-${i}`} key={i} style={{ backgroundImage: `url(/images/bonez-burn/right-pose-${i}.webp)` }} />)}</div>
     <div className="burn-bones" aria-hidden="true">{Array.from({ length: 12 }, (_, i) => <span key={i} style={{ '--i': i }}>🦴</span>)}</div>
