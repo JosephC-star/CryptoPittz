@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {validateLiquidityPrices,liquidityUsdValue,formatLiquidityUsd} from '../src/features/bonez-liquidity/pricing.js';
+const tokens=[{identifier:'BONEZ-ff9a73',decimals:6,price:.001},{identifier:'WEGLD-bd4d79',decimals:18,price:4}];
+test('USD total values both underlying assets with their token decimals',()=>{const prices=validateLiquidityPrices(tokens);assert.equal(liquidityUsdValue({lp:'1',first:'100000000',second:'500000000000000000'},prices),2.1);assert.equal(formatLiquidityUsd(2.1),'$2.10');});
+test('missing, invalid, stale and mismatched prices never display a partial total',()=>{assert.throws(()=>validateLiquidityPrices([tokens[1],tokens[0]]));for(const price of [0,-1,NaN,Infinity,undefined])assert.throws(()=>validateLiquidityPrices([{...tokens[0],price},tokens[1]]));const p=validateLiquidityPrices(tokens),position={lp:'1',first:'1',second:'1'};assert.equal(liquidityUsdValue(position,null),null);assert.equal(liquidityUsdValue(position,p,p.updated+120001),null);assert.equal(formatLiquidityUsd(null),'Price unavailable');});
+test('empty positions and sub-cent values are displayed honestly',()=>{assert.equal(liquidityUsdValue({lp:'0',first:'0',second:'0'},null),0);assert.equal(formatLiquidityUsd(0),'$0.00');assert.equal(formatLiquidityUsd(.0001),'<$0.01');});
