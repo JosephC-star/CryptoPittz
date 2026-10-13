@@ -21,3 +21,11 @@ Cabinet prompt: exact three-column/three-row illustrated contact sheet with nine
 ## Checks
 
 JavaScript syntax; homepage and stylesheet compilation; category selection, hero visibility for every game route, and filter reset tests. Live browser testing remains limited by the Netlify preview's team sign-in protection. Review responsive appearance and live interactions in an authorized browser before production release.
+
+## Plinko material pass
+
+The game gains a recessed navy glass backplate with beveled gold/chrome framing and cyan/magenta edge lighting, metallic pegs, illuminated launch ports, dimensional payout pockets, a chrome orb behind the original Bonez emblem, and refined trails and impact glow. Board coordinates, path animation, drop resolution, odds, payouts, storage, and scoring are retained in the unmodified game bundle.
+
+The separate `plinko-skin.js` appends four cosmetic SVG gradients once per board; `plinko-skin.css` styles existing shapes. The backplate asset is `public/images/playground/plinko-backplate.webp`, 71,522 bytes. Built-in image-generation prompt: empty premium illustrated Plinko backplate, almost-square landscape; dark navy glass center with faint diamond-grid texture, brushed black metal, chrome/gold bevels, screws, cyan/magenta outer LED rails and bottom tray. No pegs, ball, numbers, words, characters, or fake gameplay geometry. Real game objects remain rendered by the existing SVG. Exported at a maximum 1200-pixel edge, WebP quality 83.
+
+Material idempotency and preservation of original SVG definitions are checked in `tests/plinko-skin.test.mjs`. Live appearance and play still need review in an authorized Netlify preview browser.
