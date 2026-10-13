@@ -108,3 +108,22 @@
 @keyframes furnace-reflection{0%,26%,76%,100%{opacity:0}29%,79%{opacity:.65}36%,86%{opacity:.1}}
 @media(max-width:600px){.furnace-instrument{top:21%;width:10%;min-width:30px}.furnace-instrument-left{left:3%}.furnace-instrument-right{right:3%}.furnace-warning{width:6px;height:6px;margin:4px auto}.furnace-impact i:nth-child(n+9){display:none}}
 @media(prefers-reduced-motion:reduce){.furnace-gauge-needle{transform:rotate(-15deg)}.furnace-impact,.furnace-vent,.furnace-impact-reflection{display:none}.furnace-warning{animation:none!important;opacity:.5}}
+
+/* Rising hot air, a foreground feed belt and opt-in industrial ambience. */
+.furnace-heat-haze{position:absolute;left:39%;top:43%;width:23%;height:30%;z-index:2;pointer-events:none;overflow:hidden;mask-image:radial-gradient(ellipse,#000 40%,transparent 74%)}
+.furnace-heat-haze i{position:absolute;left:5%;top:10%;width:90%;height:60%;border-radius:50%;backdrop-filter:blur(1px);background:linear-gradient(110deg,transparent,#ffe9ad09,transparent);opacity:.7;animation:furnace-hot-air 4s ease-in-out infinite}
+.furnace-heat-haze i:nth-child(2){left:20%;width:65%;animation-delay:-1.3s}.furnace-heat-haze i:nth-child(3){left:0;width:75%;animation-delay:-2.6s}
+.burn-firing .furnace-heat-haze i{animation-duration:2s;backdrop-filter:blur(1.7px)}
+.furnace-conveyor{position:absolute;bottom:0;left:0;right:0;height:6%;min-height:24px;max-height:48px;z-index:5;pointer-events:none;border-top:2px solid #a47742;border-bottom:3px solid #432819;background:linear-gradient(#493426,#181417 40%,#201a16 70%,#4b3521);box-shadow:0 -3px 12px #ff8b1526;overflow:hidden}
+.furnace-conveyor-rollers{position:absolute;inset:45% 0 0;background:repeating-linear-gradient(90deg,#191718 0 8px,#876139 9px 11px,#242123 12px 21px);background-size:42px 100%;animation:furnace-belt-rollers 2s linear infinite}
+.furnace-conveyor-load{position:absolute;left:-100%;top:-8%;width:200%;height:75%;animation:furnace-bone-cargo 18s linear infinite}
+.furnace-conveyor-load svg{position:absolute;left:calc(var(--cargo)*7.142857%);top:calc(mod(var(--cargo-pattern),3)*7%);width:clamp(22px,3vw,44px);height:100%;transform:rotate(calc(var(--cargo-pattern)*37deg));filter:drop-shadow(1px 2px 2px #0009)}
+.furnace-conveyor-label{position:absolute;right:12px;bottom:3px;font-size:6px;letter-spacing:1.3px;color:#ccaa75;background:#171314c9;padding:2px 4px}
+.pittensor-page .burn-scene-label{bottom:calc(6% + 12px)}
+.burn-firing .furnace-conveyor-load{animation-duration:9s}.burn-firing .furnace-conveyor-rollers{animation-duration:1s}
+.pittensor-tools{flex-wrap:wrap}.furnace-audio-control{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}.furnace-audio-control label{display:flex;gap:7px;align-items:center;font-size:9px;letter-spacing:0;color:#e5b185}.furnace-audio-control input{width:80px;accent-color:#f9b067}.furnace-audio-control>span{font-size:10px;letter-spacing:0;color:#e9a97c;width:100%}.furnace-audio-control button:disabled{opacity:.5;cursor:wait}
+@keyframes furnace-hot-air{0%{transform:translate(0,50px) skewX(-3deg);opacity:0}30%{opacity:.65}70%{opacity:.45}100%{transform:translate(8px,-80px) skewX(5deg);opacity:0}}
+@keyframes furnace-belt-rollers{to{background-position:42px 0}}
+@keyframes furnace-bone-cargo{to{transform:translateX(50%)}}
+@media(max-width:600px){.furnace-heat-haze i{backdrop-filter:none}.furnace-conveyor-label{display:none}.pittensor-tools{gap:12px}}
+@media(prefers-reduced-motion:reduce){.furnace-heat-haze{display:none}.furnace-conveyor-load,.furnace-conveyor-rollers{animation:none!important}}
