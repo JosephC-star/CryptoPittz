@@ -127,3 +127,20 @@
 @keyframes furnace-bone-cargo{to{transform:translateX(50%)}}
 @media(max-width:600px){.furnace-heat-haze i{backdrop-filter:none}.furnace-conveyor-label{display:none}.pittensor-tools{gap:12px}}
 @media(prefers-reduced-motion:reduce){.furnace-heat-haze{display:none}.furnace-conveyor-load,.furnace-conveyor-rollers{animation:none!important}}
+
+/* Anchor instruments to the artwork's source coordinates. The background covers the
+   scene by height, so horizontal positions compensate for its centered crop. */
+.pittensor-page .burn-scene{container-type:size}
+.pittensor-page .furnace-instrument{min-width:0;max-width:none;transform:translate(-50%,-50%)}
+.pittensor-page .furnace-instrument-left{left:calc(50% - 39cqh);right:auto;top:10.8%;width:11.3cqh}
+.pittensor-page .furnace-instrument-right{left:calc(50% + 28cqh);right:auto;top:9.1%;width:4.8cqh}
+/* The entire instrument includes the valve beneath it; align its gauge center
+   independently so the drawn dial is covered rather than the lamp. */
+.pittensor-page .furnace-instrument{transform:translate(-50%,-23%)}
+.pittensor-page .furnace-instrument-right .furnace-gauge small{display:none}
+.pittensor-page .furnace-instrument-right .furnace-warning{width:4px;height:4px;margin:3px auto}
+.pittensor-page .furnace-instrument-right .furnace-valve{margin-top:3px}
+.furnace-bone-pile{position:absolute;bottom:-1%;left:26%;width:48%;height:10%;z-index:5;pointer-events:none;filter:drop-shadow(0 4px 3px #080506b0)}
+.furnace-bone-pile svg{position:absolute;left:var(--pile-x);bottom:var(--pile-y);width:var(--pile-size);height:auto;transform:rotate(var(--pile-turn));filter:drop-shadow(0 0 3px #ffc77320)}
+.pittensor-page .burn-scene-label{bottom:15px}
+@media(max-width:600px){.furnace-bone-pile svg{width:calc(var(--pile-size)*.7)}.furnace-bone-pile{left:20%;width:60%}.pittensor-page .furnace-gauge small{display:none}}
