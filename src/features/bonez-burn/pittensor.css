@@ -229,3 +229,49 @@
 /* Fire preview must keep twelve pose slots on the same duration as their delays. */
 .pittensor-page .burn-firing .burn-smooth-pose{animation-duration:var(--worker-cycle);animation-timing-function:linear;animation-delay:calc((var(--pose) - 12)*var(--worker-cycle)/12)}
 .pittensor-page .burn-firing .burn-worker-right .burn-smooth-pose{animation-delay:calc((var(--pose) - 12)*var(--worker-cycle)/12 - var(--worker-cycle)*.5)}
+
+/* One decoded atlas advances complete drawings; no limb rig or crossfading. */
+.pittz-trial-atlas{position:absolute;inset:0;visibility:hidden;background-repeat:no-repeat;background-size:600% 600%;animation:pittz-thirty-six var(--worker-cycle) steps(1,end) infinite}
+.pittz-trial-active .burn-smooth-pose{visibility:hidden}
+.pittz-trial-active .pittz-trial-atlas{visibility:visible}
+.pittensor-page .burn-scene-actions{flex-wrap:wrap}
+@keyframes pittz-thirty-six{
+0.00000000%{background-position:0% 0%}
+2.77777778%{background-position:20% 0%}
+5.55555556%{background-position:40% 0%}
+8.33333333%{background-position:60% 0%}
+11.11111111%{background-position:80% 0%}
+13.88888889%{background-position:100% 0%}
+16.66666667%{background-position:0% 20%}
+19.44444444%{background-position:20% 20%}
+22.22222222%{background-position:40% 20%}
+25.00000000%{background-position:60% 20%}
+27.77777778%{background-position:80% 20%}
+30.55555556%{background-position:100% 20%}
+33.33333333%{background-position:0% 40%}
+36.11111111%{background-position:20% 40%}
+38.88888889%{background-position:40% 40%}
+41.66666667%{background-position:60% 40%}
+44.44444444%{background-position:80% 40%}
+47.22222222%{background-position:100% 40%}
+50.00000000%{background-position:0% 60%}
+52.77777778%{background-position:20% 60%}
+55.55555556%{background-position:40% 60%}
+58.33333333%{background-position:60% 60%}
+61.11111111%{background-position:80% 60%}
+63.88888889%{background-position:100% 60%}
+66.66666667%{background-position:0% 80%}
+69.44444444%{background-position:20% 80%}
+72.22222222%{background-position:40% 80%}
+75.00000000%{background-position:60% 80%}
+77.77777778%{background-position:80% 80%}
+80.55555556%{background-position:100% 80%}
+83.33333333%{background-position:0% 100%}
+86.11111111%{background-position:20% 100%}
+88.88888889%{background-position:40% 100%}
+91.66666667%{background-position:60% 100%}
+94.44444444%{background-position:80% 100%}
+97.22222222%{background-position:100% 100%}
+100%{background-position:0% 0%}
+}
+@media(prefers-reduced-motion:reduce){.pittz-trial-atlas{animation:none!important;background-position:0% 60%}}
