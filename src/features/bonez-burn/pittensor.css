@@ -121,7 +121,7 @@
 .furnace-conveyor-label{position:absolute;right:12px;bottom:3px;font-size:6px;letter-spacing:1.3px;color:#ccaa75;background:#171314c9;padding:2px 4px}
 .pittensor-page .burn-scene-label{bottom:calc(6% + 12px)}
 .burn-firing .furnace-conveyor-load{animation-duration:9s}.burn-firing .furnace-conveyor-rollers{animation-duration:1s}
-.pittensor-tools{flex-wrap:wrap}.furnace-audio-control{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}.furnace-audio-control label{display:flex;gap:7px;align-items:center;font-size:9px;letter-spacing:0;color:#e5b185}.furnace-audio-control input{width:80px;accent-color:#f9b067}.furnace-audio-control>span{font-size:10px;letter-spacing:0;color:#e9a97c;width:100%}.furnace-audio-control button:disabled{opacity:.5;cursor:wait}
+.pittensor-tools{flex-wrap:wrap}
 @keyframes furnace-hot-air{0%{transform:translate(0,50px) skewX(-3deg);opacity:0}30%{opacity:.65}70%{opacity:.45}100%{transform:translate(8px,-80px) skewX(5deg);opacity:0}}
 @keyframes furnace-belt-rollers{to{background-position:42px 0}}
 @keyframes furnace-bone-cargo{to{transform:translateX(50%)}}
@@ -160,3 +160,7 @@
 .pittensor-page .burn-worker-left{animation-name:worker-planted}
 .pittensor-page .burn-flight-left{left:41%;top:70%}
 @keyframes worker-planted{0%,100%{transform:translateY(0)}35%{transform:translateY(-1px)}70%{transform:translateY(1px)}}
+
+/* Exclude neighboring sprite fragments without touching the loaded shovel blades. */
+.pittensor-page .burn-worker-left [data-pose="2"]{clip-path:polygon(9% 0,100% 0,100% 84%,92% 84%,92% 100%,46% 100%,46% 97%,37% 97%,37% 100%,9% 100%)}
+.pittensor-page .burn-worker-left [data-pose="3"]{clip-path:polygon(9% 0,100% 0,100% 84%,92% 84%,92% 100%,9% 100%)}

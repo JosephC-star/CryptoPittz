@@ -5,7 +5,6 @@ import { ProviderFactory } from '@multiversx/sdk-dapp/out/providers/ProviderFact
 import { ProviderTypeEnum } from '@multiversx/sdk-dapp/out/providers/types/providerFactory.types';
 import BonezBurner from './BonezBurner';
 import EmberField from './EmberField';
-import FurnaceAudio from './FurnaceAudio';
 import './pittensor.css';
 export default function Pittensor() {
   useEffect(() => { document.title = "Pittensor · You earn, we burn! · The PittzStop"; }, []);
@@ -31,7 +30,7 @@ export default function Pittensor() {
   return <div className={`pittensor-page ${firing ? 'pittensor-firing' : ''}`}>
     <EmberField firing={firing} enabled={effects} />
     <header className="pittensor-nav"><a className="pittensor-brand" href="/">THE PITTZ<span>STOP</span></a><nav aria-label="Pittensor navigation"><a href="/financial-district/">Financial District</a><a href="/">Back to the Pack ↗</a></nav></header>
-    <main className="pittensor-main"><section className="pittensor-hero"><span className="pittensor-kicker"><i /> THE PACK’S INDUSTRIAL HEART</span><h1>PITTENSOR</h1><p className="pittensor-motto">You earn, we burn!</p><p className="pittensor-intro">Down in the furnace room, the pack keeps the fire alive.<br />Copper pipes. Hot steel. Bonez turned to embers.</p><div className="pittensor-tools"><span>FURNACE 01 · {firing ? 'OVERDRIVE' : 'STANDING BY'}</span><button type="button" aria-pressed={effects} onClick={() => setEffects(!effects)}>Flying embers: {effects ? 'On' : 'Off'}</button><FurnaceAudio firing={firing} /></div></section>
+    <main className="pittensor-main"><section className="pittensor-hero"><span className="pittensor-kicker"><i /> THE PACK’S INDUSTRIAL HEART</span><h1>PITTENSOR</h1><p className="pittensor-motto">You earn, we burn!</p><p className="pittensor-intro">Down in the furnace room, the pack keeps the fire alive.<br />Copper pipes. Hot steel. Bonez turned to embers.</p><div className="pittensor-tools"><span>FURNACE 01 · {firing ? 'OVERDRIVE' : 'STANDING BY'}</span><button type="button" aria-pressed={effects} onClick={() => setEffects(!effects)}>Flying embers: {effects ? 'On' : 'Off'}</button></div></section>
       {walletError && <p role="status" className="burn-error">{walletError}</p>}
       <BonezBurner address={account.address} onConnect={connect} onFireChange={setFiring} dedicated />
       <div className="pittensor-bottom"><span>POWERED BY THE PACK</span><p>Every bone has a story. This is where the next one starts.</p><a href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxikVdFCh3ndX6vXVMa7/transactions" target="_blank" rel="noreferrer">Pittensor on TaoStats ↗</a></div>
