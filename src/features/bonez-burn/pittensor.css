@@ -174,3 +174,13 @@
 .pittensor-effects-lite .burn-smoke i{filter:blur(5px)}
 .burn-review,.burn-receipt{border:1px solid #c48b4c6b;background:#120c0b;padding:15px;border-radius:12px;margin:15px 0}.burn-review strong,.burn-receipt strong{font-size:14px;color:#ffd9a2}.burn-review>button:last-child{background:none;border:1px solid #795236;border-radius:8px;color:#dab68d;margin-top:10px;padding:8px 14px;cursor:pointer}.burn-receipt span{display:block;font-size:13px;color:#dbb991;margin:7px 0}
 @media(max-width:600px){.pittensor-page .furnace-bone-pile svg{width:var(--pile-size)}}
+
+/* Twelve registered poses per worker keep the same full-cycle delivery time. */
+.pittensor-page .burn-smooth-pose{animation-name:worker-twelve-pose;animation-delay:calc((var(--pose) - 12)*var(--worker-cycle)/12)}
+.pittensor-page .burn-worker-right .burn-smooth-pose,.pittensor-page .burn-firing .burn-worker-right .burn-smooth-pose{animation-delay:calc((var(--pose) - 12)*var(--worker-cycle)/12 - var(--worker-cycle)*.5)}
+@keyframes worker-twelve-pose{0%,5.5%{opacity:1}8.333%,97.167%{opacity:0}100%{opacity:1}}
+.pittensor-page .burn-worker-left [data-pose="2"],.pittensor-page .burn-worker-left [data-pose="3"],.pittensor-page .burn-worker-right [data-pose="5"]{clip-path:none}
+.pittensor-page .burn-worker-left [data-pose="4"]{clip-path:polygon(9% 0,100% 0,100% 84%,92% 84%,92% 100%,46% 100%,46% 97%,37% 97%,37% 100%,9% 100%)}
+.pittensor-page .burn-worker-left [data-pose="6"]{clip-path:polygon(9% 0,100% 0,100% 84%,92% 84%,92% 100%,9% 100%)}
+.pittensor-page .burn-worker-right [data-pose="10"]{clip-path:polygon(0 0,100% 0,100% 100%,7% 100%,7% 84%,0 84%)}
+@media(prefers-reduced-motion:reduce){.pittensor-page .burn-smooth-pose:nth-child(3){opacity:0}.pittensor-page .burn-smooth-pose:nth-child(5){opacity:1}}

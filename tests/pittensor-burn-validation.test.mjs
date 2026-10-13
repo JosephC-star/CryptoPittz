@@ -18,3 +18,12 @@ test('receipt cannot celebrate another wallet, token, amount or failed transacti
  assertBurnReceipt(receipt,review);
  for (const change of [{sender:'other'}, {receiver:'other'}, {data:btoa(burnSpec(address,'2').data)}, {value:'1'}, {status:'pending'}, {status:'fail'}]) assert.throws(() => assertBurnReceipt({...receipt,...change},review));
 });
+
+test('successful simulation must emit the exact burn event when verifying a transaction', () => {
+ const spec=burnSpec(address,'0.000001');
+ const event={identifier:'ESDTLocalBurn',address,topics:[btoa('BONEZ-ff9a73'),'',btoa(String.fromCharCode(1))]};
+ const data={code:'successful',data:{result:{status:'success',logs:{events:[event]}}}};
+ assertBurnSimulation(data,spec);
+ assert.throws(() => assertBurnSimulation({code:'successful',data:{result:{status:'success'}}},spec));
+ for(const change of [{address:'other'},{topics:[btoa('OTHER-abcdef'),'',btoa(String.fromCharCode(1))]},{topics:[btoa('BONEZ-ff9a73'),'',btoa(String.fromCharCode(2))]}]) assert.throws(() => assertBurnSimulation({code:'successful',data:{result:{status:'success',logs:{events:[{...event,...change}]}}}},spec));
+});

@@ -43,7 +43,7 @@ async function simulateBurn(tx) {
   const payload = { ...tx.toSendable(), signature: '0'.repeat(128), ...(tx.guardian?.toBech32() && tx.options & 2 ? { guardianSignature: '0'.repeat(128) } : {}) };
   const response = await fetch('https://api.multiversx.com/transaction/simulate?checkSignature=false', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: AbortSignal.timeout(15000) });
   if (!response.ok) throw Error('Burn verification is temporarily unavailable. No transaction was signed.');
-  return assertBurnSimulation(await response.json());
+  return assertBurnSimulation(await response.json(), {sender: tx.sender.toBech32(), data: atob(tx.toSendable().data)});
 }
 export async function prepareBurn(amount) {
   const address = context(); await previous(address);
@@ -67,7 +67,7 @@ export async function submitBurn(review) {
     if (Date.now() - review.created > 240000) throw Error('Signing took too long. Review again.');
     const latest = await funds(review.address, review.amount, review.guardian, true);
     if (BigInt(latest.account.nonce) !== signed[0].nonce) throw Error('Wallet nonce changed. Review again.');
-    context(review.address);
+    await simulateBurn(signed[0]); context(review.address);
     // Persist before broadcasting so reloads and uncertain responses cannot cause a duplicate burn.
     const pending = { address: review.address, amount: review.amount, hash: null };
     sessionStorage.setItem(key(review.address), JSON.stringify(pending));
