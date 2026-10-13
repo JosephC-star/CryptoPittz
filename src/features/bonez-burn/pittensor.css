@@ -151,3 +151,7 @@
 .pittensor-page .furnace-gauge small{bottom:29%;font-size:clamp(3px,.42vw,5px);letter-spacing:.7px;color:#725a36;font-weight:700}
 .pittensor-page .furnace-warning{background:#bc5428;border-color:#856132;box-shadow:0 0 6px #ed873c}
 .pittensor-page .furnace-valve{filter:drop-shadow(1px 2px 2px #1a100b80);opacity:.88}
+
+/* Hold the red worker’s loaded shovel at waist height before the low tip. */
+.pittensor-page .burn-flight-left{left:41%;top:73%}
+.pittensor-page .furnace-impact-left{top:79%}
