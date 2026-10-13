@@ -813,12 +813,12 @@ function App() {
 
           <section id="arcade" className="playground-release-entrance">
             <div>
-              <span className="playground-release-status">🎮 WORK IN PROGRESS</span>
-              <h2>Big games… more coming soon.</h2>
-              <p>The Pack’s Playground has a room of its own. Explore nine games, collect trophies, and help us shape what comes next.</p>
+              <span className="playground-release-status">THE PACK’S NEON YARD</span>
+              <h2>Pittz Playground</h2>
+              <p>Nine neon cabinets. One pack. Chase high scores, collect trophies, and stay for the vibe.</p>
               <a className="btn primary" href={`/playground/${account.address ? `?wallet=${encodeURIComponent(account.address)}` : ''}#/playground`}>Enter the Playground →</a>
             </div>
-            <div className="playground-release-art" aria-hidden="true"><span>🦴</span><strong>PITTZ<br/>PLAYGROUND</strong><span>👾</span></div>
+            <div className="playground-release-art neon-yard-entrance-art" aria-hidden="true"><i className="neon-yard-entrance-glint" /></div>
           </section>
 
           <a className="financial-entrance" href="/financial-district/">
