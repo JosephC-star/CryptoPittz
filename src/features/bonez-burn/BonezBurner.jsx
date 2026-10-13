@@ -1,6 +1,8 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { BONEZ_TOKEN, bonezHuman, burnAtomic, validateBurnToken } from './amounts';
 import './burner.css';
+import { prepareBurn, submitBurn, pendingBurn } from './burnTransactions';
+import { assertBurnReceipt } from './burnValidation';
 
 const display = (value) => Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 });
 async function json(url, signal) {
@@ -8,7 +10,7 @@ async function json(url, signal) {
   if (!response.ok) throw Error('Live BONEZ data is temporarily unavailable.');
   return response.json();
 }
-function FurnaceScene({ firing, expanded }) {
+function FurnaceScene({ firing, expanded, celebration }) {
   const gaugeId = useId();
   return <div className={`burn-scene ${firing ? 'burn-firing' : ''} ${expanded ? 'burn-scene-expanded' : ''}`} role="img" aria-label="Two neon Pittz workers shoveling bones into an industrial furnace with fire, embers and steam">
     <div className="burn-room" />
@@ -47,13 +49,42 @@ function FurnaceScene({ firing, expanded }) {
     {['left','right'].map(side => <div className={`furnace-impact furnace-impact-${side}`} key={side} aria-hidden="true">{Array.from({length:12}, (_, i) => <i key={i} style={{ '--spark-x': `${Math.cos(i * 2.4) * (24+i*3)}px`, '--spark-y': `${-25-(i%5)*15}px`, '--spark-turn': `${i*31}deg` }} />)}<span className="furnace-impact-flash"/></div>)}
     <div className="furnace-impact-reflection" aria-hidden="true" />
     <div className="burn-scene-vignette" />
-    <span className="burn-scene-label">{firing ? 'FURNACE PREVIEW · NO TOKENS SPENT' : 'THE PACK’S INCINERATOR'}</span>
+    <span className="burn-scene-label">{firing ? celebration ? 'BURN CONFIRMED · VERIFIED RECEIPT' : 'FURNACE PREVIEW · NO TOKENS SPENT' : 'THE PACK’S INCINERATOR'}</span>
   </div>;
 }
 export default function BonezBurner({ address, onConnect, onFireChange, dedicated = false }) {
   const [expanded, setExpanded] = useState(false);
   const [firing, setFiring] = useState(false);
   const [amount, setAmount] = useState('');
+  const [review, setReview] = useState(null), [busy, setBusy] = useState(false), [sent, setSent] = useState(null), [settled, setSettled] = useState(false), [burnStatus, setBurnStatus] = useState(''), [celebration, setCelebration] = useState(false);
+  const actionLock = useRef(false);
+  const blocked = Boolean(sent && !settled);
+  useEffect(() => { setReview(null); setSettled(false); setSent(null); setBurnStatus(''); if (address) { try { const pending = pendingBurn(address); if (pending) { setSent(pending); setBurnStatus(pending.hash ? 'Waiting for the previous burn receipt…' : 'Previous submission is uncertain. Check wallet history before another burn.'); } } catch (e) { setSent({address, hash:null}); setBurnStatus(e.message); } } }, [address]);
+  useEffect(() => {
+    if (!sent?.hash || sent.address !== address) return;
+    let active = true, pollTimer;
+    async function poll() {
+      try {
+        const tx = await json(`https://api.multiversx.com/transactions/${sent.hash}`, AbortSignal.timeout(15000));
+        if (!active) return;
+        if (tx.status === 'success') {
+          try { assertBurnReceipt(tx, sent); setBurnStatus('Burn confirmed. These BONEZ have been permanently destroyed.'); setCelebration(true); setFiring(true); clearTimeout(timer.current); timer.current = setTimeout(() => setFiring(false), 6500); setRefresh(n => n + 1); } catch (e) { setBurnStatus(e.message); }
+          setSettled(true); return;
+        }
+        if (['fail','invalid'].includes(tx.status)) { setSettled(true); setBurnStatus('Burn failed. Check its Explorer receipt; network fees may still apply.'); return; }
+      } catch { /* Indexing may lag; never retry the transaction itself. */ }
+      if (active) pollTimer = setTimeout(poll, 6000);
+    }
+    void poll(); return () => { active = false; clearTimeout(pollTimer); };
+  }, [sent, address]);
+  async function reviewBurn() {
+    if (actionLock.current || blocked) return; actionLock.current = true; setBusy(true); setBurnStatus('Verifying your burn with the network…'); setReview(null);
+    try { setReview(await prepareBurn(amount)); setBurnStatus('Simulation passed. Review the permanent burn below.'); } catch (e) { setBurnStatus(e.message); } finally { actionLock.current = false; setBusy(false); }
+  }
+  async function confirmBurn() {
+    if (actionLock.current || !review || blocked) return; actionLock.current = true; setBusy(true); setBurnStatus('Approve the exact burn amount in your wallet.');
+    try { const receipt = await submitBurn(review); setSent(receipt); setSettled(false); setReview(null); setBurnStatus('Submitted. Waiting for on-chain confirmation…'); } catch (e) { setBurnStatus(e.message); try { const pending = pendingBurn(review.address); if (pending) { setSent(pending); setSettled(false); } } catch { setSent({ address: review.address, hash: null }); } setReview(null); } finally { actionLock.current = false; setBusy(false); }
+  }
   const [token, setToken] = useState(null);
   const [balance, setBalance] = useState(null);
   const [error, setError] = useState('');
@@ -85,27 +116,30 @@ export default function BonezBurner({ address, onConnect, onFireChange, dedicate
   }, [address, refresh]);
   useEffect(() => { onFireChange?.(firing); }, [firing, onFireChange]);
   function preview() {
-    clearTimeout(timer.current); setFiring(true);
+    clearTimeout(timer.current); setCelebration(false); setFiring(true);
     timer.current = setTimeout(() => setFiring(false), 6500);
   }
   function changeAmount(value) {
-    setAmount(value); setInputError('');
+    setAmount(value); setReview(null); setInputError('');
     if (value) {
       try { const atomic = burnAtomic(value); if (balance !== null && atomic > BigInt(balance)) throw Error('That amount exceeds your wallet balance.'); }
       catch (e) { setInputError(e.message); }
     }
   }
   return <section id="bonez-burner" className={`burner ${expanded ? 'burner-open' : ''}`}>
-    <div className="burner-header"><div><span className="burn-eyebrow">THE PACK’S INDUSTRIAL QUARTER</span><h2>{dedicated ? "The Furnace Room" : "Pittensor"}</h2><p>Feed the furnace. Fuel the legend.</p></div><span className="burner-status"><i /> FURNACE ONLINE <small>Burn connection in development</small></span></div>
+    <div className="burner-header"><div><span className="burn-eyebrow">THE PACK’S INDUSTRIAL QUARTER</span><h2>{dedicated ? "The Furnace Room" : "Pittensor"}</h2><p>Feed the furnace. Fuel the legend.</p></div><span className="burner-status"><i /> FURNACE ONLINE <small>Wallet burn verification required</small></span></div>
     <div className="burner-layout">
-      <div className="burner-showcase"><FurnaceScene firing={firing} expanded={expanded} /><div className="burn-scene-actions"><button type="button" onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>{expanded ? 'Close furnace room ↑' : 'Expand the furnace room →'}</button><button type="button" onClick={preview} disabled={firing}>{firing ? 'Furnace firing…' : 'Preview the fire 🔥'}</button></div></div>
+      <div className="burner-showcase"><FurnaceScene firing={firing} expanded={expanded} celebration={celebration} /><div className="burn-scene-actions"><button type="button" onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>{expanded ? 'Close furnace room ↑' : 'Expand the furnace room →'}</button><button type="button" onClick={preview} disabled={firing}>{firing ? 'Furnace firing…' : 'Preview the fire 🔥'}</button></div></div>
       <div className="burn-control"><span className="burn-eyebrow">FURNACE CONTROL</span><h3>You earn, we burn!</h3><p>Real BONEZ. Permanent destruction. Every completed burn will have an on-chain receipt.</p>
         <div className="burn-wallet"><span>Your wallet BONEZ</span><strong>{address ? balance === null ? 'Loading…' : display(bonezHuman(balance)) : 'Connect to view'}</strong><small>Only liquid tokens in your wallet</small></div>
-        <label htmlFor="burn-amount">Amount of BONEZ</label><div className="burn-input"><input id="burn-amount" type="text" inputMode="decimal" value={amount} onChange={e => changeAmount(e.target.value)} placeholder="0.00" autoComplete="off" aria-describedby="burn-input-error burn-route-note" /><span>BONEZ</span></div>
-        <div className="burn-percent">{[10,25,50].map(n => <button key={n} type="button" disabled={balance === null || BigInt(balance || '0') === 0n} onClick={() => changeAmount(bonezHuman(BigInt(balance) * BigInt(n) / 100n))}>{n}%</button>)}</div>
+        <label htmlFor="burn-amount">Amount of BONEZ</label><div className="burn-input"><input id="burn-amount" disabled={busy || blocked} type="text" inputMode="decimal" value={amount} onChange={e => changeAmount(e.target.value)} placeholder="0.00" autoComplete="off" aria-describedby="burn-input-error burn-route-note" /><span>BONEZ</span></div>
+        <div className="burn-percent">{[10,25,50].map(n => <button key={n} type="button" disabled={busy || blocked || balance === null || BigInt(balance || '0') === 0n} onClick={() => changeAmount(bonezHuman(BigInt(balance) * BigInt(n) / 100n))}>{n}%</button>)}</div>
         <div id="burn-input-error" role="status" className="burn-error">{inputError}</div>
-        {!address ? <button className="burn-main" type="button" onClick={onConnect}>Connect wallet</button> : <button className="burn-main" type="button" disabled>Burn connection coming soon</button>}
-        <p id="burn-route-note" className="burn-route-note">The furnace is ready for a test fire. Wallet burning stays locked until the BONEZ burn route is verified. Previewing spends no tokens.</p>
+        {!address ? <button className="burn-main" type="button" onClick={onConnect}>Connect wallet</button> : <button className="burn-main" type="button" disabled={busy || blocked || !amount || Boolean(inputError)} onClick={reviewBurn}>{busy ? "Verifying…" : blocked ? "Waiting for burn receipt" : "Verify and review burn"}</button>}
+        <p id="burn-route-note" className="burn-route-note">Burning permanently destroys your BONEZ. Verification spends no tokens and must pass before wallet signing. Previewing the fire is free.</p>
+        {review && review.address === address && <div className="burn-review"><strong>Permanently burn {review.amount} BONEZ?</strong><p>From {review.address.slice(0,9)}…{review.address.slice(-6)} · Mainnet</p><p>Maximum network fee: {Number(review.feeCap)/1e18} EGLD</p><p>This cannot be undone. It does not pay staking rewards or return tokens.</p><button className="burn-main" type="button" disabled={busy || blocked} onClick={confirmBurn}>Confirm permanent burn</button><button type="button" disabled={busy} onClick={() => setReview(null)}>Cancel</button></div>}
+        {burnStatus && <p className="burn-route-note" role="status">{burnStatus}</p>}
+        {sent?.hash && <div className="burn-receipt"><strong>{settled ? 'Burn transaction receipt' : 'Pending burn transaction'}</strong><span>{sent.amount} BONEZ</span><a href={`https://explorer.multiversx.com/transactions/${sent.hash}`} target="_blank" rel="noreferrer">View on-chain receipt ↗</a></div>}
         <a href={`https://explorer.multiversx.com/tokens/${BONEZ_TOKEN}`} target="_blank" rel="noreferrer">Verify BONEZ on Explorer ↗</a>
       </div>
     </div>

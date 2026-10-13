@@ -12,6 +12,7 @@ export default function Pittensor() {
   const [firing, setFiring] = useState(false), [effects, setEffects] = useState(true);
   const [connecting, setConnecting] = useState(false), [walletError, setWalletError] = useState('');
   const [walletOpen, setWalletOpen] = useState(false);
+  const [quality, setQuality] = useState(() => window.matchMedia('(max-width: 700px)').matches ? 'lite' : 'full');
   async function connect() {
     if (connecting) return;
     setConnecting(true); setWalletError('');
@@ -27,10 +28,10 @@ export default function Pittensor() {
     } catch (error) { setWalletError(error.message || 'Unable to connect your wallet.'); }
     finally { setConnecting(false); }
   }
-  return <div className={`pittensor-page ${firing ? 'pittensor-firing' : ''}`}>
-    <EmberField firing={firing} enabled={effects} />
+  return <div className={`pittensor-page ${firing ? 'pittensor-firing' : ''} pittensor-effects-${quality}`}>
+    <EmberField firing={firing} enabled={effects} lite={quality === 'lite'} />
     <header className="pittensor-nav"><a className="pittensor-brand" href="/">THE PITTZ<span>STOP</span></a><nav aria-label="Pittensor navigation"><a href="/financial-district/">Financial District</a><a href="/">Back to the Pack ↗</a></nav></header>
-    <main className="pittensor-main"><section className="pittensor-hero"><span className="pittensor-kicker"><i /> THE PACK’S INDUSTRIAL HEART</span><h1>PITTENSOR</h1><p className="pittensor-motto">You earn, we burn!</p><p className="pittensor-intro">Down in the furnace room, the pack keeps the fire alive.<br />Copper pipes. Hot steel. Bonez turned to embers.</p><div className="pittensor-tools"><span>FURNACE 01 · {firing ? 'OVERDRIVE' : 'STANDING BY'}</span><button type="button" aria-pressed={effects} onClick={() => setEffects(!effects)}>Flying embers: {effects ? 'On' : 'Off'}</button></div></section>
+    <main className="pittensor-main"><section className="pittensor-hero"><span className="pittensor-kicker"><i /> THE PACK’S INDUSTRIAL HEART</span><h1>PITTENSOR</h1><p className="pittensor-motto">You earn, we burn!</p><p className="pittensor-intro">Down in the furnace room, the pack keeps the fire alive.<br />Copper pipes. Hot steel. Bonez turned to embers.</p><div className="pittensor-tools"><span>FURNACE 01 · {firing ? 'OVERDRIVE' : 'STANDING BY'}</span><button type="button" aria-pressed={effects} onClick={() => setEffects(!effects)}>Flying embers: {effects ? 'On' : 'Off'}</button><label className="pittensor-effects-choice">Effects<select value={quality} onChange={e => setQuality(e.target.value)}><option value="lite">Lite · smoother on phones</option><option value="full">Full · all details</option></select></label></div></section>
       {walletError && <p role="status" className="burn-error">{walletError}</p>}
       <BonezBurner address={account.address} onConnect={connect} onFireChange={setFiring} dedicated />
       <div className="pittensor-bottom"><span>POWERED BY THE PACK</span><p>Every bone has a story. This is where the next one starts.</p><a href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxikVdFCh3ndX6vXVMa7/transactions" target="_blank" rel="noreferrer">Pittensor on TaoStats ↗</a></div>
