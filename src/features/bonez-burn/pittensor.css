@@ -144,3 +144,10 @@
 .furnace-bone-pile svg{position:absolute;left:var(--pile-x);bottom:var(--pile-y);width:var(--pile-size);height:auto;transform:rotate(var(--pile-turn));filter:drop-shadow(0 0 3px #ffc77320)}
 .pittensor-page .burn-scene-label{bottom:15px}
 @media(max-width:600px){.furnace-bone-pile svg{width:calc(var(--pile-size)*.7)}.furnace-bone-pile{left:20%;width:60%}.pittensor-page .furnace-gauge small{display:none}}
+
+/* Riveted brass housing, recessed warm glass and a compact pipe mount. */
+.pittensor-page .furnace-gauge{isolation:isolate;filter:drop-shadow(1px 2px 2px #1a100bb3)}
+.pittensor-page .furnace-gauge::before{content:'';position:absolute;left:42%;top:82%;width:16%;height:22%;z-index:-1;background:linear-gradient(90deg,#50321c,#c1924d 45%,#724c29);border:1px solid #432817;border-radius:2px}
+.pittensor-page .furnace-gauge small{bottom:29%;font-size:clamp(3px,.42vw,5px);letter-spacing:.7px;color:#725a36;font-weight:700}
+.pittensor-page .furnace-warning{background:#bc5428;border-color:#856132;box-shadow:0 0 6px #ed873c}
+.pittensor-page .furnace-valve{filter:drop-shadow(1px 2px 2px #1a100b80);opacity:.88}

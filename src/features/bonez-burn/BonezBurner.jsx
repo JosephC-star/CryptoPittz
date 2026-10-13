@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { BONEZ_TOKEN, bonezHuman, burnAtomic, validateBurnToken } from './amounts';
 import './burner.css';
 
@@ -9,6 +9,7 @@ async function json(url, signal) {
   return response.json();
 }
 function FurnaceScene({ firing, expanded }) {
+  const gaugeId = useId();
   return <div className={`burn-scene ${firing ? 'burn-firing' : ''} ${expanded ? 'burn-scene-expanded' : ''}`} role="img" aria-label="Two neon Pittz workers shoveling bones into an industrial furnace with fire, embers and steam">
     <div className="burn-room" />
     <div className="furnace-lights" aria-hidden="true"><i className="furnace-light-magenta" /><i className="furnace-light-violet" /><i className="furnace-light-green" /></div>
@@ -24,7 +25,20 @@ function FurnaceScene({ firing, expanded }) {
     <div className="burn-embers" aria-hidden="true">{Array.from({ length: 22 }, (_, i) => <i key={i} style={{ '--i': i }} />)}</div>
     <div className="furnace-machinery" aria-hidden="true">
       {['left','right'].map(side => <div className={`furnace-instrument furnace-instrument-${side}`} key={side}>
-        <div className="furnace-gauge"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#211816" stroke="#d8a45d" strokeWidth="7"/><circle cx="50" cy="50" r="36" fill="#eedcb3"/><path d="M22 67A33 33 0 0 1 72 26" fill="none" stroke="#96734b" strokeWidth="4"/><path d="M72 26A33 33 0 0 1 81 64" fill="none" stroke="#bd4627" strokeWidth="4"/>{[0,1,2,3,4,5,6].map(i => <path key={i} d="M50 18v6" transform={`rotate(${i*35-105} 50 50)`} stroke="#634226" strokeWidth="2"/>)}<g className="furnace-gauge-needle"><path d="M50 55V22" stroke="#c8381b" strokeWidth="3" strokeLinecap="round"/><circle cx="50" cy="50" r="5" fill="#604325"/></g></svg><small>PRESSURE</small></div>
+        <div className="furnace-gauge"><svg viewBox="0 0 100 100">
+          <defs><linearGradient id={`${gaugeId}-${side}-brass`} x1="0" y1="0" x2="1" y2="1"><stop stopColor="#fff0b2"/><stop offset=".22" stopColor="#d5a34e"/><stop offset=".48" stopColor="#68401f"/><stop offset=".72" stopColor="#efc87b"/><stop offset="1" stopColor="#93602d"/></linearGradient><radialGradient id={`${gaugeId}-${side}-face`} cx=".4" cy=".3" r=".8"><stop stopColor="#f4e5bf"/><stop offset=".7" stopColor="#d8c292"/><stop offset="1" stopColor="#947951"/></radialGradient><linearGradient id={`${gaugeId}-${side}-glass`} x2=".6" y2="1"><stop stopColor="#ffd7fc" stopOpacity=".25"/><stop offset=".4" stopColor="#fff9df" stopOpacity=".03"/><stop offset="1" stopColor="#54ff9b" stopOpacity=".08"/></linearGradient></defs>
+          <circle cx="50" cy="50" r="47" fill="#352315" stroke="#170f0b" strokeWidth="2"/>
+          <circle cx="50" cy="50" r="44" fill={`url(#${gaugeId}-${side}-brass)`} stroke="#b28547" strokeWidth="1"/>
+          <path d="M17 28A40 40 0 0 1 77 20" fill="none" stroke="#ffe5a0" strokeWidth="1.5" opacity=".75"/><path d="M11 44A41 41 0 0 1 22 22" fill="none" stroke="#ee6dd4" strokeWidth="2" opacity=".4"/>
+          <circle cx="50" cy="50" r="36.5" fill="#392b1c" stroke="#5e3e23" strokeWidth="2"/>
+          <circle cx="50" cy="50" r="33.5" fill={`url(#${gaugeId}-${side}-face)`}/>
+          <path d="M24 65A29 29 0 0 1 70 28" fill="none" stroke="#8b744e" strokeWidth="2"/><path d="M70 28A29 29 0 0 1 77 64" fill="none" stroke="#a85132" strokeWidth="2"/>
+          {[0,1,2,3,4,5,6,7,8].map(i => <path key={i} d={i%2 ? 'M50 20v3' : 'M50 20v5'} transform={`rotate(${i*27-108} 50 50)`} stroke="#68502f" strokeWidth={i%2 ? '1' : '1.6'}/>)}
+          <text x="50" y="72" textAnchor="middle" fontSize="4.5" fill="#80643c" letterSpacing="1">PITTENSOR</text>
+          <g className="furnace-gauge-needle"><path d="M50 56V26" stroke="#422619" strokeWidth="3" strokeLinecap="round"/><path d="M50 52V25" stroke="#a34b27" strokeWidth="1.4"/><circle cx="50" cy="50" r="4" fill="#b68843" stroke="#55341d" strokeWidth="1"/></g>
+          <circle cx="50" cy="50" r="33" fill={`url(#${gaugeId}-${side}-glass)`}/><path d="M27 37Q38 19 60 26" fill="none" stroke="#fff7dc" strokeWidth="2" strokeLinecap="round" opacity=".35"/>
+          {[[50,8],[92,50],[50,92],[8,50]].map(([x,y],i) => <g key={i}><circle cx={x} cy={y} r="2.5" fill="#75502d" stroke="#efc77b" strokeWidth=".6"/><path d={`M${x-1.2} ${y+.8}l2.4-1.6`} stroke="#372316" strokeWidth=".8"/></g>)}
+        </svg><small>PRESSURE</small></div>
         <span className="furnace-warning" />
         <div className="furnace-valve"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="36" fill="#24150c" stroke="#b9803e" strokeWidth="8"/><circle cx="50" cy="50" r="29" fill="none" stroke="#f3c985" strokeWidth="2"/>{[0,90,180,270].map(a => <path key={a} d="M50 20v30" transform={`rotate(${a} 50 50)`} stroke="#d6a357" strokeWidth="7"/>)}<circle cx="50" cy="50" r="10" fill="#bf883f" stroke="#ffdc95" strokeWidth="2"/></svg></div>
         <div className="furnace-vent"><i/><i/><i/></div>
