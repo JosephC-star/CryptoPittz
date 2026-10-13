@@ -250,3 +250,11 @@
 @keyframes pittensor-entrance-steam{0%{opacity:0;transform:translate(-50%,14px) scale(.65) rotate(-8deg)}20%{opacity:.24}50%{opacity:.19;transform:translate(calc(-50% + var(--steam-drift)*.45),-35px) scale(1.25) rotate(8deg)}80%{opacity:.06}100%{opacity:0;transform:translate(calc(-50% + var(--steam-drift)),-105px) scale(1.75) rotate(18deg)}}
 @media(max-width:700px){.pittensor-entrance-steam{left:0;top:auto;height:160px;bottom:8px}.pittensor-entrance-steam i{width:95px;height:50px}.pittensor-entrance-steam i:last-child{display:none}}
 @media(prefers-reduced-motion:reduce){.pittensor-entrance-steam{display:none}}
+
+/* Dedicated-route wallet popup: independent of the homepage stylesheet. */
+.pittensor-wallet-overlay{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding: max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));background:#080711cc;backdrop-filter:blur(8px);overflow:auto;overscroll-behavior:contain}
+.pittensor-wallet-overlay[hidden]{display:none}
+.pittensor-wallet-dialog{position:relative;width:min(100%,440px);max-height:calc(100dvh - 48px);overflow:auto;overscroll-behavior:contain;border:1px solid #bd874a88;border-radius:20px;background:#18121c;box-shadow:0 24px 80px #000a;padding:54px 14px 20px}
+.pittensor-wallet-anchor{width:100%;min-width:0}
+.pittensor-wallet-close{position:absolute;top:10px;right:10px;width:38px;height:38px;border:1px solid #bd874a88;border-radius:50%;background:#30202a;color:#ffe2ad;font-size:25px;cursor:pointer}
+.pittensor-wallet-close:focus-visible{outline:2px solid #ffc779;outline-offset:3px}

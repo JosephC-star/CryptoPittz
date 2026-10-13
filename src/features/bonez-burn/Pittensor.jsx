@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useGetAccount } from '@multiversx/sdk-dapp/out/react/account/useGetAccount';
 import { UnlockPanelManager } from '@multiversx/sdk-dapp/out/managers/UnlockPanelManager';
 import { ProviderFactory } from '@multiversx/sdk-dapp/out/providers/ProviderFactory';
@@ -13,6 +14,13 @@ export default function Pittensor() {
   const [connecting, setConnecting] = useState(false), [walletError, setWalletError] = useState('');
   const [walletOpen, setWalletOpen] = useState(false);
   const [quality, setQuality] = useState(() => window.matchMedia('(max-width: 700px)').matches ? 'lite' : 'full');
+  useEffect(() => {
+    if (!walletOpen) return;
+    const previous = document.body.style.overflow;
+    const focus = document.activeElement;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previous; focus?.focus?.(); };
+  }, [walletOpen]);
   async function connect() {
     if (connecting) return;
     setConnecting(true); setWalletError('');
@@ -26,7 +34,7 @@ export default function Pittensor() {
         await UnlockPanelManager.getInstance().openUnlockPanel();
       }
     } catch (error) { setWalletError(error.message || 'Unable to connect your wallet.'); }
-    finally { setConnecting(false); }
+    finally { anchor.current?.replaceChildren(); setWalletOpen(false); setConnecting(false); }
   }
   return <div className={`pittensor-page ${firing ? 'pittensor-firing' : ''} pittensor-effects-${quality}`}>
     <EmberField firing={firing} enabled={effects} lite={quality === 'lite'} />
@@ -36,6 +44,11 @@ export default function Pittensor() {
       <BonezBurner address={account.address} onConnect={connect} onFireChange={setFiring} dedicated />
       <div className="pittensor-bottom"><span>POWERED BY THE PACK</span><p>Every bone has a story. This is where the next one starts.</p><a href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxikVdFCh3ndX6vXVMa7/transactions" target="_blank" rel="noreferrer">Pittensor on TaoStats ↗</a></div>
     </main><footer className="pittensor-footer"><a href="/">THE PITTZSTOP</a><span>You earn, we burn!</span></footer>
-    <div ref={anchor} className="walletconnect-anchor" />{walletOpen && <button className="walletconnect-close" aria-label="Close wallet connection" onClick={() => { anchor.current?.replaceChildren(); setWalletOpen(false); }}>×</button>}
+    {createPortal(<div className="pittensor-wallet-overlay" hidden={!walletOpen}>
+      <section className="pittensor-wallet-dialog" role="dialog" aria-modal="true" aria-label="Connect with xPortal">
+        <button className="pittensor-wallet-close" aria-label="Close wallet connection" onClick={() => { anchor.current?.replaceChildren(); setWalletOpen(false); }}>×</button>
+        <div ref={anchor} className="pittensor-wallet-anchor" />
+      </section>
+    </div>, document.body)}
   </div>;
 }
