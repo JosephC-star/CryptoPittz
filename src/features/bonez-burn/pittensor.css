@@ -207,3 +207,8 @@
 @keyframes district-entrance-dust{to{background-position:15px -73px,10px -77px}}
 @media(max-width:700px){.financial-entrance{flex-direction:column;gap:18px;padding:22px}.financial-entrance-copy{flex:auto;width:100%}.financial-entrance-art{flex:none;width:100%;height:160px}.financial-entrance h2{font-size:25px}.pittensor-entrance-art,.financial-entrance-art{mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}}
 @media(prefers-reduced-motion:reduce){.pittensor-entrance-art::after,.financial-entrance-shine,.financial-entrance-dust{animation:none!important}}
+/* Carry the furnace's molten gold, magenta and green light into its entrance. */
+.pittensor-entrance{background:radial-gradient(ellipse at 80% 65%,#e7812438,transparent 65%),radial-gradient(ellipse at 42% 15%,#b72e9429,transparent 62%),linear-gradient(112deg,#382116,#221322 48%,#14251c);color:#ffe1a5;box-shadow:0 10px 45px #0003,0 0 28px #e8791410}
+.pittensor-entrance small{color:#ffc064}.pittensor-entrance h2{color:#ffdda0;text-shadow:0 0 20px #ff992226}.pittensor-entrance p{color:#dcc0aa}.pittensor-entrance strong{color:#ffd88f}
+.pittensor-entrance:hover{background:radial-gradient(ellipse at 80% 65%,#e7812445,transparent 65%),radial-gradient(ellipse at 42% 15%,#b72e9435,transparent 62%),linear-gradient(112deg,#3d2518,#271527 48%,#192c21)}
+.pittensor-entrance:focus-visible{outline-color:#ffcf7f}
