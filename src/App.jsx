@@ -821,12 +821,9 @@ function App() {
             <div className="playground-release-art" aria-hidden="true"><span>🦴</span><strong>PITTZ<br/>PLAYGROUND</strong><span>👾</span></div>
           </section>
 
-          <a href="/financial-district/" style={{display:"block",padding:"28px",margin:"24px 0",border:"1px solid #c6a65b66",borderRadius:"20px",background:"linear-gradient(110deg,#21190c,#131117)",color:"#efd38c",textDecoration:"none"}}>
-            <span style={{fontSize:"12px",letterSpacing:"2px"}}>THE PACK’S GOLDEN QUARTER</span>
-            <h2 style={{margin:"10px 0"}}>Pittz Financial District</h2>
-            <p style={{margin:"0 0 14px",lineHeight:"1.7",color:"#d1c3a5"}}>One home for your next move. Swap 16 currencies, add BONEZ + WEGLD liquidity on xExchange, and stake BONEZ on OneDEX—all through your connected wallet.</p>
-            <span style={{display:"block",fontSize:"13px",marginBottom:"14px"}}>You earn, we burn!</span>
-            <span style={{fontWeight:"600"}}>Enter the Financial District →</span>
+          <a className="financial-entrance" href="/financial-district/">
+            <div className="financial-entrance-copy"><small>THE PACK’S GOLDEN QUARTER</small><h2>Pittz Financial District</h2><p>Swap 16 currencies, add BONEZ + WEGLD liquidity, and stake BONEZ—all through your connected wallet.</p><span>You earn, we burn!</span><strong>Enter the Financial District →</strong></div>
+            <div className="financial-entrance-art" aria-hidden="true"><i className="financial-entrance-shine"/><i className="financial-entrance-dust"/></div>
           </a>
 
           <a className="pittensor-entrance" href="/pittensor/">
