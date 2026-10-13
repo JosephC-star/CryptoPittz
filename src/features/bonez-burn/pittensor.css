@@ -47,8 +47,8 @@
 @media(prefers-reduced-motion:reduce){.pittensor-page .burn-worker,.pittensor-page .burn-pose,.burn-flare,.burn-flare i,.burn-smoke i{animation:none!important;will-change:auto}.burn-smoke{display:none}.burn-flare{opacity:.4}.burn-pose-0,.burn-pose-2{opacity:0}.burn-pose-1{opacity:1}}
 
 /* Six in-between poses share one clock with the separate falling bones. */
-.pittensor-page .burn-scene{--worker-cycle:6.8s}
-.pittensor-page .burn-firing{--worker-cycle:3.6s}
+.pittensor-page .burn-scene{--worker-cycle:2.8s}
+.pittensor-page .burn-firing{--worker-cycle:2.4s}
 .pittensor-page .burn-room{background-image:url('/images/bonez-burn/gold-furnace.webp');filter:brightness(.94) saturate(1.05);animation:gold-firelight 6.8s ease-in-out infinite}
 .pittensor-entrance-art{background-image:url('/images/bonez-burn/gold-furnace.webp')}
 .pittensor-page .burn-worker{animation-duration:var(--worker-cycle)}
@@ -59,7 +59,7 @@
 .pittensor-page .burn-flare{top:50%;height:37%;left:35%;width:30%}
 .burn-flight-bank{position:absolute;top:68%;width:1px;height:1px;z-index:4;pointer-events:none;--bone-direction:1;--worker-offset:0s}
 .burn-flight-left{left:43%}.burn-flight-right{left:57%;--bone-direction:-1;--worker-offset:calc(var(--worker-cycle)*-.5)}
-.burn-flight-bone{position:absolute;width:clamp(15px,2.2vw,31px);height:auto;opacity:0;filter:drop-shadow(0 0 3px #ffad32);animation:bone-into-fire var(--worker-cycle) linear infinite;animation-delay:calc(var(--worker-offset) - var(--bone-n)*.08s);will-change:transform,opacity}
+.burn-flight-bone{position:absolute;width:clamp(15px,2.2vw,31px);height:auto;opacity:0;filter:drop-shadow(0 0 3px #ffad32);animation:bone-into-fire var(--worker-cycle) linear infinite;animation-delay:calc(var(--worker-offset) - var(--bone-n)*var(--worker-cycle)*.012);will-change:transform,opacity}
 @keyframes worker-six-pose{0%,12%{opacity:1}17%,95%{opacity:0}100%{opacity:1}}
 @keyframes bone-into-fire{0%,60%{opacity:0;transform:translate(0,var(--bone-spread)) rotate(var(--bone-turn)) scale(1)}62%{opacity:1;transform:translate(0,var(--bone-spread)) rotate(var(--bone-turn)) scale(1)}70%{opacity:1;transform:translate(calc(var(--bone-direction)*clamp(15px,2vw,45px)),calc(-12px + var(--bone-spread))) rotate(calc(var(--bone-turn) + 75deg)) scale(.95)}79%{opacity:1;transform:translate(calc(var(--bone-direction)*clamp(25px,4vw,80px)),calc(32px + var(--bone-spread))) rotate(calc(var(--bone-turn) + 160deg)) scale(.8)}84%,100%{opacity:0;transform:translate(calc(var(--bone-direction)*clamp(25px,4vw,80px)),calc(46px + var(--bone-spread))) rotate(calc(var(--bone-turn) + 180deg)) scale(.4)}}
 @keyframes gold-firelight{0%,100%{filter:brightness(.94) saturate(1.05)}50%{filter:brightness(1.04) saturate(1.15)}}
@@ -220,3 +220,8 @@
 .pittensor-page .furnace-bone-pile{left:15%;width:70%;height:18%;bottom:0}
 .pittensor-page .furnace-bone-pile svg{width:calc(var(--pile-size)*1.45);filter:drop-shadow(0 2px 2px #1a0d09) drop-shadow(0 0 3px #ffa74926)}
 @media(max-width:600px){.pittensor-page .furnace-bone-pile{left:13%;width:74%;height:16%}.pittensor-page .furnace-bone-pile svg{width:calc(var(--pile-size)*1.05)}}
+
+/* Quicker shovel cadence inspired by the reference; feet stay planted. */
+.pittensor-page .burn-worker{animation:none}
+.pittensor-page .burn-smooth-pose{animation-timing-function:linear}
+@keyframes worker-twelve-pose{0%,6.333333%{opacity:1}8.333333%,98%{opacity:0}100%{opacity:1}}
