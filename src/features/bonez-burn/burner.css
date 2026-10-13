@@ -3,3 +3,5 @@
 .burn-feed-right{animation-name:burn-feed-right}@keyframes burn-feed-right{0%,38%,80%,100%{opacity:0;transform:translate(0,0) rotate(0)}45%{opacity:1}65%{opacity:1;transform:translate(-55px,-40px) rotate(-160deg)}75%{opacity:0;transform:translate(-65px,0) rotate(-200deg)}}
 
 .burn-control .burn-precision-help{font-size:11px;line-height:1.6;color:#bfa79a;margin:6px 0 12px}
+
+.burn-pile-summary{padding:16px;margin:18px 0;border:1px solid #b78b4f40;border-radius:12px;background:linear-gradient(130deg,#45301e35,#130d15)}.burn-pile-summary span,.burn-pile-summary small{display:block;color:#b99d83;font-size:10px;line-height:1.7}.burn-pile-summary strong{display:block;color:#ffe0a3;font-size:26px;margin:5px 0}.burn-pile-summary a{display:inline-block;margin-top:8px}.burn-recipient{display:block;overflow-wrap:anywhere;font-size:10px;line-height:1.7;color:#f2c994;margin-top:6px}
