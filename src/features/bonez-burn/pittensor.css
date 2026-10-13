@@ -243,3 +243,10 @@
 .pittensor-effects-lite .furnace-vent i:nth-child(n+4){display:none}
 @media(max-width:600px){.pittensor-page .furnace-vent i:nth-child(n+5){display:none}}
 @media(prefers-reduced-motion:reduce){.furnace-valve-wheel{animation:none!important}.furnace-vent{display:none}}
+
+/* Quiet steam curls along the industrial entrance, away from its copy. */
+.pittensor-entrance-steam{position:absolute;left:43%;right:0;top:0;bottom:0;pointer-events:none;z-index:1;mask-image:linear-gradient(90deg,transparent,#000 12%,#000 90%,transparent)}
+.pittensor-entrance-steam i{position:absolute;left:var(--steam-x);bottom:6%;width:clamp(75px,10vw,145px);height:64px;border-radius:50%;background:radial-gradient(ellipse at 35% 65%,#f4dfca60,transparent 66%),radial-gradient(ellipse at 70% 45%,#c4a9c44d,transparent 68%);filter:blur(8px);opacity:0;transform-origin:50% 100%;animation:pittensor-entrance-steam 14s linear infinite;animation-delay:var(--steam-delay)}
+@keyframes pittensor-entrance-steam{0%{opacity:0;transform:translate(-50%,14px) scale(.65) rotate(-8deg)}20%{opacity:.24}50%{opacity:.19;transform:translate(calc(-50% + var(--steam-drift)*.45),-35px) scale(1.25) rotate(8deg)}80%{opacity:.06}100%{opacity:0;transform:translate(calc(-50% + var(--steam-drift)),-105px) scale(1.75) rotate(18deg)}}
+@media(max-width:700px){.pittensor-entrance-steam{left:0;top:auto;height:160px;bottom:8px}.pittensor-entrance-steam i{width:95px;height:50px}.pittensor-entrance-steam i:last-child{display:none}}
+@media(prefers-reduced-motion:reduce){.pittensor-entrance-steam{display:none}}

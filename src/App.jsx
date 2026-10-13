@@ -829,6 +829,7 @@ function App() {
           <a className="pittensor-entrance" href="/pittensor/">
             <div><small>THE PACK’S INDUSTRIAL HEART</small><h2>Pittensor</h2><p>You earn, we burn! Step inside the pack’s furnace room.</p><strong>Enter Pittensor →</strong></div>
             <div className="pittensor-entrance-art" aria-hidden="true" />
+            <span className="pittensor-entrance-steam" aria-hidden="true">{[12, 48, 82].map((x, i) => <i key={x} style={{ '--steam-x': `${x}%`, '--steam-drift': `${i % 2 ? 30 : -24}px`, '--steam-delay': `${-i * 4}s` }} />)}</span>
           </a>
 
           <BonezMarketSection
