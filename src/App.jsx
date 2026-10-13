@@ -12,6 +12,7 @@ import ExplorerControls from "./components/explorer/ExplorerControls";
 import ExplorerPagination from "./components/explorer/ExplorerPagination";
 import NftCard from "./components/nft/NftCard";
 import NftDetailModal from "./components/nft/NftDetailModal";
+import "./features/bonez-burn/pittensor.css";
 import BonezMarketSection from "./features/bonez-market/BonezMarketSection";
 import useBonezMarket from "./features/bonez-market/useBonezMarket";
 import useExplorerData from "./features/explorer/useExplorerData";
@@ -396,6 +397,7 @@ function App() {
 
                 <div className="dropdown" role="menu">
                   <a href="#join">CryptoPittz Ecosystem</a>
+                  <a href="/pittensor/">Pittensor →</a>
 
                   <a href="https://discord.gg/PP8S8DX9t" target="_blank" rel="noreferrer">
                     Discord ↗
@@ -811,20 +813,23 @@ function App() {
 
           <section id="arcade" className="playground-release-entrance">
             <div>
-              <span className="playground-release-status">🎮 WORK IN PROGRESS</span>
-              <h2>Big games… more coming soon.</h2>
-              <p>The Pack’s Playground has a room of its own. Explore nine games, collect trophies, and help us shape what comes next.</p>
+              <span className="playground-release-status">THE PACK’S NEON YARD</span>
+              <h2>Pittz Playground</h2>
+              <p>Nine neon cabinets. One pack. Chase high scores, collect trophies, and stay for the vibe.</p>
               <a className="btn primary" href={`/playground/${account.address ? `?wallet=${encodeURIComponent(account.address)}` : ''}#/playground`}>Enter the Playground →</a>
             </div>
-            <div className="playground-release-art" aria-hidden="true"><span>🦴</span><strong>PITTZ<br/>PLAYGROUND</strong><span>👾</span></div>
+            <div className="playground-release-art neon-yard-entrance-art" aria-hidden="true"><i className="neon-yard-entrance-glint" /></div>
           </section>
 
-          <a href="/financial-district/" style={{display:"block",padding:"28px",margin:"24px 0",border:"1px solid #c6a65b66",borderRadius:"20px",background:"linear-gradient(110deg,#21190c,#131117)",color:"#efd38c",textDecoration:"none"}}>
-            <span style={{fontSize:"12px",letterSpacing:"2px"}}>THE PACK’S GOLDEN QUARTER</span>
-            <h2 style={{margin:"10px 0"}}>Pittz Financial District</h2>
-            <p style={{margin:"0 0 14px",lineHeight:"1.7",color:"#d1c3a5"}}>One home for your next move. Swap 16 currencies, add BONEZ + WEGLD liquidity on xExchange, and stake BONEZ on OneDEX—all through your connected wallet.</p>
-            <span style={{display:"block",fontSize:"13px",marginBottom:"14px"}}>You earn, we burn!</span>
-            <span style={{fontWeight:"600"}}>Enter the Financial District →</span>
+          <a className="financial-entrance" href="/financial-district/">
+            <div className="financial-entrance-copy"><small>THE PACK’S GOLDEN QUARTER</small><h2>Pittz Financial District</h2><p>Swap 16 currencies, add BONEZ + WEGLD liquidity, and stake BONEZ—all through your connected wallet.</p><span>You earn, we burn!</span><strong>Enter the Financial District →</strong></div>
+            <div className="financial-entrance-art" aria-hidden="true"><i className="financial-entrance-shine"/><i className="financial-entrance-dust"/></div>
+          </a>
+
+          <a className="pittensor-entrance" href="/pittensor/">
+            <div><small>THE PACK’S INDUSTRIAL HEART</small><h2>Pittensor</h2><p>You earn, we burn! Add BONEZ to the pack’s monthly burn pile.</p><strong>Enter Pittensor →</strong></div>
+            <div className="pittensor-entrance-art" aria-hidden="true" />
+            <span className="pittensor-entrance-steam" aria-hidden="true">{[12, 48, 82].map((x, i) => <i key={x} style={{ '--steam-x': `${x}%`, '--steam-drift': `${i % 2 ? 30 : -24}px`, '--steam-delay': `${-i * 4}s` }} />)}</span>
           </a>
 
           <BonezMarketSection
