@@ -16,7 +16,7 @@ function assertEvent(events, spec) {
 export function assertContributionSimulation(data, spec) {
   const result = data?.data?.result;
   const shards = result?.receiverShard ? [result.receiverShard, ...(result.senderShard ? [result.senderShard] : [])] : [result];
-  if (data?.code !== 'successful' || shards.some(shard => !shard || shard.status !== 'success')) throw Error('Contribution verification failed. No transaction was signed or sent.');
+  if (data?.code !== 'successful' || shards.some(shard => !shard || shard.status !== 'success')) throw Error('Contribution verification failed. This contribution has not been submitted.');
   assertEvent(shards.flatMap(shard => shard.logs?.events || []), spec);
   return result;
 }
