@@ -212,3 +212,11 @@
 .pittensor-entrance small{color:#ffc064}.pittensor-entrance h2{color:#ffdda0;text-shadow:0 0 20px #ff992226}.pittensor-entrance p{color:#dcc0aa}.pittensor-entrance strong{color:#ffd88f}
 .pittensor-entrance:hover{background:radial-gradient(ellipse at 80% 65%,#e7812445,transparent 65%),radial-gradient(ellipse at 42% 15%,#b72e9435,transparent 62%),linear-gradient(112deg,#3d2518,#271527 48%,#192c21)}
 .pittensor-entrance:focus-visible{outline-color:#ffcf7f}
+
+/* Third animated dial follows the far-right pipe gauge in the source artwork. */
+.pittensor-page .furnace-instrument-far-right{left:calc(50% + 84.1cqh);right:auto;top:21.9%;width:11.8cqh;transform:translate(-50%,-50%)}
+.furnace-instrument-far-right .furnace-warning,.furnace-instrument-far-right .furnace-valve,.furnace-instrument-far-right .furnace-vent{display:none}
+.furnace-instrument-far-right .furnace-gauge-needle{animation-delay:calc(var(--worker-cycle)*-.25)}
+.pittensor-page .furnace-bone-pile{left:15%;width:70%;height:18%;bottom:0}
+.pittensor-page .furnace-bone-pile svg{width:calc(var(--pile-size)*1.45);filter:drop-shadow(0 2px 2px #1a0d09) drop-shadow(0 0 3px #ffa74926)}
+@media(max-width:600px){.pittensor-page .furnace-bone-pile{left:13%;width:74%;height:16%}.pittensor-page .furnace-bone-pile svg{width:calc(var(--pile-size)*1.05)}}
