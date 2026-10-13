@@ -15,3 +15,9 @@ test('live stats require the exact token and decimals', () => {
   assert.equal(validateBurnToken(token), token);
   for (const change of [{ decimals: 18 }, { identifier: 'BONEZ-xxxxxx' }, { burnt: 'NaN' }, { supply: null }]) assert.throws(() => validateBurnToken({ ...token, ...change }));
 });
+
+test('whole BONEZ and six-decimal input produce the same atomic amount', () => {
+  assert.equal(burnAtomic('1000'), 1000000000n);
+  assert.equal(burnAtomic('1000.000000'), burnAtomic('1000'));
+  assert.equal(burnAtomic('1000000000'), 1000000000000000n);
+});
