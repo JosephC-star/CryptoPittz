@@ -1,7 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { BONEZ_TOKEN, bonezHuman, burnAtomic, validateBurnToken } from './amounts';
 import './burner.css';
-import RiggedPittz from './RiggedPittz';
 import { prepareBurn, submitBurn, pendingBurn } from './burnTransactions';
 import { assertBurnReceipt } from './burnValidation';
 
@@ -21,8 +20,9 @@ function FurnaceScene({ firing, expanded, celebration }) {
     <div className="furnace-heat-haze" aria-hidden="true"><i/><i/><i/></div>
     <div className="burn-flare" aria-hidden="true"><i /><i /></div>
     <div className="burn-smoke" aria-hidden="true">{Array.from({ length: 9 }, (_, i) => <i key={i} style={{ '--smoke-delay': `${-i * .9}s`, '--smoke-x': `${36 + (i % 4) * 8}%`, '--smoke-drift': `${(i % 2 ? 1 : -1) * (18 + i * 5)}px`, '--smoke-size': `${48 + (i % 3) * 22}px` }} />)}</div>
-    <RiggedPittz firing={firing} />
+    <div className="burn-worker burn-worker-left">{Array.from({length:12}, (_, i) => <span className="burn-pose burn-smooth-pose" data-pose={i} key={i} style={{ "--pose": i, backgroundImage: `url(/images/bonez-burn/left-twelve-${i}.webp)` }} />)}</div><div className="burn-worker burn-worker-right">{Array.from({length:12}, (_, i) => <span className="burn-pose burn-smooth-pose" data-pose={i} key={i} style={{ "--pose": i, backgroundImage: `url(/images/bonez-burn/right-twelve-${i}.webp)` }} />)}</div>
     <div className="furnace-bone-pile" aria-hidden="true">{Array.from({length:36}, (_, i) => <svg key={i} viewBox="0 0 64 32" style={{ '--pile-x': `${10+(i*23)%76}%`, '--pile-y': `${Math.max(0, 42-Math.abs((10+(i*23)%76)-50)*.7)+(i%3)*7}%`, '--pile-turn': `${i*47}deg`, '--pile-size': `${30+(i%4)*8}px` }}><path fill={i%4===0 ? '#f3c45e' : '#ead5aa'} stroke="#896236" strokeWidth="2" d="M16 10C13 1 3 1 3 8C3 12 6 14 7 16C6 18 3 20 3 24C3 31 13 31 16 22C25 20 39 20 48 22C51 31 61 31 61 24C61 20 58 18 57 16C58 14 61 12 61 8C61 1 51 1 48 10C39 12 25 12 16 10Z"/><path stroke="#fff3d2" strokeWidth="2" fill="none" d="M18 13Q32 16 46 13"/></svg>)}</div>
+    {['left', 'right'].map(side => <div className={`burn-flight-bank burn-flight-${side}`} key={side} aria-hidden="true">{Array.from({length:5}, (_, i) => <svg className="burn-flight-bone" key={i} style={{ '--bone-n': i, '--bone-turn': `${i*43}deg`, '--bone-spread': `${(i-2)*8}px` }} viewBox="0 0 64 32"><path fill="#ffe2a0" stroke="#b67b31" strokeWidth="2" d="M16 10C13 1 3 1 3 8C3 12 6 14 7 16C6 18 3 20 3 24C3 31 13 31 16 22C25 20 39 20 48 22C51 31 61 31 61 24C61 20 58 18 57 16C58 14 61 12 61 8C61 1 51 1 48 10C39 12 25 12 16 10Z"/><path fill="none" stroke="#fff8de" strokeWidth="2" d="M18 13Q32 16 46 13"/></svg>)}</div>)}
     <div className="burn-steam burn-steam-left" /><div className="burn-steam burn-steam-right" />
     <div className="burn-embers" aria-hidden="true">{Array.from({ length: 22 }, (_, i) => <i key={i} style={{ '--i': i }} />)}</div>
     <div className="furnace-machinery" aria-hidden="true">
