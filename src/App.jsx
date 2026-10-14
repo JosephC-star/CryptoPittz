@@ -29,6 +29,14 @@ function App() {
   const [desktopGroup, setDesktopGroup] = useState(null);
   const [selectedNft, setSelectedNft] = useState(null);
   const [modalNfts, setModalNfts] = useState([]);
+  const [explorerExpanded, setExplorerExpanded] = useState(true);
+  const explorerHeadingRef = useRef(null);
+  const explorerToggleRef = useRef(null);
+  function retractExplorer() {
+    setExplorerExpanded(false);
+    explorerToggleRef.current?.focus({ preventScroll: true });
+    explorerHeadingRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
+  }
   const [explorerSearch, setExplorerSearch] = useState("");
   const [explorerSort, setExplorerSort] = useState("rank");
   const [explorerBloodline, setExplorerBloodline] = useState("all");
@@ -838,11 +846,19 @@ function App() {
             bonezUsdPrice={Number(bonezMarket?.priceUsd)}
             onOpenNft={openNftDetails}
           />
-          <section id="explorer">
-            <div className="section-title">
-              <h2>CryptoPittz Explorer</h2>
-              <span>Browse the collection. No wallet required.</span>
+          <section id="explorer" ref={explorerHeadingRef}>
+            <div className="section-title explorer-heading">
+              <div>
+                <h2>CryptoPittz Explorer</h2>
+                <span>{explorerExpanded ? "Browse the collection. No wallet required." : "The pack is tucked away. Expand to keep exploring."}</span>
+              </div>
+              <button ref={explorerToggleRef} type="button" className="explorer-fold-toggle" aria-expanded={explorerExpanded} aria-controls="explorer-content" onClick={() => setExplorerExpanded((expanded) => !expanded)}>
+                {explorerExpanded ? "Retract Explorer" : "Expand Explorer"}
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={{ transform: explorerExpanded ? "rotate(180deg)" : undefined }}><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </button>
             </div>
+
+            <div id="explorer-content" hidden={!explorerExpanded}>
 
             <div className="explorer-tabs">
               <button
@@ -997,6 +1013,11 @@ function App() {
                     />
                   </>
                 )}
+              </div>
+            </div>
+              <div className="explorer-fold-footer">
+                <button type="button" className="explorer-fold-toggle" onClick={retractExplorer}>Retract Explorer ↑</button>
+                <span>Keep cruising to the Flea Market.</span>
               </div>
             </div>
           </section>

@@ -6852,3 +6852,15 @@ footer .container > div:hover {
 @media(prefers-reduced-motion:reduce){.market-sign-shimmer{animation:none;}}
 
 .playground-release-entrance{text-decoration:none;color:inherit;cursor:pointer;}.playground-release-entrance:focus-visible{outline:3px solid #91dfd6;outline-offset:5px;}
+
+/* Explorer folding keeps the market close without losing browse selections. */
+#explorer { scroll-margin-top: 100px; }
+.explorer-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.explorer-heading h2 { margin-bottom: 6px; }
+.explorer-fold-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 11px 17px; border: 1px solid rgba(0,229,255,.45); border-radius: 999px; background: linear-gradient(135deg,rgba(0,229,255,.12),rgba(255,61,247,.09)); color: #e8fcff; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0; transition: border-color .2s, box-shadow .2s; }
+.explorer-fold-toggle:hover { border-color: #00e5ff; box-shadow: 0 0 18px rgba(0,229,255,.15); }
+.explorer-fold-toggle:focus-visible { outline: 2px solid #ffd000; outline-offset: 4px; }
+.explorer-fold-footer { display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 20px; }
+.explorer-fold-footer span { color: var(--muted); font-size: 12px; }
+#explorer-content[hidden] { display: none; }
+@media (max-width: 640px) { .explorer-heading { align-items: flex-start; flex-direction: column; gap: 12px; } .explorer-fold-toggle { min-height: 44px; } }
