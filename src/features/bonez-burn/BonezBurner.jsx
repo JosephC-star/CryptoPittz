@@ -59,6 +59,7 @@ export default function BonezBurner({ address, onConnect, onFireChange, dedicate
   const [expanded, setExpanded] = useState(false);
   const [firing, setFiring] = useState(false);
   const [amount, setAmount] = useState('');
+  const [waitingForXPortal, setWaitingForXPortal] = useState(false);
   const [review, setReview] = useState(null), [busy, setBusy] = useState(false), [sent, setSent] = useState(null), [settled, setSettled] = useState(false), [burnStatus, setBurnStatus] = useState(''), [celebration, setCelebration] = useState(false);
   const actionLock = useRef(false);
   const blocked = Boolean(sent && !settled);
@@ -98,7 +99,7 @@ export default function BonezBurner({ address, onConnect, onFireChange, dedicate
   }
   async function confirmContribution() {
     if (actionLock.current || !review || blocked) return; actionLock.current = true; setBusy(true); setBurnStatus('Approve the exact BONEZ contribution in your wallet.');
-    try { const receipt = await submitContribution(review); setSent(receipt); setSettled(false); setReview(null); setBurnStatus('Submitted. Waiting for on-chain confirmation…'); } catch (e) { setBurnStatus(e.message); try { const pending = pendingContribution(review.address); if (pending) { setSent(pending); setSettled(false); } } catch { setSent({ address: review.address, hash: null }); } setReview(null); } finally { actionLock.current = false; setBusy(false); }
+    try { const receipt = await submitContribution(review, setWaitingForXPortal); setSent(receipt); setSettled(false); setReview(null); setBurnStatus('Submitted. Waiting for on-chain confirmation…'); } catch (e) { setBurnStatus(e.message); try { const pending = pendingContribution(review.address); if (pending) { setSent(pending); setSettled(false); } } catch { setSent({ address: review.address, hash: null }); } setReview(null); } finally { actionLock.current = false; setBusy(false); }
   }
   const [token, setToken] = useState(null);
   const [pileBalance, setPileBalance] = useState(null);
@@ -167,6 +168,7 @@ export default function BonezBurner({ address, onConnect, onFireChange, dedicate
         {!address ? <button className="burn-main" type="button" onClick={onConnect}>Connect wallet</button> : <button className="burn-main" type="button" disabled={busy || blocked || !amount || Boolean(inputError)} onClick={reviewContribution}>{busy ? "Verifying…" : blocked ? "Waiting for transaction receipt" : "Review contribution"}</button>}
         <p id="burn-route-note" className="burn-route-note">This transfers BONEZ to the team-controlled wallet for its monthly burn. It does not burn tokens immediately or automate the team’s burn. Previewing the fire is free.</p>
         {review && review.address === address && <div className="burn-review"><strong>Add {review.amount} BONEZ to the monthly burn pile?</strong><p>From {review.address.slice(0,9)}…{review.address.slice(-6)} · Mainnet</p><p>Recipient: <code className="burn-recipient">{BURN_PILE_ADDRESS}</code></p><p>Maximum network fee: {Number(review.feeCap)/1e18} EGLD</p><p>You are transferring these tokens to the team. No rewards or tokens are returned; the team handles the later burn.</p><button className="burn-main" type="button" disabled={busy || blocked} onClick={confirmContribution}>Send BONEZ to burn pile</button><button type="button" disabled={busy} onClick={() => setReview(null)}>Cancel</button></div>}
+        {waitingForXPortal && <aside className="burn-wallet-help" role="status"><strong>Waiting for xPortal approval</strong><p>App stuck loading? Close and reopen xPortal manually. Your approval may already be waiting. Return here after approving.</p><small>Keep this page open. You don’t need to start another contribution.</small></aside>}
         {burnStatus && <p className="burn-route-note" role="status">{burnStatus}</p>}
         {sent?.hash && <div className="burn-receipt"><strong>{settled ? 'Transaction receipt' : 'Pending transaction'}</strong><span>{sent.amount} BONEZ</span><a href={`https://explorer.multiversx.com/transactions/${sent.hash}`} target="_blank" rel="noreferrer">View on-chain receipt ↗</a></div>}
         <a href={`https://explorer.multiversx.com/tokens/${BONEZ_TOKEN}`} target="_blank" rel="noreferrer">Verify BONEZ on Explorer ↗</a>
