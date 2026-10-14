@@ -52,7 +52,7 @@ export async function prepareContribution(amount) {
   checkTransaction(tx, f.spec); await simulateContribution(tx); context(address);
   return { kind: 'contribution', recipient: BURN_PILE_ADDRESS, address, amount, spec: f.spec, guardian: f.guardian, created: Date.now(), feeCap: (BigInt(f.spec.gasLimit) * BigInt(f.spec.gasPrice)).toString() };
 }
-export async function submitContribution(review) {
+export async function submitContribution(review, onSigningChange = () => {}) {
   if (inFlight) throw Error('Another contribution is in progress.');
   inFlight = true; let broadcast = false;
   try {
@@ -63,7 +63,11 @@ export async function submitContribution(review) {
     if (JSON.stringify(f.spec) !== JSON.stringify(review.spec)) throw Error('Contribution review changed. Review again.');
     const tx = buildTransaction(f.spec, f.account.nonce); checkTransaction(tx, f.spec); await simulateContribution(tx); context(review.address);
     if (Date.now() - review.created > 60000) throw Error('Review expired. Review again.');
-    const signed = await getAccountProvider().signTransactions([tx]);
+    const provider = getAccountProvider();
+    let signed;
+    onSigningChange(provider.getType?.() === 'walletConnect');
+    try { signed = await provider.signTransactions([tx]); }
+    finally { onSigningChange(false); }
     if (signed?.length !== 1) throw Error('Signing was cancelled.');
     checkTransaction(signed[0], f.spec, true); context(review.address);
     if (Date.now() - review.created > 240000) throw Error('Signing took too long. Review again.');
