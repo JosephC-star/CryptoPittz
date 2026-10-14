@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { BONEZ_TOKEN, bonezHuman, burnAtomic, validateBurnToken } from './amounts';
 import './burner.css';
 import FurnaceValve from './FurnaceValve';
+import FurnaceScene from './VideoFurnace';
 import { prepareContribution, submitContribution, pendingContribution } from './burnTransactions';
 import { BURN_PILE_ADDRESS, assertContributionReceipt } from './contributionValidation';
 import { assertBurnReceipt } from './burnValidation';
@@ -13,7 +14,7 @@ async function json(url, signal) {
   if (!response.ok) throw Error('Live BONEZ data is temporarily unavailable.');
   return response.json();
 }
-function FurnaceScene({ firing, expanded, celebration }) {
+function LegacyFurnaceScene({ firing, expanded, celebration }) {
   const gaugeId = useId();
   return <div className={`burn-scene ${firing ? 'burn-firing' : ''} ${expanded ? 'burn-scene-expanded' : ''}`} role="img" aria-label="Two neon Pittz workers shoveling bones into an industrial furnace with fire, embers and steam">
     <div className="burn-room" />
