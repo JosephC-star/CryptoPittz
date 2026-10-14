@@ -11,6 +11,8 @@ function BurnCelebration({ nft, hash }) {
   const dialog=useRef(null),titleId=useId();
   const [reveal,setReveal]=useState('covered'),[origin,setOrigin]=useState({x:0,y:0});
   const [exporting,setExporting]=useState(false),[progress,setProgress]=useState(0),[exportError,setExportError]=useState('');
+  const [readyGif,setReadyGif]=useState('');
+  const gifName=`${(nft.identifier||'pittz').replace(/[^a-z0-9-]/gi,'')}-reveal.gif`;
   const canvas=useRef(null),job=useRef(null),downloadUrl=useRef(null);
   useEffect(()=>{
     const node=dialog.current;
@@ -42,11 +44,11 @@ function BurnCelebration({ nft, hash }) {
     const controller=new AbortController();job.current=controller;setExporting(true);setExportError('');setProgress(0);
     try{
       const {exportRevealGif}=await import('./exportRevealGif');
-      const blob=await exportRevealGif(getNftImage(nft),nft.name,controller.signal,setProgress);
+      const blob=await exportRevealGif(getNftImage(nft),nft.name,controller.signal,setProgress,nft.identifier);
       if(controller.signal.aborted)return;
       if(downloadUrl.current)URL.revokeObjectURL(downloadUrl.current);
-      downloadUrl.current=URL.createObjectURL(blob);
-      const link=document.createElement('a');link.href=downloadUrl.current;link.download=`${(nft.identifier||'pittz').replace(/[^a-z0-9-]/gi,'')}-reveal.gif`;document.body.appendChild(link);link.click();link.remove();
+      downloadUrl.current=URL.createObjectURL(blob);setReadyGif(downloadUrl.current);
+      const link=document.createElement('a');link.href=downloadUrl.current;link.download=gifName;document.body.appendChild(link);link.click();link.remove();
     }catch(error){if(!controller.signal.aborted)setExportError(error.name==='SecurityError'?'The artwork server blocked GIF export. You can still replay your reveal.':'GIF export could not complete. Please try again.');}
     finally{if(!controller.signal.aborted){setExporting(false);job.current=null;}}
   };
@@ -58,7 +60,7 @@ function BurnCelebration({ nft, hash }) {
     {(reveal==='burning'||reveal==='revealed')&&<div className="pitt-flying-embers" key={reveal} style={{left:origin.x,top:origin.y}} aria-hidden="true">
       {Array.from({length:reveal==='burning'?76:52},(_,i)=><i className={reveal==='revealed'?'finale':''} key={i} style={{'--dx':`${(i*83)%760-380}px`,'--dy':`${-100-(i*47)%530}px`,'--delay':`${reveal==='burning'?(i%14)*.15:0}s`,'--size':`${1.5+i%4*.7}px`}}/>)}
     </div>}
-    <p className="pitt-party-eyebrow">WELCOME TO YOUR PACK</p><h3 id={titleId}>You just bought…</h3>
+    <p className="pitt-party-eyebrow">WELCOME TO YOUR PACK</p><h3 id={titleId}>You just purchased…</h3>
     <div className="pitt-party-frame"><div className={`pitt-burn-art ${reveal}`}>
       <img src={getNftImage(nft)} alt={nft.name}/>
       {reveal!=='revealed'&&<><canvas className="paper-burn-canvas" ref={canvas} aria-hidden="true"/>
@@ -69,6 +71,7 @@ function BurnCelebration({ nft, hash }) {
     <div className="pitt-reveal-actions">
       <button className="btn" onClick={()=>setReveal('covered')} disabled={reveal==='burning'}>Replay reveal ↻</button>
       <button className="btn" onClick={download} disabled={exporting}>{exporting?`Creating GIF… ${progress}%`:'Download GIF'}</button>
+      {readyGif&&<a className="btn primary" href={readyGif} download={gifName}>Save GIF ↓</a>}
       <a className="btn" href={shareUrl(nft.name)} target="_blank" rel="noopener noreferrer">Share to X ↗</a>
     </div>
     <p className="pitt-share-note">Download your GIF, then attach it to your X post. No wallet address or purchase price is included.</p>

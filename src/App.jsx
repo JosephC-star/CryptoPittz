@@ -378,7 +378,7 @@ function App() {
                   <a href="#my-pittz" onClick={() => setDesktopGroup(null)}>My Pittz</a>
                   <a href="#explorer" onClick={() => setDesktopGroup(null)}>CryptoPittz Explorer</a>
                   <a href="#traits" onClick={() => setDesktopGroup(null)}>Traits</a>
-                  <a href="#merch" onClick={() => setDesktopGroup(null)}>Merch — Coming Soon</a>
+                  <a href="#merch" onClick={() => setDesktopGroup(null)}>Pittz Flea Market</a>
                 </div>
               </div>
 
@@ -413,14 +413,6 @@ function App() {
                     href="/financial-district/"
                   >
                     Financial District →
-                  </a>
-
-                  <a
-                    href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxikVdFCh3ndX6vXVMa7/transactions"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Pittensor / TaoStats ↗
                   </a>
 
                   <a
@@ -517,7 +509,7 @@ function App() {
                 </a>
 
                 <a href="#merch" onClick={closeMobileMenu}>
-                  Merch — Coming Soon
+                  Pittz Flea Market
                 </a>
               </div>
             </div>
@@ -559,14 +551,7 @@ function App() {
                   Financial District →
                 </a>
 
-                <a
-                  href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxikVdFCh3ndX6vXVMa7/transactions"
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={closeMobileMenu}
-                >
-                  Pittensor / TaoStats ↗
-                </a>
+                <a href="/pittensor/" onClick={closeMobileMenu}>Pittensor →</a>
 
                 <a
                   href="https://xportal.app.link/referral?code=xdsu8lsipv"
@@ -811,15 +796,15 @@ function App() {
             </div>
           </div>
 
-          <section id="arcade" className="playground-release-entrance">
+          <a id="arcade" className="playground-release-entrance" href={`/playground/${account.address ? `?wallet=${encodeURIComponent(account.address)}` : ''}#/playground`}>
             <div>
               <span className="playground-release-status">THE PACK’S NEON YARD</span>
               <h2>Pittz Playground</h2>
               <p>Nine neon cabinets. One pack. Chase high scores, collect trophies, and stay for the vibe.</p>
-              <a className="btn primary" href={`/playground/${account.address ? `?wallet=${encodeURIComponent(account.address)}` : ''}#/playground`}>Enter the Playground →</a>
+              <span className="btn primary">Enter the Playground →</span>
             </div>
             <div className="playground-release-art neon-yard-entrance-art" aria-hidden="true"><i className="neon-yard-entrance-glint" /></div>
-          </section>
+          </a>
 
           <a className="financial-entrance" href="/financial-district/">
             <div className="financial-entrance-copy"><small>THE PACK’S GOLDEN QUARTER</small><h2>Pittz Financial District</h2><p>Swap 16 currencies, add BONEZ + WEGLD liquidity, and stake BONEZ—all through your connected wallet.</p><span>You earn, we burn!</span><strong>Enter the Financial District →</strong></div>
@@ -1017,45 +1002,20 @@ function App() {
           </section>
 
           <section id="merch" className="merch-coming-soon">
-            <div className="merch-neon-banner">
+            <div className="merch-neon-banner flea-market-entrance">
               <div className="merch-copy">
-                <span className="merch-eyebrow">⚡ FROM THE SCREEN TO THE STREETS</span>
-                <h2>CRYPTOPITTZ MERCH</h2>
-                <strong>COMING SOON</strong>
-                <p>
-                  The Pack is moving into the physical world. Apparel, pet gear, collectibles and
-                  more are being explored for future CryptoPittz drops.
-                </p>
-                <a
-                  className="btn primary"
-                  href="https://discord.gg/PP8S8DX9t"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Follow Merch Updates ↗
-                </a>
+                <span className="merch-eyebrow">THE PACK’S BACKSTREET BAZAAR</span>
+                <h2>PITTZ<br /><em>FLEA MARKET</em></h2>
+                <strong>BIG TALENT. SMALL BOOTHS.</strong>
+                <p>Handmade wares, custom creations, and pack-made skills. Step off the main road and into the market.</p>
+                <a className="btn primary" href="/flea-market/">Enter the Flea Market →</a>
+                <div className="market-entrance-tags" aria-label="The three Pittz bloodlines"><span>Street</span><span>Regal</span><span>Loyal</span></div>
               </div>
-
-              <div className="merch-preview-grid" aria-label="Planned merchandise categories">
-                <article>
-                  <span>👕</span>
-                  <div><small>PACK STYLE</small><h3>Apparel</h3></div>
-                  <b>IN DEVELOPMENT</b>
-                </article>
-                <article>
-                  <span>🐕</span>
-                  <div><small>FOR THE REAL PACK</small><h3>Pet Gear</h3></div>
-                  <b>IN DEVELOPMENT</b>
-                </article>
-                <article>
-                  <span>🦴</span>
-                  <div><small>PHYSICAL DROPS</small><h3>Collectibles</h3></div>
-                  <b>IN DEVELOPMENT</b>
-                </article>
+              <div className="market-entrance-window">
+                <span className="market-sticker">PACK UNITY</span>
+                <div className="market-shop-strip"><b>GordonCrypto · Stache Rugs</b><span>Rug shop opening soon · Prices TBD</span><small>YOUR STORE COULD BE NEXT ↗</small></div>
+                <i className="market-sign-shimmer" aria-hidden="true" />
               </div>
-
-              <div className="merch-orbit merch-orbit-one" aria-hidden="true" />
-              <div className="merch-orbit merch-orbit-two" aria-hidden="true" />
             </div>
           </section>
 

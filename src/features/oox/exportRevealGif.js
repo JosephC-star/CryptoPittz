@@ -1,15 +1,20 @@
 import { drawPaperBurn, REVEAL_DURATION } from './paperBurn.js';
 import { encodeGif, makePalette, indexPixels } from './gifEncoder.js';
 export function shareUrl(name){return `https://twitter.com/intent/tweet?${new URLSearchParams({text:`Just welcomed ${name} to my pack! You Earn, We Burn. 🔥🐾`,url:'https://thepittzstop.com/'})}`;}
-export async function exportRevealGif(imageUrl,name,signal,onProgress=()=>{}){
-  const image=await new Promise((resolve,reject)=>{
+export async function exportRevealGif(imageUrl,name,signal,onProgress=()=>{},identifier){
+  const loadImage=url=>new Promise((resolve,reject)=>{
     const img=new Image();img.crossOrigin='anonymous';
     const clean=()=>{clearTimeout(timer);signal.removeEventListener('abort',abort);img.onload=null;img.onerror=null;};
     const fail=()=>{clean();reject(new Error('Artwork could not be loaded for GIF export. Please try again.'));};
     const abort=()=>{clean();img.src='';reject(new DOMException('Cancelled','AbortError'));};
     const timer=setTimeout(fail,15000);
-    img.onload=()=>{clean();resolve(img);};img.onerror=fail;signal.addEventListener('abort',abort,{once:true});if(signal.aborted){abort();return;}img.src=imageUrl;
+    img.onload=()=>{clean();resolve(img);};img.onerror=fail;signal.addEventListener('abort',abort,{once:true});if(signal.aborted){abort();return;}img.src=url;
   });
+  let image;
+  try{image=await loadImage(imageUrl);}catch(error){
+    if(signal.aborted||!identifier)throw error;
+    image=await loadImage(`/.netlify/functions/pittz-artwork?identifier=${encodeURIComponent(identifier)}`);
+  }
   const canvas=document.createElement('canvas');canvas.width=256;canvas.height=352;
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
   const cover=document.createElement('canvas');cover.width=224;cover.height=224;const cc=cover.getContext('2d');
