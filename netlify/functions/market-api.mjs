@@ -3,7 +3,7 @@ import { isIP } from 'node:net';
 import { Address, Message, MessageComputer, UserVerifier } from '@multiversx/sdk-core';
 
 const ORIGIN = 'https://deploy-preview-17--cryptopittz.netlify.app';
-const ALLOWED_ORIGINS = new Set([ORIGIN, 'https://thepittzstop.com', 'https://www.thepittzstop.com', 'https://cryptopittz.netlify.app']);
+const ALLOWED_ORIGINS = new Set([ORIGIN, 'https://deploy-preview-18--cryptopittz.netlify.app', 'https://thepittzstop.com', 'https://www.thepittzstop.com', 'https://cryptopittz.netlify.app']);
 const COOKIE = '__Host-pittz-market';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const hash = text => createHash('sha256').update(text).digest('hex');
@@ -20,7 +20,7 @@ export function wallet(value) {
   catch { fail(400, 'A valid public erd1 wallet address is required.'); }
 }
 export function active(shop) {
-  return !!shop && (shop.access_status === 'test' || (shop.access_status === 'active' && Date.parse(shop.rental_expires_at) > Date.now()));
+  return !!shop && !shop.moderation_suspended && (shop.access_status === 'test' || (shop.access_status === 'active' && Date.parse(shop.rental_expires_at) > Date.now()));
 }
 export function loginMessage(challenge, nonce) {
   return ['The PittzStop — Merchant sign-in', 'Origin: ' + challenge.origin,
@@ -72,6 +72,7 @@ async function request(path, method = 'GET', body, extra = {}) {
 const db = (path, method, body, headers) => request('/rest/v1/' + path, method, body, headers);
 async function ownerShop(address) {
   const shops = await db('market_shops?owner_wallet=eq.' + encodeURIComponent(address) + '&select=*&limit=1');
+  if (shops?.[0]?.moderation_suspended) fail(403, 'This storefront is suspended. Reason: ' + (shops[0].moderation_reason || 'Contact a market administrator.'));
   if (!active(shops?.[0])) fail(403, 'This wallet does not have an active assigned booth.');
   return shops[0];
 }
@@ -132,17 +133,17 @@ export async function handler(event) {
     if (route === 'catalog') {
       const booth = Number(event.queryStringParameters?.booth || 1);
       if (!Number.isSafeInteger(booth) || booth < 1) fail(400,'Invalid booth.');
-      const shops = await db('market_shops?booth_number=eq.'+booth+'&select=id,booth_number,name,description,access_status,rental_expires_at&limit=1');
+      const shops = await db('market_shops?booth_number=eq.'+booth+'&select=id,booth_number,name,description,access_status,rental_expires_at,moderation_suspended&limit=1');
       const shop = shops?.[0]; if (!active(shop)) fail(404,'This storefront is not available.');
-      const products = await db('market_products?shop_id=eq.'+shop.id+'&status=eq.published&select=id,name,description,price,currency,quantity,made_to_order,delivery,image_path&order=created_at.desc&limit=100');
+      const products = await db('market_products?shop_id=eq.'+shop.id+'&status=eq.published&moderation_hidden=eq.false&select=id,name,description,price,currency,quantity,made_to_order,delivery,image_path&order=created_at.desc&limit=100');
       return response(200,{shop:{id:shop.id,name:shop.name,description:shop.description,booth_number:shop.booth_number},products:products.map(withImage)});
     }
     if (route === 'image') {
       const id=event.queryStringParameters?.product;if(!UUID.test(id))fail(400,'Invalid product.');
-      const rows=await db('market_products?id=eq.'+id+'&select=id,shop_id,status,image_path&limit=1');const product=rows?.[0];
+      const rows=await db('market_products?id=eq.'+id+'&select=id,shop_id,status,image_path,moderation_hidden,currency&limit=1');const product=rows?.[0];
       if(!product?.image_path)fail(404,'Image not found.');
-      if(product.status==='published'){
-        const shops=await db('market_shops?id=eq.'+product.shop_id+'&select=access_status,rental_expires_at&limit=1');
+      if(product.status==='published'&&!product.moderation_hidden){
+        const shops=await db('market_shops?id=eq.'+product.shop_id+'&select=access_status,rental_expires_at,moderation_suspended&limit=1');
         if(!active(shops?.[0]))fail(404,'Image not available.');
       }else{const auth=await session(event);if(auth.shop.id!==product.shop_id)fail(404,'Image not available.');}
       if(!product.image_path.startsWith(product.shop_id+'/')||product.image_path.includes('..'))fail(404,'Image not available.');
@@ -162,14 +163,14 @@ export async function handler(event) {
       const booth=Number(body.booth);
       if(!Number.isSafeInteger(booth)||booth<1)fail(400,'Invalid booth.');
       if(!UUID.test(body.request_id))fail(400,'Refresh the page before sending this inquiry.');
-      const shops=await db('market_shops?booth_number=eq.'+booth+'&select=id,access_status,rental_expires_at&limit=1');const target=shops?.[0];
+      const shops=await db('market_shops?booth_number=eq.'+booth+'&select=id,access_status,rental_expires_at,moderation_suspended&limit=1');const target=shops?.[0];
       if(!active(target))fail(404,'This shop is not accepting inquiries.');
       const existing=await db('market_inquiries?id=eq.'+body.request_id+'&shop_id=eq.'+target.id+'&customer_email=eq.'+encodeURIComponent(email)+'&select=id&limit=1');
       if(existing?.length)return response(200,{received:true,reference:body.request_id,message:'This inquiry is already saved in the merchant’s inbox. No order or payment has been placed.'});
       let productId=null;
       if(body.product_id){
         if(!UUID.test(body.product_id))fail(400,'Invalid product.');
-        const products=await db('market_products?id=eq.'+body.product_id+'&shop_id=eq.'+target.id+'&status=eq.published&select=id&limit=1');
+        const products=await db('market_products?id=eq.'+body.product_id+'&shop_id=eq.'+target.id+'&status=eq.published&moderation_hidden=eq.false&select=id&limit=1');
         if(products?.length!==1)fail(404,'This product is no longer available for inquiries.');
         productId=products[0].id;
       }
@@ -254,3 +255,4 @@ export function imageInput(body){
   if(!type||type!==body.type)fail(400,'Choose a JPG, PNG or WebP picture.');
   return {bytes,type,extension:{'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[type]};
 }
+export { request, db, configuration, requestOrigin, hash, fail, response, now };
