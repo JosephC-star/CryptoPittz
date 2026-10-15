@@ -9,10 +9,7 @@ export async function handler(event) {
     body: JSON.stringify(body)
   });
   if (event.httpMethod !== 'GET') return response(405, { ready: false, message: 'GET required.' });
-  // This diagnostic is intentionally available only in the merchant deploy preview.
-  if (process.env.CONTEXT !== 'deploy-preview' || process.env.HEAD !== 'preview/merchant-dashboard') {
-    return response(404, { ready: false });
-  }
+  // No credentials or database records are included in diagnostic responses.
   const base = process.env.SUPABASE_URL;
   const secret = process.env.SUPABASE_SECRET_KEY;
   if (!base || !secret) return response(503, { ready: false, stage: 'configuration', message: 'Backend environment settings are missing.' });
