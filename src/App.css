@@ -6864,3 +6864,7 @@ footer .container > div:hover {
 .explorer-fold-footer span { color: var(--muted); font-size: 12px; }
 #explorer-content[hidden] { display: none; }
 @media (max-width: 640px) { .explorer-heading { align-items: flex-start; flex-direction: column; gap: 12px; } .explorer-fold-toggle { min-height: 44px; } }
+
+
+#my-pittz { scroll-margin-top: 100px; }
+#my-pittz-content[hidden] { display: none; }

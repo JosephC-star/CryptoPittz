@@ -35,3 +35,10 @@ body:has(.financial-district){margin:0;background:#0b0b09}
 @keyframes district-osmosis{0%,100%{background-position:100% 100%;opacity:0}20%{opacity:.2}55%{background-position:0% 0%;opacity:.85}80%{opacity:0}}
 @keyframes district-merge-pulse{0%,100%{transform:scale(.7);opacity:.2}50%{transform:scale(1.8);opacity:.8}}
 @media(prefers-reduced-motion:reduce){.district-pool-flow,.district-pool-pulse{display:none}}
+
+
+/* A dedicated artwork alcove keeps the service cards clear. */
+.district-gallery{margin:50px auto 0;padding:30px 38px;display:grid;grid-template-columns:1fr minmax(230px,340px);align-items:center;gap:42px;border:1px solid #ac884735;border-radius:22px;background:radial-gradient(ellipse at 90% 50%,#c7953517,transparent 65%),linear-gradient(125deg,#1c1912,#10110e);overflow:hidden}
+.district-gallery-kicker{font-size:9px;letter-spacing:3px;font-weight:700;color:#b59a64}.district-gallery h2{font:500 clamp(27px,3vw,40px)/1.15 'Space Grotesk',sans-serif;color:#e9c77a;letter-spacing:-1px;margin:16px 0}.district-gallery-copy p{font-size:14px;line-height:1.9;color:#b6aa94;margin:0 0 20px}.district-gallery-motto{font-size:11px;letter-spacing:1px;color:#d5b776}
+.district-gallery-frame{margin:0;padding:9px;border:1px solid #c8a35d88;border-radius:13px;background:linear-gradient(135deg,#514025,#151510 45%,#674f25);box-shadow:0 16px 30px #0006,inset 0 0 0 3px #161611}.district-gallery-frame img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:contain;border-radius:6px}.district-gallery-frame figcaption{text-align:center;font-size:8px;letter-spacing:2px;color:#c9b387;padding:12px 3px 4px;line-height:1.5}
+@media(max-width:680px){.district-gallery{grid-template-columns:1fr;padding:25px 22px;gap:24px;text-align:center;margin-top:30px}.district-gallery-frame{width:min(100%,300px);justify-self:center}.district-gallery-copy p{font-size:13px}.district-gallery h2{font-size:30px}}

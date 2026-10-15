@@ -676,23 +676,7 @@ function App() {
                   <div className="chip">📱 Mobile-friendly</div>
                 </div>
 
-                <div
-                  className="hero-actions"
-                  style={{
-                    display: "flex",
-                    gap: "12px",
-                    flexWrap: "wrap",
-                    marginTop: "18px",
-                  }}
-                >
-                  <a className="btn primary" href="#arcade">
-                    Enter the Arcade
-                  </a>
 
-                  <a className="btn" href="#explorer">
-                    Explore the Pittz
-                  </a>
-                </div>
               </div>
             </div>
 
@@ -1262,3 +1246,4 @@ function App() {
 }
 
 export default App;
+
