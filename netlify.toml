@@ -54,3 +54,15 @@
   to = "/index.html"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/merchant-access"
+  to = "/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/merchant-access/"
+  to = "/index.html"
+  status = 200
+  force = true
