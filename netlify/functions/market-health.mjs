@@ -42,8 +42,8 @@ export async function handler(event) {
       ready: true,
       database: 'connected',
       photoStorage: 'private buckets ready',
-      walletLogin: 'not connected yet',
-      message: 'Backend connection verified. Merchant access remains disabled.'
+      walletLogin: 'implemented; assigned-wallet test pending',
+      message: 'Backend connection verified. Merchant edits require a verified assigned-wallet session.'
     });
   } catch {
     return response(503, { ready: false, stage: 'connection', message: 'Database or private storage verification failed. Check the SQL setup and backend key.' });
