@@ -10,7 +10,7 @@ export async function handler(event) {
     const nft = await response.json();
     if (nft.identifier !== identifier) return error(502);
     const media = nft.media?.[0];
-    const url = new URL(media?.thumbnailUrl || media?.url || nft.url);
+    const url = new URL((!media?.fileType?.startsWith('video/') && media?.url) || media?.thumbnailUrl || nft.url);
     if (url.protocol !== 'https:' || url.hostname !== 'media.multiversx.com' || url.port || url.username || url.password) return error(502);
     const artwork = await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(10000) });
     const type = artwork.headers.get('content-type')?.split(';')[0];
@@ -24,3 +24,4 @@ export async function handler(event) {
     return { statusCode: 200, headers: { 'Content-Type': type, 'Cache-Control': 'public, max-age=86400', 'X-Content-Type-Options': 'nosniff' }, body: Buffer.concat(chunks).toString('base64'), isBase64Encoded: true };
   } catch { return error(502); }
 }
+

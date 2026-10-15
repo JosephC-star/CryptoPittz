@@ -11,8 +11,10 @@ function BurnCelebration({ nft, hash }) {
   const dialog=useRef(null),titleId=useId();
   const [reveal,setReveal]=useState('covered'),[origin,setOrigin]=useState({x:0,y:0});
   const [exporting,setExporting]=useState(false),[progress,setProgress]=useState(0),[exportError,setExportError]=useState('');
-  const [readyGif,setReadyGif]=useState('');
-  const gifName=`${(nft.identifier||'pittz').replace(/[^a-z0-9-]/gi,'')}-reveal.gif`;
+  const [readyGif,setReadyGif]=useState(''),[readyExtension,setReadyExtension]=useState('gif'),[exportKind,setExportKind]=useState('gif');
+  const exportArtwork = !nft.media?.[0]?.fileType?.startsWith('video/') && nft.media?.[0]?.url || getNftImage(nft);
+  const fileStem=`${(nft.identifier||'pittz').replace(/[^a-z0-9-]/gi,'')}-reveal`;
+  const downloadName=`${fileStem}.${readyExtension}`;
   const canvas=useRef(null),job=useRef(null),downloadUrl=useRef(null);
   useEffect(()=>{
     const node=dialog.current;
@@ -39,17 +41,23 @@ function BurnCelebration({ nft, hash }) {
     const rect=event.currentTarget.getBoundingClientRect();setOrigin({x:rect.left+rect.width*.32,y:rect.top+rect.height*.68});
     setReveal(window.matchMedia('(prefers-reduced-motion: reduce)').matches?'revealed':'burning');
   };
-  const download=async()=>{
+  const download=async(format)=>{
     if(job.current)return;
-    const controller=new AbortController();job.current=controller;setExporting(true);setExportError('');setProgress(0);
+    const controller=new AbortController();job.current=controller;setExporting(true);setExportError('');setProgress(0);setExportKind(format);
     try{
-      const {exportRevealGif}=await import('./exportRevealGif');
-      const blob=await exportRevealGif(getNftImage(nft),nft.name,controller.signal,setProgress,nft.identifier);
+      let blob,extension='gif';
+      if(format==='video'){
+        const {exportRevealVideo}=await import('./exportRevealVideo');
+        const result=await exportRevealVideo(exportArtwork,nft.name,controller.signal,setProgress,nft.identifier);blob=result.blob;extension=result.extension;
+      }else{
+        const {exportRevealGif}=await import('./exportRevealGif');
+        blob=await exportRevealGif(exportArtwork,nft.name,controller.signal,setProgress,nft.identifier);
+      }
       if(controller.signal.aborted)return;
       if(downloadUrl.current)URL.revokeObjectURL(downloadUrl.current);
-      downloadUrl.current=URL.createObjectURL(blob);setReadyGif(downloadUrl.current);
-      const link=document.createElement('a');link.href=downloadUrl.current;link.download=gifName;document.body.appendChild(link);link.click();link.remove();
-    }catch(error){if(!controller.signal.aborted)setExportError(error.name==='SecurityError'?'The artwork server blocked GIF export. You can still replay your reveal.':'GIF export could not complete. Please try again.');}
+      downloadUrl.current=URL.createObjectURL(blob);setReadyGif(downloadUrl.current);setReadyExtension(extension);
+      const link=document.createElement('a');link.href=downloadUrl.current;link.download=`${fileStem}.${extension}`;document.body.appendChild(link);link.click();link.remove();
+    }catch(error){if(!controller.signal.aborted)setExportError(error.name==='SecurityError'?'The artwork server blocked GIF export. You can still replay your reveal.':error.message||'Reveal export could not complete. Please try again.');}
     finally{if(!controller.signal.aborted){setExporting(false);job.current=null;}}
   };
   return <>
@@ -70,14 +78,16 @@ function BurnCelebration({ nft, hash }) {
     <h4>{nft.name}</h4><p aria-live="polite">{reveal==='revealed'?'WELCOME TO YOUR PACK 🐾':'Purchase confirmed. Tap to meet your new pack member.'}</p>
     <div className="pitt-reveal-actions">
       <button className="btn" onClick={()=>setReveal('covered')} disabled={reveal==='burning'}>Replay reveal ↻</button>
-      <button className="btn" onClick={download} disabled={exporting}>{exporting?`Creating GIF… ${progress}%`:'Download GIF'}</button>
-      {readyGif&&<a className="btn primary" href={readyGif} download={gifName}>Save GIF ↓</a>}
+      <button className="btn" onClick={()=>download('gif')} disabled={exporting}>{exporting&&exportKind==='gif'?`Creating GIF… ${progress}%`:'Download sharper GIF'}</button>
+      <button className="btn" onClick={()=>download('video')} disabled={exporting}>{exporting&&exportKind==='video'?`Creating HD video… ${progress}%`:'Download HD video'}</button>
+      {readyGif&&<a className="btn primary" href={readyGif} download={downloadName}>Save {readyExtension.toUpperCase()} ↓</a>}
       <a className="btn" href={shareUrl(nft.name)} target="_blank" rel="noopener noreferrer">Share to X ↗</a>
     </div>
-    <p className="pitt-share-note">Download your GIF, then attach it to your X post. No wallet address or purchase price is included.</p>
+    <p className="pitt-share-note">Choose HD video for sharper color and smoother motion. Video downloads as MP4 or WebM, depending on your browser. No wallet address or purchase price is included.</p>
     {exportError&&<p role="status">{exportError}</p>}
     <a className="btn primary" href={`https://explorer.multiversx.com/transactions/${hash}`} target="_blank" rel="noopener noreferrer">View confirmed purchase ↗</a>
   </div>
   </dialog>,document.body)}
   </>;
 }
+

@@ -37,3 +37,10 @@ test('GIF artwork refuses media URLs outside the approved host', async () => {
     assert.equal(calls, 1);
   } finally { globalThis.fetch = original; }
 });
+
+
+test('Reveal exports prefer the original official artwork over its thumbnail', async () => {
+ const original=globalThis.fetch,identifier='PITTZ-1a4c2d-01',calls=[];
+ globalThis.fetch=async url=>{calls.push(String(url));return calls.length===1?Response.json({identifier,media:[{url:'https://media.multiversx.com/nfts/asset/full.png',thumbnailUrl:'https://media.multiversx.com/nfts/thumbnail/small',fileType:'image/png'}]}):new Response(new Uint8Array([1]),{headers:{'content-type':'image/png'}});};
+ try{assert.equal((await handler({httpMethod:'GET',queryStringParameters:{identifier}})).statusCode,200);assert.equal(calls[1],'https://media.multiversx.com/nfts/asset/full.png');}finally{globalThis.fetch=original;}
+});

@@ -29,3 +29,17 @@ export function assertStakingAction(pool,balances,action,amount){
  if(action==='claim'&&unsigned(pool.user.rewards)===0n)throw Error('There are no claimable rewards yet.');
  if(action==='withdraw'&&pool.user.pendingCount===0)throw Error('There are no pending withdrawals.');
 }
+
+
+// Restake only BONEZ received by this wallet from its confirmed pool-49 claim.
+export function reinvestClaimAmount(tx,address,hash){
+ if(!/^[a-f0-9]{64}$/.test(hash)||tx?.txHash!==hash||tx.status!=='success'||tx.sender!==address||tx.receiver!==CONTRACT)throw Error('The reward claim could not be verified.');
+ let data;try{data=atob(tx.data);}catch{throw Error('Invalid reward claim data.');}
+ if(data!=='userClaim@31'||!Array.isArray(tx.operations))throw Error('The BONEZ reward claim details are not available yet. Try again shortly.');
+ let total=0n;
+ for(const op of tx.operations){
+  if(op.action==='transfer'&&op.type==='esdt'&&op.identifier===TOKEN&&op.sender===CONTRACT&&op.receiver===address)total+=unsigned(op.value);
+ }
+ if(total===0n)throw Error('No received BONEZ rewards could be verified for this claim. Refresh and try again shortly.');
+ return total.toString();
+}
