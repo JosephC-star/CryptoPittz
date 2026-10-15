@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {CONTRACT,TOKEN,POOL,validateStaking,stakingSpec,assertStakingAction} from '../src/features/bonez-staking/validation.js';
+import {CONTRACT,TOKEN,POOL,validateStaking,stakingSpec,assertStakingAction,reinvestClaimAmount} from '../src/features/bonez-staking/validation.js';
 import {assertSimulation} from '../src/features/bonez-swap/validation.js';
 const wallet='erd1jgw6rjlmnk0g3mpdjnuyd0t07ff5an5fnv9xt6nkl79u2yewcngqcy9zls';
 const pool={address:CONTRACT,poolId:POOL,token:TOKEN,paused:false,unbondEpochs:0,totalStaked:'100000000',rewardReserve:'10000',user:{staked:'1000000',rewards:'10',pendingCount:0}};
@@ -9,3 +9,12 @@ test('Deposit targets contract with plain ESDT payload, verified endpoint and po
 test('Claim, unstake and withdrawal use the deployed contract endpoints',()=>{assert.equal(stakingSpec(wallet,'claim').data,'userClaim@31');assert.equal(stakingSpec(wallet,'unstake','1').data,'userUnstake@31@01');assert.equal(stakingSpec(wallet,'withdraw').data,'userUnbond@31');});
 test('Rejects invalid and zero stake amounts without floating point conversion',()=>{for(const amount of ['0','-1','1.23','0xff','1e6'])assert.throws(()=>stakingSpec(wallet,'stake',amount));assert.equal(stakingSpec(wallet,'stake','9007199254740993').data.split('@')[2],'20000000000001');assert.throws(()=>stakingSpec(wallet,'admin'));});
 test('Balances, staked positions, paused pools and pending withdrawals gate actions',()=>{assert.doesNotThrow(()=>assertStakingAction(pool,{bonez:'1000000'},'stake','1000000'));assert.throws(()=>assertStakingAction(pool,{bonez:'1'},'stake','1000000'));assert.throws(()=>assertStakingAction(pool,{},'unstake','1000001'));assert.throws(()=>assertStakingAction({...pool,paused:true},{bonez:'1000000'},'stake','1'));assert.throws(()=>assertStakingAction(pool,{},'withdraw','0'));assert.throws(()=>assertStakingAction({...pool,user:{...pool.user,rewards:'0'}},{},'claim','0'));});
+
+
+const claimHash='ab'.repeat(32);
+const rewardClaim={txHash:claimHash,sender:wallet,receiver:CONTRACT,status:'success',data:btoa('userClaim@31'),operations:[{action:'transfer',type:'esdt',identifier:TOKEN,sender:CONTRACT,receiver:wallet,value:'2500000'}]};
+test('Reinvestment uses only received BONEZ from the confirmed wallet pool-49 claim',()=>{
+ assert.equal(reinvestClaimAmount(rewardClaim,wallet,claimHash),'2500000');
+ assert.equal(reinvestClaimAmount({...rewardClaim,operations:[...rewardClaim.operations,{action:'transfer',type:'esdt',identifier:'OTHER-123456',sender:CONTRACT,receiver:wallet,value:'999999999'}]},wallet,claimHash),'2500000');
+ for(const patch of [{status:'pending'},{receiver:wallet},{sender:CONTRACT},{txHash:'cd'.repeat(32)},{data:btoa('userClaim@32')},{operations:[]},{operations:[{...rewardClaim.operations[0],receiver:CONTRACT}]},{operations:[{...rewardClaim.operations[0],sender:wallet}]},{operations:[{...rewardClaim.operations[0],value:'1.2'}]}])assert.throws(()=>reinvestClaimAmount({...rewardClaim,...patch},wallet,claimHash));
+});

@@ -1,6 +1,6 @@
 // GIF89a with a bounded palette and literal LZW blocks. No external encoder or upload.
 export function encodeGif(frames, width, height, palette, delay=100) {
-  if(!Number.isInteger(width)||!Number.isInteger(height)||width<1||height<1||width>512||height>512||frames.length<1||frames.length>100||palette.length!==256)throw new Error('Invalid GIF dimensions or palette');
+  if(!Number.isInteger(width)||!Number.isInteger(height)||width<1||height<1||width>768||height>768||frames.length<1||frames.length>100||palette.length!==256)throw new Error('Invalid GIF dimensions or palette');
   const bytes=new Uint8Array(frames.length*(width*height*2+1024)+1024);let offset=0; const byte=n=>{bytes[offset++]=n&255;},word=n=>{byte(n);byte(n>>8);},text=s=>{for(const c of s)byte(c.charCodeAt(0));};
   text('GIF89a');word(width);word(height);byte(0xf7);byte(0);byte(0);
   for(const rgb of palette)for(const n of rgb)byte(n);
@@ -34,3 +34,4 @@ export function indexPixels(rgba,palette,cache=new Map()){
     out[j]=found;
   }return out;
 }
+

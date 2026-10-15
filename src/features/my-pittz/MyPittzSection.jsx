@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useRef, useState } from "react";
 
 import NftCard from "../../components/nft/NftCard";
 import { getBonezGeneration, getBonezWalletTotals } from "../../utils/bonezUtils";
@@ -12,6 +12,14 @@ import { loadMyListings } from '../oox/loadPreview';
 const MyListings=lazy(loadMyListings);
 
 function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNft }) {
+  const [expanded, setExpanded] = useState(true);
+  const headingRef = useRef(null);
+  const toggleRef = useRef(null);
+  function retractMyPittz() {
+    setExpanded(false);
+    toggleRef.current?.focus({ preventScroll: true });
+    headingRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
+  }
   const [view,setView]=useState("wallet");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("rank");
@@ -106,11 +114,18 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
   }
 
   return (
-    <section id="my-pittz">
-      <div className="section-title">
-        <h2>My Pittz</h2>
-        <span>Your CryptoPittz collection.</span>
+    <section id="my-pittz" ref={headingRef}>
+      <div className="section-title explorer-heading">
+        <div>
+          <h2>My Pittz</h2>
+          <span>{!address || expanded ? "Your CryptoPittz collection." : loading ? "Searching your wallet..." : error ? "Expand to view your wallet status." : `${nfts.length} CryptoPittz tucked away. Expand to browse your pack.`}</span>
+        </div>
+        {address && <button ref={toggleRef} type="button" className="explorer-fold-toggle" aria-expanded={expanded} aria-controls="my-pittz-content" onClick={() => setExpanded((open) => !open)}>
+          {expanded ? "Retract My Pittz" : "Expand My Pittz"}
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={{ transform: expanded ? "rotate(180deg)" : undefined }}><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </button>}
       </div>
+      <div id="my-pittz-content" hidden={Boolean(address) && !expanded}>
 
       {import.meta.env.VITE_OOX_PREVIEW === 'true' && <div className="explorer-tabs my-pittz-tabs" aria-label="Wallet views">
         <button className={`explorer-tab ${view==='wallet'?'active':''}`} onClick={()=>setView('wallet')}>In My Wallet</button>
@@ -348,8 +363,14 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
         </div>
       </div>
       </>}
+      {address && !loading && !error && nfts.length > 0 && <div className="explorer-fold-footer">
+        <button type="button" className="explorer-fold-toggle" onClick={retractMyPittz}>Retract My Pittz ↑</button>
+        <span>Tuck the pack away and keep exploring.</span>
+      </div>}
+      </div>
     </section>
   );
 }
 
 export default MyPittzSection;
+

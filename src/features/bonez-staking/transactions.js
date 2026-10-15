@@ -4,7 +4,7 @@ import { getAccountProvider } from '@multiversx/sdk-dapp/out/providers/helpers/a
 import { TransactionManager } from '@multiversx/sdk-dapp/out/managers/TransactionManager/TransactionManager';
 import { addressHex,getJson,buildTransaction,checkTransaction,simulate } from '../bonez-swap/transactions.js';
 import { guardianForAccount,withGuardian,assertGuardianUnchanged } from '../bonez-swap/guarded.js';
-import { TOKEN,validateStaking,stakingSpec,assertStakingAction } from './validation.js';
+import { TOKEN,validateStaking,stakingSpec,assertStakingAction,reinvestClaimAmount } from './validation.js';
 export async function fetchStaking(address){return validateStaking((await getJson('/.netlify/functions/bonez-staking'+(address?'?user='+addressHex(address):''))).pool);}
 function context(expected){const a=getAccount().address;if(!a||expected&&a!==expected)throw Error('Wallet changed. Connect and review again.');if(getNetworkConfig().network.chainId!=='1')throw Error('Connect a mainnet wallet.');return a;}
 export async function fetchStakingBalances(address){
@@ -57,4 +57,16 @@ export async function submitStaking(review){
   try{await manager.track(sent);}catch{/* A tracking failure must not repeat the transaction. */}
   const hash=sent?.[0]?.hash;pendingHash=typeof hash==='string'&&/^[a-f0-9]{64}$/.test(hash)?hash:null;if(!pendingHash)submissionUncertain=true;return {hash:pendingHash};
  }catch(e){if(broadcast){submissionUncertain=true;throw Error('Submission status is uncertain. Check wallet history before trying again.');}throw e;}finally{inFlight=false;}
+}
+
+
+export async function prepareReinvestStake(claimHash,address){
+ context(address);
+ if(!/^[a-f0-9]{64}$/.test(claimHash))throw Error('Invalid reward claim transaction.');
+ const tx=await getJson(`https://api.multiversx.com/transactions/${claimHash}?withOperations=true`);
+ const amount=reinvestClaimAmount(tx,address,claimHash);
+ context(address);
+ const review=await prepareStaking('stake',amount);
+ context(address);
+ return {...review,reinvestStep:'stake',claimHash};
 }
