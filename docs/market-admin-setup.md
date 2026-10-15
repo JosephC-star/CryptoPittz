@@ -10,3 +10,5 @@ Public catalog, image access, product inquiries and merchant sessions all enforc
 
 Rental payment policy: BONEZ and Meta-Keyz only. Rental prices/terms await the owners. No rental charging or automatic renewals are enabled. This restriction is for storefront rent; merchant product price options remain unchanged.
 
+
+BONEZ rental proceeds: send paid storefront rental BONEZ to the existing verified Pittensor team burn wallet so it joins the burn pile. Reuse the pinned, verified Pittensor destination when implementing payment; do not guess or introduce a different address. Track rental receipts separately from voluntary contributions while including confirmed receipts in the burn-wallet balance. Receiving rent is a contribution to the pending burn pile, not proof of a completed on-chain burn. Rental rates, durations and Meta-Keyz payment mechanics still await owner decisions; no rental payment transaction is enabled yet.
