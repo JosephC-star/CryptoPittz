@@ -1,3 +1,4 @@
+import {readJsonRequest} from '../../server/json-request.mjs';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { wallet, validSignature, loginMessage, db, request, configuration, requestOrigin, hash, fail, response, now } from './market-api.mjs';
 
@@ -12,10 +13,8 @@ export async function handler(event){try{
   const methods={me:'GET',challenge:'POST',verify:'POST',logout:'POST',shops:'GET',products:'GET',audit:'GET',moderate:'POST',image:'GET'};
   if(!methods[route])fail(404,'Unknown admin action.');if(event.httpMethod!==methods[route])fail(405,'Unsupported request method.');
   if(event.httpMethod!=='GET'&&event.headers?.origin!==origin)fail(403,'Open this action from the market admin page.');
-  if(event.isBase64Encoded||(event.body&&Buffer.byteLength(event.body)>12000))fail(413,'Request too large.');
   if(event.httpMethod!=='GET'&&!event.headers?.['content-type']?.startsWith('application/json'))fail(415,'JSON required.');
-  let body={};try{if(event.body)body=JSON.parse(event.body);}catch{fail(400,'Invalid request.');}
-  if(!body||Array.isArray(body)||typeof body!=='object')fail(400,'Invalid request.');
+  const body=readJsonRequest(event,12000,'This admin request is too large.');
   if(route==='challenge'){
     const address=wallet(body.address);await admin(address);
     const recent=await db('market_login_challenges?wallet_address=eq.'+address+'&created_at=gt.'+encodeURIComponent(new Date(Date.now()-60000).toISOString())+'&select=id&limit=5');
