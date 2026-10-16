@@ -1,3 +1,4 @@
+import {RENTAL_TEST_POLICY,rentalTestAllowed} from '../../../shared/market-rental-test.mjs';
 import {TransactionComputer} from '@multiversx/sdk-core/out/core/transactionComputer.js';
 import {getAccount} from '@multiversx/sdk-dapp/out/methods/account/getAccount';
 import {getNetworkConfig} from '@multiversx/sdk-dapp/out/methods/network/getNetworkConfig';
@@ -12,7 +13,10 @@ function context(address){if(getAccount().address!==address||getNetworkConfig().
 function specFor(review){
  const totals={1:'60000',6:'330000',12:'600000'},base=totals[review.months];
  if(!base||!['standard','meta'].includes(review.tier)||review.recipient!==BURN_PILE_ADDRESS||review.token!==TOKEN||review.decimals!==6)throw Error('Rental payment review could not be verified.');
- const expected=BigInt(base)/(review.tier==='meta'?2n:1n);
+ const test=review.policyVersion===RENTAL_TEST_POLICY;
+ if(test&&(!rentalTestAllowed(review.address,window.location.origin)||review.origin!==window.location.origin||review.months!==1||review.tier!=='standard'))throw Error('This test payment is not available here.');
+ if(!test&&review.policyVersion!=='2026-10-15-v1')throw Error('Unknown rental policy.');
+ const expected=test?1n:BigInt(base)/(review.tier==='meta'?2n:1n);
  if(String(review.amountBonez)!==expected.toString()||String(review.amountAtomic)!==(expected*1000000n).toString())throw Error('Rental price did not match its plan.');
  return contributionSpec(review.address,review.amountBonez);
 }

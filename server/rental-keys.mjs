@@ -3,7 +3,7 @@ import {KEY_COLLECTION,keyTypeFromChain,waived,priceFor} from './rental-policy.m
 async function read(url){const r=await fetch(url,{cache:'no-store',redirect:'error',signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error('Key verification is temporarily unavailable. No rental payment is being requested.');return r.json();}
 export async function verifyKeyBenefit(address){
   if(Address.newFromBech32(address).toBech32()!==address)throw Error('Invalid wallet.');
-  let tier='standard',evidence=null;
+  let tier='standard',evidence=null,collection;
   for(let page=0;page<20;page++){
     const nfts=await read('https://api.multiversx.com/accounts/'+address+'/nfts?collections='+KEY_COLLECTION+'&from='+page*100+'&size=100');
     if(!Array.isArray(nfts)||nfts.length>100)throw Error('Key holdings could not be verified.');
@@ -13,7 +13,12 @@ export async function verifyKeyBenefit(address){
       if(!Number.isSafeInteger(nonce)||nonce<1||nft.nonce!==nonce)throw Error('Key nonce could not be verified.');
       const result=await read('https://gateway.multiversx.com/address/'+address+'/nft/'+KEY_COLLECTION+'/nonce/'+nonce);
       if(result.code!=='successful'||result.error)throw Error('On-chain key verification failed.');
-      const type=keyTypeFromChain(result.data?.tokenData,nft.identifier);
+      const token=result.data?.tokenData;
+      if(token?.type==='' && collection===undefined){
+        collection=await read('https://api.multiversx.com/collections/'+KEY_COLLECTION);
+        if(collection?.collection!==KEY_COLLECTION||!['NonFungibleESDT','NonFungibleESDTv2'].includes(collection.type))throw Error('The key collection must be a verified NFT collection.');
+      }
+      const type=keyTypeFromChain(token,nft.identifier,collection);
       if(type==='diamond')return {tier:'diamond',keyIdentifier:nft.identifier,verifiedAt:new Date().toISOString(),source:'mainnet balance and attributes'};
       if(type==='meta'){tier='meta';evidence=nft.identifier;}
     }

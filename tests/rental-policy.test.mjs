@@ -14,3 +14,31 @@ test('stale indexed ownership never produces an unowned key discount',async()=>{
 test('verification outages fail closed rather than assuming a price',async()=>{globalThis.fetch=async()=>new Response('unavailable',{status:503});await assert.rejects(verifyKeyBenefit(address),/unavailable/)});
 test('private booth access never discloses its personal reason or enables payment',async()=>{globalThis.fetch=()=>{throw Error('No chain call needed for existing private access')};const quote=await quoteRental({access_status:'test',owner_wallet:address},12);assert.equal(quote.amountAtomic,'0');assert.equal(quote.paymentsEnabled,false);assert(!JSON.stringify(quote).includes('Gordon'));assert(!JSON.stringify(quote).includes('OG'));});
 
+
+test('legacy blank gateway type requires exact NFT collection corroboration',async()=>{
+  const token={balance:'1',type:'',nonce:8,tokenIdentifier:'CPMK-8d8a01',attributes:attrs('Diamond')};
+  const collection={collection:'CPMK-8d8a01',type:'NonFungibleESDT'};
+  assert.throws(()=>keyTypeFromChain(token,'CPMK-8d8a01-08'));
+  assert.equal(keyTypeFromChain(token,'CPMK-8d8a01-08',collection),'diamond');
+  for(const bad of [{...collection,collection:'FAKE-123456'},{...collection,type:'SemiFungibleESDT'}])assert.throws(()=>keyTypeFromChain(token,'CPMK-8d8a01-08',bad));
+  assert.throws(()=>keyTypeFromChain({...token,type:'SemiFungibleESDT'},'CPMK-8d8a01-08',collection));
+  assert.equal(keyTypeFromChain({...token,balance:'0'},'CPMK-8d8a01-08',collection),null);
+  let calls=0;
+  globalThis.fetch=async url=>{calls++;return Response.json(String(url).includes('/accounts/')?[{identifier:'CPMK-8d8a01-08',collection:'CPMK-8d8a01',nonce:8}]:String(url).includes('/collections/')?collection:{code:'successful',error:'',data:{tokenData:token}})};
+  assert.equal((await verifyKeyBenefit(address)).tier,'diamond');assert.equal(calls,3);
+  globalThis.fetch=async url=>Response.json(String(url).includes('/accounts/')?[{identifier:'CPMK-8d8a01-08',collection:'CPMK-8d8a01',nonce:8}]:String(url).includes('/collections/')?{...collection,type:'SemiFungibleESDT'}:{code:'successful',error:'',data:{tokenData:token}});
+  await assert.rejects(verifyKeyBenefit(address),/verified NFT collection/);
+});
+
+test('one-BONEZ test policy pins wallet, preview, term and receipt amount',async()=>{
+ const {reviewPrice}=await import('../server/rental-policy.mjs');
+ const {RENTAL_TEST_POLICY,RENTAL_TEST_WALLET,RENTAL_TEST_ORIGIN}=await import('../shared/market-rental-test.mjs');
+ const q={...reviewPrice(1,'standard',RENTAL_TEST_POLICY,RENTAL_TEST_WALLET,RENTAL_TEST_ORIGIN),address:RENTAL_TEST_WALLET,origin:RENTAL_TEST_ORIGIN,expectedNonce:3,createdAt:100000,expiresAt:400000};
+ assert.equal(q.amountAtomic,'1000000');
+ for(const args of [[1,'standard',RENTAL_TEST_POLICY,address,RENTAL_TEST_ORIGIN],[1,'standard',RENTAL_TEST_POLICY,RENTAL_TEST_WALLET,'https://thepittzstop.com'],[6,'standard',RENTAL_TEST_POLICY,RENTAL_TEST_WALLET,RENTAL_TEST_ORIGIN],[1,'diamond',RENTAL_TEST_POLICY,RENTAL_TEST_WALLET,RENTAL_TEST_ORIGIN]])assert.throws(()=>reviewPrice(...args));
+ const spec=rentalSpec(q.address,q),txHash='cd'.repeat(32);
+ const tx={txHash,sender:q.address,receiver:RENTAL_RECIPIENT,status:'success',value:'0',nonce:3,timestamp:200,data:Buffer.from(spec.data).toString('base64'),logs:{events:[{identifier:'ESDTTransfer',address:q.address,topics:[Buffer.from(RENTAL_TOKEN).toString('base64'),'',Buffer.from('0f4240','hex').toString('base64'),'fpGH2htfx9GEA2SuQbFDWV3XMryOBGq7xuSq+FIGCaQ=']}]}};
+ assert.equal(verifyRentalReceipt(tx,q,txHash).amountAtomic,'1000000');
+ assert.throws(()=>verifyRentalReceipt({...tx,data:Buffer.from('ESDTTransfer@424f4e455a2d666639613733@01').toString('base64')},q,txHash));
+ assert.throws(()=>rentalSpec(q.address,{...q,amountAtomic:'1'}));
+});
