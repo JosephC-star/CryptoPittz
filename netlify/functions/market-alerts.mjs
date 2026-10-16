@@ -9,6 +9,7 @@ export async function handler(event){try{
  if(route!=='settings'&&(event.headers?.origin!==origin||!event.headers?.['content-type']?.startsWith('application/json')))fail(403,'Open email settings from your backroom.');
  const {shop}=await session(event),body=readJsonRequest(event,4096);
  if(route==='settings'){
+  if(!mailReady())return response(200,{configured:false,settings:{enabled:false}});
   const rows=await db('market_alert_contacts?shop_id=eq.'+shop.id+'&owner_wallet=eq.'+shop.owner_wallet+'&select=email,enabled,verified_at,pending_email,pending_expires_at&limit=1');
   return response(200,{configured:mailReady(),settings:rows[0]||{enabled:false}});
  }
