@@ -5,6 +5,7 @@ import { Address, Message, MessageComputer, UserVerifier } from '@multiversx/sdk
 
 const ORIGIN = 'https://deploy-preview-17--cryptopittz.netlify.app';
 const ALLOWED_ORIGINS = new Set([ORIGIN, 'https://deploy-preview-18--cryptopittz.netlify.app', 'https://thepittzstop.com', 'https://www.thepittzstop.com', 'https://cryptopittz.netlify.app']);
+if(/^https:\/\/deploy-preview-\d+--cryptopittz\.netlify\.app$/.test(process.env.DEPLOY_PRIME_URL||''))ALLOWED_ORIGINS.add(process.env.DEPLOY_PRIME_URL);
 const COOKIE = '__Host-pittz-market';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const hash = text => createHash('sha256').update(text).digest('hex');
@@ -100,7 +101,7 @@ export async function handler(event) {
   try {
     const actualOrigin = requestOrigin(event);
     const route = event.queryStringParameters?.route || 'me';
-    const allowed = { me:'GET', catalog:'GET', image:'GET', products:'GET', challenge:'POST', verify:'POST', logout:'POST', product:'POST', upload:'POST', shop:'POST', inquiry:'POST', inquiries:'GET', 'inquiry-status':'POST', 'inquiry-reference':'GET' };
+    const allowed = { me:'GET', shops:'GET', catalog:'GET', image:'GET', products:'GET', challenge:'POST', verify:'POST', logout:'POST', product:'POST', upload:'POST', shop:'POST', inquiry:'POST', inquiries:'GET', 'inquiry-status':'POST', 'inquiry-reference':'GET' };
     if (!allowed[route]) fail(404, 'Unknown merchant action.');
     if (event.httpMethod !== allowed[route]) fail(405, 'Unsupported request method.');
     if (event.httpMethod !== 'GET' && event.headers?.origin !== actualOrigin) fail(403, 'Open this action from the market.');
@@ -129,6 +130,10 @@ export async function handler(event) {
       const token = randomBytes(32).toString('hex');
       await db('market_sessions','POST',{shop_id:shop.id,wallet_address:challenge.wallet_address,token_hash:hash(actualOrigin+token),expires_at:new Date(Date.now()+7200000).toISOString()});
       return response(200,{ shop },{'Set-Cookie':cookie(token)});
+    }
+    if(route==='shops'){
+      const rows=await db('market_shops?moderation_suspended=eq.false&access_status=in.(test,active)&select=id,booth_number,name,description,access_status,rental_expires_at,moderation_suspended&order=booth_number.asc&limit=500');
+      return response(200,{shops:rows.filter(active).map(shop=>({booth_number:shop.booth_number,name:shop.name,description:shop.description}))});
     }
     if (route === 'catalog') {
       const booth = Number(event.queryStringParameters?.booth || 1);
@@ -255,4 +260,5 @@ export function imageInput(body){
   if(!type||type!==body.type)fail(400,'Choose a JPG, PNG or WebP picture.');
   return {bytes,type,extension:{'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[type]};
 }
-export { request, db, configuration, requestOrigin, hash, fail, response, now };
+export { request, db, configuration, requestOrigin, hash, fail, response, now, session };
+

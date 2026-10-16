@@ -30,7 +30,7 @@ async function preparePhoto(photo) {
   }finally{URL.revokeObjectURL(url);}
 }
 
-export default function ProductPhoto({file,onSelect,onPreparing,disabled}) {
+export default function ProductPhoto({file,onSelect,onPreparing,disabled,label="Product photo",help="Large pictures are resized automatically. Your picture uploads when you save the product."}) {
   const input=useRef(null);
   const [dragging,setDragging]=useState(false),[error,setError]=useState(''),[preparing,setPreparing]=useState(false);
   async function choose(files){
@@ -45,18 +45,19 @@ export default function ProductPhoto({file,onSelect,onPreparing,disabled}) {
     setError('');setPreparing(true);onPreparing(true);
     try{onSelect(await preparePhoto(photo));}catch(error){setError(error.message||'This picture could not be read. Try exporting a JPG copy.');}finally{setPreparing(false);onPreparing(false);}
   }
-  return <section className={'ml-photo-drop'+(dragging?' is-dragging':'')} aria-label="Product photo"
+  return <section className={'ml-photo-drop'+(dragging?' is-dragging':'')} aria-label={label}
     onDragEnter={e=>{e.preventDefault();if(!disabled&&!preparing)setDragging(true);}}
     onDragOver={e=>{e.preventDefault();e.dataTransfer.dropEffect=disabled||preparing?'none':'copy';}}
     onDragLeave={e=>{if(!e.currentTarget.contains(e.relatedTarget))setDragging(false);}}
     onDrop={e=>{e.preventDefault();choose(e.dataTransfer.files);}}>
-    <b>Product photo</b><p>Drag a picture here, or browse your photos.</p>
+    <b>{label}</b><p>Drag a picture here, or browse your photos.</p>
     <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" disabled={disabled||preparing}
-      aria-label="Choose product photo" onChange={e=>{choose(e.target.files);e.target.value='';}}/>
+      aria-label={"Choose "+label.toLowerCase()} onChange={e=>{choose(e.target.files);e.target.value='';}}/>
     <button type="button" disabled={disabled||preparing} onClick={()=>input.current?.click()}>Browse photos</button>
-    <p className="ml-photo-help">JPG, PNG or WebP · Up to 20 MB<br/>Large pictures are resized automatically. Your picture uploads when you save the product.</p>
+    <p className="ml-photo-help">JPG, PNG or WebP · Up to 20 MB<br/>{help}</p>
     {preparing&&<p role="status">Preparing your picture…</p>}
     {file&&<p role="status">Selected: {file.name}</p>}
     {error&&<p className="ml-photo-error" role="alert">{error}</p>}
   </section>;
 }
+
