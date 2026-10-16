@@ -14,3 +14,18 @@ test('stale indexed ownership never produces an unowned key discount',async()=>{
 test('verification outages fail closed rather than assuming a price',async()=>{globalThis.fetch=async()=>new Response('unavailable',{status:503});await assert.rejects(verifyKeyBenefit(address),/unavailable/)});
 test('private booth access never discloses its personal reason or enables payment',async()=>{globalThis.fetch=()=>{throw Error('No chain call needed for existing private access')};const quote=await quoteRental({access_status:'test',owner_wallet:address},12);assert.equal(quote.amountAtomic,'0');assert.equal(quote.paymentsEnabled,false);assert(!JSON.stringify(quote).includes('Gordon'));assert(!JSON.stringify(quote).includes('OG'));});
 
+
+test('legacy blank gateway type requires exact NFT collection corroboration',async()=>{
+  const token={balance:'1',type:'',nonce:8,tokenIdentifier:'CPMK-8d8a01',attributes:attrs('Diamond')};
+  const collection={collection:'CPMK-8d8a01',type:'NonFungibleESDT'};
+  assert.throws(()=>keyTypeFromChain(token,'CPMK-8d8a01-08'));
+  assert.equal(keyTypeFromChain(token,'CPMK-8d8a01-08',collection),'diamond');
+  for(const bad of [{...collection,collection:'FAKE-123456'},{...collection,type:'SemiFungibleESDT'}])assert.throws(()=>keyTypeFromChain(token,'CPMK-8d8a01-08',bad));
+  assert.throws(()=>keyTypeFromChain({...token,type:'SemiFungibleESDT'},'CPMK-8d8a01-08',collection));
+  assert.equal(keyTypeFromChain({...token,balance:'0'},'CPMK-8d8a01-08',collection),null);
+  let calls=0;
+  globalThis.fetch=async url=>{calls++;return Response.json(String(url).includes('/accounts/')?[{identifier:'CPMK-8d8a01-08',collection:'CPMK-8d8a01',nonce:8}]:String(url).includes('/collections/')?collection:{code:'successful',error:'',data:{tokenData:token}})};
+  assert.equal((await verifyKeyBenefit(address)).tier,'diamond');assert.equal(calls,3);
+  globalThis.fetch=async url=>Response.json(String(url).includes('/accounts/')?[{identifier:'CPMK-8d8a01-08',collection:'CPMK-8d8a01',nonce:8}]:String(url).includes('/collections/')?{...collection,type:'SemiFungibleESDT'}:{code:'successful',error:'',data:{tokenData:token}});
+  await assert.rejects(verifyKeyBenefit(address),/verified NFT collection/);
+});

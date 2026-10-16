@@ -11,10 +11,13 @@ export function priceFor(months,tier){
   const base=PLANS[months],amount=tier==='diamond'||tier==='waived'?0n:tier==='meta'?base/2n:base;
   return {months,tier,standardBonez:base.toString(),amountBonez:amount.toString(),amountAtomic:(amount*1000000n).toString(),discountPercent:tier==='standard'?0:tier==='meta'?50:100,token:RENTAL_TOKEN,decimals:RENTAL_DECIMALS,recipient:RENTAL_RECIPIENT,policyVersion:RENTAL_POLICY_VERSION};
 }
-export function keyTypeFromChain(token,identifier){
+export function keyTypeFromChain(token,identifier,collection){
   if(!token||!/^CPMK-8d8a01-(?:[0-9a-f]{2})+$/.test(identifier)||typeof token.balance!=='string'||!/^\d+$/.test(token.balance)||BigInt(token.balance)===0n)return null;
   if(![KEY_COLLECTION,identifier].includes(token.tokenIdentifier)||typeof token.attributes!=='string')throw Error('Key token data could not be verified.');
-  if(!['NonFungibleESDT','NonFungibleESDTv2'].includes(token.type))throw Error('The key must be a verified NFT.');
+  // Legacy gateway NFT records can have an empty type. Only corroborated
+  // metadata for this exact collection may supply the missing type.
+  const type=token.type===''&&collection?.collection===KEY_COLLECTION?collection.type:token.type;
+  if(!['NonFungibleESDT','NonFungibleESDTv2'].includes(type))throw Error('The key must be a verified NFT.');
   const nonce=Number.parseInt(identifier.slice(KEY_COLLECTION.length+1),16);
   if(token.nonce!==undefined&&token.nonce!==nonce)throw Error('Key nonce did not match the verified token.');
   const raw=Buffer.from(token.attributes,'base64');
