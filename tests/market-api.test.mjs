@@ -62,3 +62,30 @@ test('moderation requires a reason and uses the authenticated admin rather than 
 test('admin-hidden products stay hidden when merchants publish or submit moderation fields',async()=>{setup();await adminLogin();tables.market_products.push({id:foreignId,shop_id:shopId,status:'published',name:'Item',moderation_hidden:false});await adminCall('moderate',{kind:'product',id:foreignId,action:'hide',reason:'Offensive artwork'});assert.equal(JSON.parse((await call('catalog')).body).products.length,0);await login();const result=await call('product',{id:foreignId,name:'Revised item',price:'1',currency:'USD',quantity:1,made_to_order:false,status:'published',moderation_hidden:false,moderation_reason:'Cleared'});assert.equal(result.statusCode,200,result.body);assert.equal(tables.market_products[0].moderation_hidden,true);assert.equal(JSON.parse((await call('catalog')).body).products.length,0);assert.equal((await call('inquiry',{...inquiry(),product_id:foreignId},inquiryHeaders)).statusCode,404);});
 test('suspension blocks public catalog, inquiries and existing merchant editing sessions',async()=>{setup();await login();const merchantCookie=cookie;await adminLogin();await adminCall('moderate',{kind:'shop',id:shopId,action:'suspend',reason:'Offensive storefront content'});assert.equal((await call('catalog')).statusCode,404);assert.equal((await call('inquiry',inquiry(),inquiryHeaders)).statusCode,404);const adminCookie=cookie;cookie=merchantCookie;assert.equal((await call('products')).statusCode,403);assert.equal((await call('challenge',{address})).statusCode,403);cookie=adminCookie;await adminCall('moderate',{kind:'shop',id:shopId,action:'reopen',reason:'Storefront content reviewed and corrected'});assert.equal((await call('catalog')).statusCode,200);assert.equal(tables.market_shops[0].access_status,'test');assert.equal(tables.market_moderation_log.length,2);});
 test('revoking an admin disables their existing session immediately',async()=>{setup();await adminLogin();tables.market_admins[0].active=false;assert.equal((await adminCall('shops')).statusCode,403);assert.equal((await adminCall('audit')).statusCode,403);assert.equal((await adminCall('moderate',{kind:'shop',id:shopId,action:'suspend',reason:'Valid reason'})).statusCode,403);});
+
+test('transport-encoded merchant challenge and signature verification complete the login',async()=>{
+ setup();
+ const payload={address};
+ const challengeResponse=await call('challenge',payload,{event:{isBase64Encoded:true,body:Buffer.from(JSON.stringify(payload)).toString('base64')}});
+ assert.equal(challengeResponse.statusCode,200,challengeResponse.body);
+ const challenge=JSON.parse(challengeResponse.body);
+ const signature=Buffer.from(await signer.sign(new MessageComputer().computeBytesForSigning(new Message({data:Buffer.from(challenge.message)})))).toString('hex');
+ const proof={...challenge,signature};
+ const verified=await call('verify',proof,{event:{isBase64Encoded:true,body:Buffer.from(JSON.stringify(proof)).toString('base64')}});
+ assert.equal(verified.statusCode,200,verified.body);
+ cookie=verified.headers['Set-Cookie'].split(';')[0];
+ assert.equal((await call('products',undefined,{event:{isBase64Encoded:true}})).statusCode,200);
+});
+test('transport-encoded admin login succeeds while unassigned access stays blocked',async()=>{
+ setup();tables.market_admins.push({wallet_address:address,display_name:'Test Admin',active:true});
+ const payload={address};
+ const c=await adminCall('challenge',payload,{event:{isBase64Encoded:true,body:Buffer.from(JSON.stringify(payload)).toString('base64')}});
+ assert.equal(c.statusCode,200,c.body);
+ const challenge=JSON.parse(c.body);
+ const signature=Buffer.from(await signer.sign(new MessageComputer().computeBytesForSigning(new Message({data:Buffer.from(challenge.message)})))).toString('hex');
+ const proof={...challenge,signature};
+ const result=await adminCall('verify',proof,{event:{isBase64Encoded:true,body:Buffer.from(JSON.stringify(proof)).toString('base64')}});
+ assert.equal(result.statusCode,200,result.body);
+ cookie=result.headers['Set-Cookie'].split(';')[0];
+ assert.equal((await adminCall('shops',undefined,{event:{isBase64Encoded:true}})).statusCode,200);
+});

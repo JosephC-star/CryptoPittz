@@ -1,3 +1,4 @@
+import {readJsonRequest} from '../../server/json-request.mjs';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { isIP } from 'node:net';
 import { Address, Message, MessageComputer, UserVerifier } from '@multiversx/sdk-core';
@@ -103,10 +104,9 @@ export async function handler(event) {
     if (!allowed[route]) fail(404, 'Unknown merchant action.');
     if (event.httpMethod !== allowed[route]) fail(405, 'Unsupported request method.');
     if (event.httpMethod !== 'GET' && event.headers?.origin !== actualOrigin) fail(403, 'Open this action from the market.');
-    if (event.isBase64Encoded || (event.body && Buffer.byteLength(event.body) > 2900000)) fail(413, 'The request is too large. Use an image under 2 MB.');
     if (event.httpMethod !== 'GET' && !event.headers?.['content-type']?.startsWith('application/json')) fail(415, 'JSON required.');
-    let body = {}; try { if (event.body) body = JSON.parse(event.body); } catch { fail(400, 'Invalid request.'); }
-    if (!body || Array.isArray(body) || typeof body !== 'object') fail(400, 'Invalid request.');
+    const largeUpload = ['upload','inquiry'].includes(route);
+    const body = readJsonRequest(event, largeUpload ? 2900000 : 32768, largeUpload ? 'The request is too large. Use an image under 2 MB.' : 'This request is too large. Please shorten the text and try again.');
 
     if (route === 'challenge') {
       const address = wallet(body.address); await ownerShop(address);
