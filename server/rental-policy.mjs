@@ -1,3 +1,4 @@
+import {RENTAL_TEST_POLICY,rentalTestAllowed} from '../shared/market-rental-test.mjs';
 export const RENTAL_POLICY_VERSION='2026-10-15-v1';
 export const RENTAL_TOKEN='BONEZ-ff9a73';
 export const RENTAL_DECIMALS=6;
@@ -10,6 +11,11 @@ export function priceFor(months,tier){
   if(![1,6,12].includes(months)||!['standard','meta','diamond','waived'].includes(tier))throw Error('Invalid rental plan.');
   const base=PLANS[months],amount=tier==='diamond'||tier==='waived'?0n:tier==='meta'?base/2n:base;
   return {months,tier,standardBonez:base.toString(),amountBonez:amount.toString(),amountAtomic:(amount*1000000n).toString(),discountPercent:tier==='standard'?0:tier==='meta'?50:100,token:RENTAL_TOKEN,decimals:RENTAL_DECIMALS,recipient:RENTAL_RECIPIENT,policyVersion:RENTAL_POLICY_VERSION};
+}
+export function reviewPrice(months,tier,policyVersion,address,origin){
+  if(policyVersion===RENTAL_POLICY_VERSION)return priceFor(months,tier);
+  if(policyVersion!==RENTAL_TEST_POLICY||!rentalTestAllowed(address,origin)||months!==1||tier!=='standard')throw Error('Rental test policy could not be verified.');
+  return {...priceFor(1,'standard'),amountBonez:'1',amountAtomic:'1000000',discountPercent:0,policyVersion:RENTAL_TEST_POLICY,testPayment:true};
 }
 export function keyTypeFromChain(token,identifier,collection){
   if(!token||!/^CPMK-8d8a01-(?:[0-9a-f]{2})+$/.test(identifier)||typeof token.balance!=='string'||!/^\d+$/.test(token.balance)||BigInt(token.balance)===0n)return null;
@@ -28,7 +34,7 @@ export function keyTypeFromChain(token,identifier,collection){
 }
 export function rentalSpec(address,quote){
   if(!/^erd1[0-9a-z]{58}$/.test(address)||address===RENTAL_RECIPIENT||quote.recipient!==RENTAL_RECIPIENT||quote.token!==RENTAL_TOKEN)throw Error('Rental payment destination could not be verified.');
-  const expected=priceFor(quote.months,quote.tier);
+  const expected=reviewPrice(quote.months,quote.tier,quote.policyVersion||RENTAL_POLICY_VERSION,address,quote.origin);
   if(expected.amountAtomic!==quote.amountAtomic||BigInt(expected.amountAtomic)<=0n)throw Error('This quote does not require a valid paid transfer.');
   let hex=BigInt(expected.amountAtomic).toString(16);if(hex.length%2)hex='0'+hex;
   return {sender:address,receiver:RENTAL_RECIPIENT,value:'0',data:'ESDTTransfer@424f4e455a2d666639613733@'+hex,gasLimit:500000,gasPrice:1000000000,chainID:'1',version:2};

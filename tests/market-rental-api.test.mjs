@@ -19,7 +19,7 @@ function setup(){
   }
   assert.equal(options.headers.apikey,'sb_secret_test');
   if(u.pathname.endsWith('/rpc/market_create_rental')){const existing=tables.market_rental_intents.find(r=>r.wallet_address===data.review_data.wallet_address&&['review','submitted'].includes(r.state));if(existing)return Response.json(existing);const row={...data.review_data,created_at:new Date().toISOString(),terms_accepted_at:new Date().toISOString(),state:'review',tx_hash:null};tables.market_rental_intents.push(row);return Response.json(row);}
-  if(u.pathname.endsWith('/rpc/market_activate_rental')){const intent=tables.market_rental_intents.find(r=>r.id===data.intent_key);assert.equal(intent.tx_hash,data.receipt_hash);intent.state='activated';intent.shop_id=randomUUID();const shop={id:intent.shop_id,booth_number:2,owner_wallet:address,name:intent.shop_name};tables.market_shops.push(shop);return Response.json(shop);}
+  if(u.pathname.endsWith('/rpc/market_activate_rental')){const intent=tables.market_rental_intents.find(r=>r.id===data.intent_key);assert.equal(intent.tx_hash,data.receipt_hash);intent.state='activated';intent.shop_id=randomUUID();const shop={id:intent.shop_id,booth_number:2,owner_wallet:intent.wallet_address,name:intent.shop_name};tables.market_shops.push(shop);return Response.json(shop);}
   const table=u.pathname.split('/').at(-1);assert(tables[table],table);const rows=tables[table].filter(row=>match(row,u.searchParams));
   if(method==='GET')return Response.json(rows.slice(0,Number(u.searchParams.get('limit')||100)));
   if(method==='POST'){tables[table].push({id:randomUUID(),created_at:new Date().toISOString(),...data});return Response.json(null);}
@@ -43,3 +43,24 @@ test('choosing the standard rate cannot accidentally charge a private existing a
 test('only a matching successful mainnet receipt reaches activation',async()=>{setup();await login();const intent=JSON.parse((await call('quote',{name:'Shop',months:1})).body).intent,txHash='a'.repeat(64);await call('reserve',{id:intent.id,txHash});const spec=rentalSpec(address,intent);let hex=BigInt(intent.amountAtomic).toString(16);if(hex.length%2)hex='0'+hex;tx={txHash,sender:address,receiver:RENTAL_RECIPIENT,status:'success',value:'0',nonce:0,timestamp:Math.floor(Date.now()/1000),data:Buffer.from(spec.data).toString('base64'),logs:{events:[{identifier:'ESDTTransfer',address,topics:[Buffer.from(RENTAL_TOKEN).toString('base64'),'',Buffer.from(hex,'hex').toString('base64'),'fpGH2htfx9GEA2SuQbFDWV3XMryOBGq7xuSq+FIGCaQ=']}]}};const result=await call('confirm',{id:intent.id});assert.equal(result.statusCode,200,result.body);assert.equal(JSON.parse(result.body).booth,2);assert.equal(tables.market_shops.length,1);assert.equal((await call('confirm',{id:intent.id})).statusCode,200);assert.equal(tables.market_shops.length,1);});
 
 test('rental terms require an explicit current acknowledgement',async()=>{setup();await login();for(const patch of [{acceptTerms:false},{termsVersion:'old'}]){const r=await call('quote',{name:'Shop',months:1,...patch});assert.equal(r.statusCode,400);assert.equal(tables.market_rental_intents.length,0);}});
+
+test('test price cannot be requested by another wallet or on production',async()=>{
+ setup();await login();assert.equal((await call('quote',{name:'Test',months:1,testPayment:true})).statusCode,403);
+ const {RENTAL_TEST_WALLET,RENTAL_TEST_ORIGIN}=await import('../shared/market-rental-test.mjs');
+ const {hash}=await import('../netlify/functions/market-api.mjs');
+ async function asJoe(at){const token='cd'.repeat(32);cookie='__Host-pittz-rental='+token;tables.market_rental_sessions.push({id:randomUUID(),wallet_address:RENTAL_TEST_WALLET,origin:at,token_hash:hash(at+token),expires_at:new Date(Date.now()+60000).toISOString(),revoked_at:null});}
+ await asJoe(origin);assert.equal((await call('quote',{name:'Test',months:1,testPayment:true})).statusCode,403);
+ await asJoe(RENTAL_TEST_ORIGIN);
+ const extra={rawUrl:RENTAL_TEST_ORIGIN+'/.netlify/functions/market-rental',headers:{origin:RENTAL_TEST_ORIGIN,'content-type':'application/json',cookie}};
+ assert.equal((await call('quote',{name:'Test',months:6,testPayment:true},extra)).statusCode,403);
+ const result=await call('quote',{name:'Test',months:1,testPayment:true,amountAtomic:'1'},extra);assert.equal(result.statusCode,200,result.body);
+ const review=JSON.parse(result.body).intent;assert.equal(review.amountBonez,'1');assert.equal(review.amountAtomic,'1000000');assert.equal(review.testPayment,true);
+ assert.equal((await call('reserve',{id:review.id,txHash:'ef'.repeat(32)},extra)).statusCode,200);
+ assert.equal(tables.market_rental_intents.at(-1).state,'submitted');
+ const spec=rentalSpec(RENTAL_TEST_WALLET,review);
+ tx={txHash:'ef'.repeat(32),sender:RENTAL_TEST_WALLET,receiver:RENTAL_RECIPIENT,status:'success',value:'0',nonce:0,timestamp:Math.floor(Date.now()/1000),data:Buffer.from(spec.data).toString('base64'),logs:{events:[{identifier:'ESDTTransfer',address:RENTAL_TEST_WALLET,topics:[Buffer.from(RENTAL_TOKEN).toString('base64'),'',Buffer.from('0f4240','hex').toString('base64'),'fpGH2htfx9GEA2SuQbFDWV3XMryOBGq7xuSq+FIGCaQ=']}]}};
+ assert.equal((await call('confirm',{id:review.id},extra)).statusCode,200);
+ assert.equal(tables.market_shops.length,1);assert.equal(tables.market_shops[0].owner_wallet,RENTAL_TEST_WALLET);
+ assert.equal((await call('confirm',{id:review.id},extra)).statusCode,200);assert.equal(tables.market_shops.length,1);
+
+});

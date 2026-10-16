@@ -1,9 +1,10 @@
+import {RENTAL_TEST_POLICY,rentalTestAllowed} from '../../shared/market-rental-test.mjs';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {db,requestOrigin,response,fail,hash,wallet,validSignature} from './market-api.mjs';
 import {readJsonRequest} from '../../server/json-request.mjs';
 import {RENTAL_TERMS_VERSION} from '../../shared/market-rental-terms.mjs';
 import {verifyKeyBenefit} from '../../server/rental-keys.mjs';
-import {priceFor,waived,rentalSpec,verifyRentalReceipt,RENTAL_POLICY_VERSION,RENTAL_TOKEN,RENTAL_RECIPIENT} from '../../server/rental-policy.mjs';
+import {priceFor,reviewPrice,waived,rentalSpec,verifyRentalReceipt,RENTAL_POLICY_VERSION,RENTAL_TOKEN,RENTAL_RECIPIENT} from '../../server/rental-policy.mjs';
 const COOKIE='__Host-pittz-rental',UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const enabled=()=>process.env.MARKET_RENTALS_ENABLED==='true',benefitsEnabled=()=>process.env.MARKET_KEY_BENEFITS_ENABLED==='true';
 const cookie=(token,age=3600)=>COOKIE+'='+token+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age='+age;
@@ -16,12 +17,13 @@ async function identity(event,origin){
  if(!rows.length)fail(401,'Rental session expired. Verify your wallet again.');return rows[0];
 }
 async function owner(address){const rows=await db('market_shops?owner_wallet=eq.'+address+'&select=*&limit=1');const shop=rows[0]||null;if(shop?.moderation_suspended||shop?.access_status==='suspended')fail(403,'This shop is suspended. Contact an administrator.');return shop;}
-function publicIntent(r){const quote=priceFor(r.months,r.tier);if(quote.amountAtomic!==String(r.amount_atomic)||r.policy_version!==RENTAL_POLICY_VERSION)fail(409,'Rental policy changed. Contact an administrator before paying.');return {id:r.id,address:r.wallet_address,shopName:r.shop_name,...quote,expectedNonce:String(r.expected_nonce),createdAt:Date.parse(r.created_at),expiresAt:Date.parse(r.expires_at),state:r.state,txHash:r.tx_hash,shopId:r.shop_id,keyIdentifier:r.key_identifier,termsAccepted:r.terms_version===RENTAL_TERMS_VERSION&&!!r.terms_accepted_at,canPay:r.terms_version===RENTAL_TERMS_VERSION&&!!r.terms_accepted_at&&enabled()&&(r.tier==='standard'||r.tier==='waived'||benefitsEnabled())};}
+function publicIntent(r){const quote=reviewPrice(r.months,r.tier,r.policy_version,r.wallet_address,r.origin);if(quote.amountAtomic!==String(r.amount_atomic))fail(409,'Rental policy changed. Contact an administrator before paying.');return {id:r.id,address:r.wallet_address,origin:r.origin,shopName:r.shop_name,...quote,expectedNonce:String(r.expected_nonce),createdAt:Date.parse(r.created_at),expiresAt:Date.parse(r.expires_at),state:r.state,txHash:r.tx_hash,shopId:r.shop_id,keyIdentifier:r.key_identifier,termsAccepted:r.terms_version===RENTAL_TERMS_VERSION&&!!r.terms_accepted_at,canPay:r.terms_version===RENTAL_TERMS_VERSION&&!!r.terms_accepted_at&&enabled()&&(r.tier==='standard'||r.tier==='waived'||benefitsEnabled())};}
 async function loadIntent(id,address){if(!UUID.test(id||''))fail(400,'Invalid rental review.');const rows=await db('market_rental_intents?id=eq.'+id+'&wallet_address=eq.'+address+'&select=*&limit=1');if(!rows.length)fail(404,'Rental review not found.');return rows[0];}
 async function currentBenefit(shop,address){return waived(shop)?{tier:'waived'}:verifyKeyBenefit(address);}
 async function recheck(r,shop){
  if(r.terms_version!==RENTAL_TERMS_VERSION||!r.terms_accepted_at)fail(409,'Accept the current rental terms in a new review before activating or paying. Cancel this review first.');
  if(r.state!=='review'||Date.parse(r.expires_at)<=Date.now())fail(409,'This rental review expired or was submitted. Check its receipt before starting another.');
+ if(r.policy_version===RENTAL_TEST_POLICY){if(!rentalTestAllowed(r.wallet_address,r.origin)||waived(shop))fail(403,'This test payment is unavailable.');return;}
  const benefit=waived(shop)?{tier:'waived'}:r.use_standard_rate?{tier:'standard'}:await currentBenefit(shop,r.wallet_address);
  if(benefit.tier!==r.tier||priceFor(r.months,benefit.tier).amountAtomic!==String(r.amount_atomic))fail(409,'Key eligibility changed. Cancel this review and check your current rate.');
  if(!publicIntent(r).canPay)fail(409,'Key benefits are still being finalized. No payment will be requested.');
@@ -51,18 +53,21 @@ export async function handler(event){try{
  const auth=await identity(event,origin),address=auth.wallet_address,shop=await owner(address);
  if(route==='logout'){await db('market_rental_sessions?id=eq.'+auth.id,'PATCH',{revoked_at:new Date().toISOString()});return response(200,{signedOut:true},{'Set-Cookie':cookie('',0)});}
  if(route==='me'){
-  const rows=await db('market_rental_intents?wallet_address=eq.'+address+'&state=in.(review,submitted,activated)&order=created_at.desc&limit=1');return response(200,{address,shop:shop?{name:shop.name,booth_number:shop.booth_number,rental_expires_at:shop.rental_expires_at}:null,intent:rows.length?publicIntent(rows[0]):null});
+  const rows=await db('market_rental_intents?wallet_address=eq.'+address+'&state=in.(review,submitted,activated)&order=created_at.desc&limit=1');return response(200,{address,shop:shop?{name:shop.name,booth_number:shop.booth_number,rental_expires_at:shop.rental_expires_at}:null,testPaymentAvailable:rentalTestAllowed(address,origin)&&!waived(shop),intent:rows.length?publicIntent(rows[0]):null});
  }
  if(route==='quote'){
   if(body.acceptTerms!==true||body.termsVersion!==RENTAL_TERMS_VERSION)fail(400,'Acknowledge the final-duration, no-refund and no-proration rental terms before continuing.');
   const months=Number(body.months);if(![1,6,12].includes(months))fail(400,'Choose one, six or twelve months.');
   const name=shop?.name||(typeof body.name==='string'?body.name.trim():'');if(!name||name.length>120)fail(400,'Enter a shop name up to 120 characters.');
-  const benefit=waived(shop)?{tier:"waived"}:body.useStandardRate===true?{tier:"standard"}:await currentBenefit(shop,address),price=priceFor(months,benefit.tier),account=await chain('accounts/'+address);
+  const testPayment=body.testPayment===true;
+  if(testPayment&&(!rentalTestAllowed(address,origin)||months!==1||waived(shop)))fail(403,'The 1-BONEZ test is available only to the designated wallet on preview 28 for one month.');
+  const benefit=waived(shop)?{tier:"waived"}:testPayment||body.useStandardRate===true?{tier:"standard"}:await currentBenefit(shop,address),price=reviewPrice(months,benefit.tier,testPayment?RENTAL_TEST_POLICY:RENTAL_POLICY_VERSION,address,origin),account=await chain('accounts/'+address);
   if(!Number.isSafeInteger(account.nonce)||account.nonce<0)fail(503,'Wallet nonce could not be verified.');
-  const r=await db('rpc/market_create_rental','POST',{review_data:{id:randomUUID(),wallet_address:address,origin,months,tier:benefit.tier,amount_atomic:price.amountAtomic,expected_nonce:String(account.nonce),policy_version:RENTAL_POLICY_VERSION,terms_version:RENTAL_TERMS_VERSION,key_identifier:benefit.keyIdentifier||null,use_standard_rate:body.useStandardRate===true,shop_name:name,expires_at:new Date(Date.now()+600000).toISOString()}});
+  const r=await db('rpc/market_create_rental','POST',{review_data:{id:randomUUID(),wallet_address:address,origin,months,tier:benefit.tier,amount_atomic:price.amountAtomic,expected_nonce:String(account.nonce),policy_version:price.policyVersion,terms_version:RENTAL_TERMS_VERSION,key_identifier:benefit.keyIdentifier||null,use_standard_rate:testPayment||body.useStandardRate===true,shop_name:name,expires_at:new Date(Date.now()+600000).toISOString()}});
   return response(200,{intent:publicIntent(r)});
  }
  const r=await loadIntent(body.id,address),review=publicIntent(r);
+ if(r.policy_version===RENTAL_TEST_POLICY&&r.origin!==origin)fail(403,'Open this test review in its original preview.');
  if(route==='cancel'){
   if(r.state!=='review')fail(409,'Submitted payments cannot be cancelled. Check the saved transaction receipt.');
   const rows=await db('market_rental_intents?id=eq.'+r.id+'&state=eq.review','PATCH',{state:'cancelled'},{Prefer:'return=representation'});if(rows.length!==1)fail(409,'Rental review changed. Refresh.');return response(200,{cancelled:true});

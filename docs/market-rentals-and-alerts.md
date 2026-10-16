@@ -57,3 +57,10 @@ If submission becomes uncertain, do not pay again. Check the saved Explorer hash
 Validation: Node policy/auth/receipt tests; SQL integration checks in PGlite for private permissions, email code limits, outbox leases, duplicate activations, booth allocation, renewal, suspension and UTC clamping; Netlify app build. To rerun SQL checks, install `@electric-sql/pglite` in a separate temporary development directory and run `MARKET_PGLITE_MODULE=/absolute/path/to/pglite/dist/index.js node scripts/test-market-database.mjs` from the repo root. No production dependency is needed.
 
 Sources: https://resend.com/docs/api-reference/emails/send-email ; https://resend.com/docs/dashboard/emails/idempotency-keys ; https://docs.netlify.com/build/functions/scheduled-functions/
+
+
+### Restricted 1-BONEZ integration test
+
+Preview 28 offers an explicit real-payment test only after authenticating Joe's designated wallet (`shared/market-rental-test.mjs`). It is not a public discount. The server enforces the exact wallet, exact preview origin, one-month standard tier, distinct persisted policy version, and 1,000,000 atomic BONEZ amount. Regular rates and key benefit flags are unchanged; no SQL or environment update is required. Other wallets and production requests cannot create these test quotes. The frontend independently validates the same restriction before signing. Submitted tests use the existing saved-hash and exact mainnet receipt verification, including after reload.
+
+The preview shares the production database. A successful test creates or extends a real shop for one month and sends 1 BONEZ to Pittensor, plus an EGLD network fee. Use Hide store afterward if the booth is only for testing; retain the receipt and rental history. Cancel any unsubmitted existing review before requesting the test price. Never retry a submitted payment; check the saved receipt. This temporary test path should be removed after verification. Diamond no-charge activation remains subject to MARKET_KEY_BENEFITS_ENABLED.

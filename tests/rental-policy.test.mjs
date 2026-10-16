@@ -29,3 +29,16 @@ test('legacy blank gateway type requires exact NFT collection corroboration',asy
   globalThis.fetch=async url=>Response.json(String(url).includes('/accounts/')?[{identifier:'CPMK-8d8a01-08',collection:'CPMK-8d8a01',nonce:8}]:String(url).includes('/collections/')?{...collection,type:'SemiFungibleESDT'}:{code:'successful',error:'',data:{tokenData:token}});
   await assert.rejects(verifyKeyBenefit(address),/verified NFT collection/);
 });
+
+test('one-BONEZ test policy pins wallet, preview, term and receipt amount',async()=>{
+ const {reviewPrice}=await import('../server/rental-policy.mjs');
+ const {RENTAL_TEST_POLICY,RENTAL_TEST_WALLET,RENTAL_TEST_ORIGIN}=await import('../shared/market-rental-test.mjs');
+ const q={...reviewPrice(1,'standard',RENTAL_TEST_POLICY,RENTAL_TEST_WALLET,RENTAL_TEST_ORIGIN),address:RENTAL_TEST_WALLET,origin:RENTAL_TEST_ORIGIN,expectedNonce:3,createdAt:100000,expiresAt:400000};
+ assert.equal(q.amountAtomic,'1000000');
+ for(const args of [[1,'standard',RENTAL_TEST_POLICY,address,RENTAL_TEST_ORIGIN],[1,'standard',RENTAL_TEST_POLICY,RENTAL_TEST_WALLET,'https://thepittzstop.com'],[6,'standard',RENTAL_TEST_POLICY,RENTAL_TEST_WALLET,RENTAL_TEST_ORIGIN],[1,'diamond',RENTAL_TEST_POLICY,RENTAL_TEST_WALLET,RENTAL_TEST_ORIGIN]])assert.throws(()=>reviewPrice(...args));
+ const spec=rentalSpec(q.address,q),txHash='cd'.repeat(32);
+ const tx={txHash,sender:q.address,receiver:RENTAL_RECIPIENT,status:'success',value:'0',nonce:3,timestamp:200,data:Buffer.from(spec.data).toString('base64'),logs:{events:[{identifier:'ESDTTransfer',address:q.address,topics:[Buffer.from(RENTAL_TOKEN).toString('base64'),'',Buffer.from('0f4240','hex').toString('base64'),'fpGH2htfx9GEA2SuQbFDWV3XMryOBGq7xuSq+FIGCaQ=']}]}};
+ assert.equal(verifyRentalReceipt(tx,q,txHash).amountAtomic,'1000000');
+ assert.throws(()=>verifyRentalReceipt({...tx,data:Buffer.from('ESDTTransfer@424f4e455a2d666639613733@01').toString('base64')},q,txHash));
+ assert.throws(()=>rentalSpec(q.address,{...q,amountAtomic:'1'}));
+});
