@@ -6,6 +6,7 @@ import { EnvironmentsEnum } from "@multiversx/sdk-dapp/out/types/enums.types";
 
 import "./index.css";
 const App = lazy(() => import("./App.jsx"));
+const MarketAdmin = lazy(() => import("./features/merchant/MarketAdmin.jsx"));
 const MerchantStudio = lazy(() => import("./features/merchant/MerchantStudio.jsx"));
 const BonezSwap = lazy(() => import("./features/bonez-swap/BonezSwap.jsx"));
 
@@ -19,7 +20,7 @@ const config = {
   },
 
   dAppConfig: {
-    environment: (["/bonez-swap", "/financial-district", "/pittensor", "/merchant-access"].includes(pagePath) || (import.meta.env.VITE_OOX_TRANSACTIONS === "true" && import.meta.env.VITE_OOX_PREVIEW === "true")) ? EnvironmentsEnum.mainnet : EnvironmentsEnum.devnet,
+    environment: (["/bonez-swap", "/financial-district", "/pittensor", "/merchant-access", "/market-admin"].includes(pagePath) || (import.meta.env.VITE_OOX_TRANSACTIONS === "true" && import.meta.env.VITE_OOX_PREVIEW === "true")) ? EnvironmentsEnum.mainnet : EnvironmentsEnum.devnet,
 
     providers: {
       walletConnect: {
@@ -43,7 +44,7 @@ initApp(config)
     createRoot(document.getElementById("root")).render(
       <StrictMode>
         <Suspense fallback={<p style={{padding:"24px",color:"#e9c77a"}}>Loading PittzStop…</p>}>
-          {pagePath === "/merchant-access" ? <MerchantStudio /> : pagePath === "/pittensor" ? <Pittensor /> : pagePath === "/financial-district" ? <FinancialDistrict /> : pagePath === "/bonez-swap" ? <BonezSwap /> : <App />}
+          {pagePath === "/market-admin" ? <MarketAdmin /> : pagePath === "/merchant-access" ? <MerchantStudio /> : pagePath === "/pittensor" ? <Pittensor /> : pagePath === "/financial-district" ? <FinancialDistrict /> : pagePath === "/bonez-swap" ? <BonezSwap /> : <App />}
         </Suspense>
       </StrictMode>,
     );
@@ -51,3 +52,4 @@ initApp(config)
   .catch((error) => {
     console.error("MultiversX initialization failed:", error);
   });
+

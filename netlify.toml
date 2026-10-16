@@ -66,3 +66,16 @@
   to = "/index.html"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/market-admin"
+  to = "/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/market-admin/"
+  to = "/index.html"
+  status = 200
+  force = true
+
