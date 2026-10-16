@@ -24,6 +24,10 @@ Each merchant signs in, opens Shop details, enters their alert email, and verifi
 
 The `market-alert-dispatch` scheduled function runs once per minute on production. A failed delivery does not remove the inquiry. Jobs use atomic leases and provider idempotency keys, with retries limited to 20 hours (within the provider's 24-hour idempotency window). Alerts accepted by the provider are not a guarantee of inbox delivery; inspect provider delivery/bounce logs if mail is missing. There is no delivery-webhook UI in this version. Existing inquiries are not emailed retroactively.
 
+## Rental terms
+
+Renters must explicitly acknowledge the versioned policy before creating a payable review. Once activated, booth rentals are non-refundable; there are no prorated months, partial refunds or credits for unused time. The selected duration is final whether used or not. The backend records the accepted terms version and timestamp and rejects activation or payment reservation without them. Key verification never transfers, spends, burns or locks a key. Granted rental terms are honored after a later key transfer; current ownership is checked at renewal.
+
 ## Rental setup and tests
 
 `/market-rent` is a separate wallet-verified enrollment/renewal page. It does not grant merchant editing rights until a reviewed term is activated. Keys are optional. Standard upfront totals are 60,000 BONEZ / one month, 330,000 / six months, and 600,000 / twelve months. BONEZ-ff9a73 has six decimals. Paid transfers go only to the existing Pittensor burn-pile wallet; this is not an on-chain burn itself.
@@ -45,9 +49,9 @@ If submission becomes uncertain, do not pay again. Check the saved Explorer hash
 
 ## Decisions and remaining hands-on checks
 
-- Final key benefits, including whether free Diamond access continues after the key is transferred. Do not enable the benefit switch until that policy is settled; the current proposal grants a reviewed prepaid term and does not revoke already-granted time on a later transfer.
+- Final key benefit amounts/tiers. Granted time remains valid after a later key transfer, with ownership rechecked at renewal; the key itself always stays in its holder’s wallet.
 - Whether staked/delegated keys qualify. Current verification only supports wallet-held keys with actual mainnet balances and on-chain Type attributes in CPMK-8d8a01; display names/art cannot establish a tier.
-- Merchant/customer terms, acceptable listings, fulfillment, cancellations/refunds and a support contact.
+- Acceptable listings, fulfillment, product-purchase terms and a support contact. The no-refund/no-proration rule above applies to booth rentals.
 - Real mailbox verification and delivery; deliberate wallet payment/renewal test; mobile and guarded-wallet hands-on tests. These cannot be established by mocked tests or a successful build.
 
 Validation: Node policy/auth/receipt tests; SQL integration checks in PGlite for private permissions, email code limits, outbox leases, duplicate activations, booth allocation, renewal, suspension and UTC clamping; Netlify app build. To rerun SQL checks, install `@electric-sql/pglite` in a separate temporary development directory and run `MARKET_PGLITE_MODULE=/absolute/path/to/pglite/dist/index.js node scripts/test-market-database.mjs` from the repo root. No production dependency is needed.

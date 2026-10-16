@@ -18,12 +18,12 @@ try{
  const jobs=await q('select * from market_claim_alerts()');assert.equal(jobs.length,1);assert.equal((await q('select * from market_claim_alerts()')).length,0);checks++;
  await q("update market_alert_jobs set lease_until=now()-interval '1 minute'");assert.equal((await q('select * from market_claim_alerts()')).length,1);checks++;
  await q("update market_alert_jobs set created_at=now()-interval '21 hours',lease_until=now()-interval '1 minute'");assert.equal((await q('select * from market_claim_alerts()')).length,0);assert.equal((await q('select state from market_alert_jobs'))[0].state,'failed');checks++;
- const create=async(address,id=crypto.randomUUID(),months=1)=>{const data={id,wallet_address:address,origin:'https://thepittzstop.com',months,tier:'standard',amount_atomic:months===6?'330000000000':'60000000000',expected_nonce:'0',policy_version:'2026-10-15-v1',shop_name:'New merchant',expires_at:new Date(Date.now()+600000).toISOString()};return (await q('select * from market_create_rental($1::jsonb)',[JSON.stringify(data)]))[0];};
+ const create=async(address,id=crypto.randomUUID(),months=1)=>{const data={id,wallet_address:address,origin:'https://thepittzstop.com',months,tier:'standard',amount_atomic:months===6?'330000000000':'60000000000',expected_nonce:'0',policy_version:'2026-10-15-v1',terms_version:'2026-10-16-v1',shop_name:'New merchant',expires_at:new Date(Date.now()+600000).toISOString()};return (await q('select * from market_create_rental($1::jsonb)',[JSON.stringify(data)]))[0];};
  const r=await create(other);assert.equal((await create(other)).id,r.id);checks++;
  await assert.rejects(q('select * from market_activate_rental($1,$2,$3)',[r.id,other,'a'.repeat(64)]),/Receipt not reserved/);checks++;
  await q("update market_rental_intents set state='submitted',tx_hash=$2 where id=$1",[r.id,'a'.repeat(64)]);
  const activate=async(r,address,hash)=>(await q('select * from market_activate_rental($1,$2,$3)',[r.id,address,hash]))[0];
- const store=await activate(r,other,'a'.repeat(64));assert.equal(store.booth_number,2);assert.equal(store.access_status,'active');checks++;
+ const store=await activate(r,other,'a'.repeat(64));assert.equal(store.booth_number,2);assert.equal(store.access_status,'active');assert.equal(r.terms_version,'2026-10-16-v1');assert(r.terms_accepted_at);checks++;
  const repeat=await activate(r,other,'a'.repeat(64));assert.equal(+repeat.rental_expires_at,+store.rental_expires_at);assert.equal((await q('select * from market_shops')).length,2);checks++;
  const renewal=await create(other,crypto.randomUUID(),6);await q("update market_rental_intents set state='submitted',tx_hash=$2 where id=$1",[renewal.id,'b'.repeat(64)]);
  const renewed=await activate(renewal,other,'b'.repeat(64));assert.equal(renewed.booth_number,2);assert(+renewed.rental_expires_at>+store.rental_expires_at);checks++;

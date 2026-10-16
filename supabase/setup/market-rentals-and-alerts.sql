@@ -92,6 +92,8 @@ create table if not exists public.market_rental_intents (
 );
 create unique index if not exists market_one_open_rental on public.market_rental_intents(wallet_address) where state in ('review','submitted');
 alter table public.market_rental_intents add column if not exists use_standard_rate boolean not null default false;
+alter table public.market_rental_intents add column if not exists terms_version text;
+alter table public.market_rental_intents add column if not exists terms_accepted_at timestamptz;
 
 create or replace function public.market_create_rental(review_data jsonb) returns public.market_rental_intents
 language plpgsql security definer set search_path='' as $$
@@ -101,8 +103,10 @@ begin
  update public.market_rental_intents set state='expired' where wallet_address=review_data->>'wallet_address' and state='review' and expires_at<=now();
  select * into r from public.market_rental_intents where wallet_address=review_data->>'wallet_address' and state in ('review','submitted');
  if found then return r; end if;
+ if review_data->>'terms_version' is distinct from '2026-10-16-v1' then raise exception 'Current rental terms must be accepted'; end if;
  insert into public.market_rental_intents(id,wallet_address,origin,months,tier,amount_atomic,expected_nonce,policy_version,key_identifier,use_standard_rate,shop_name,expires_at)
  values((review_data->>'id')::uuid,review_data->>'wallet_address',review_data->>'origin',(review_data->>'months')::integer,review_data->>'tier',(review_data->>'amount_atomic')::numeric,(review_data->>'expected_nonce')::bigint,review_data->>'policy_version',review_data->>'key_identifier',coalesce((review_data->>'use_standard_rate')::boolean,false),review_data->>'shop_name',(review_data->>'expires_at')::timestamptz) returning * into r;
+ update public.market_rental_intents set terms_version=review_data->>'terms_version',terms_accepted_at=now() where id=r.id returning * into r;
  return r;
 end $$;
 
@@ -114,6 +118,7 @@ begin
  select * into r from public.market_rental_intents where id=intent_key and wallet_address=wallet_key for update;
  if not found then raise exception 'Rental review not found'; end if;
  if r.state='activated' then select * into s from public.market_shops where id=r.shop_id;return s;end if;
+ if r.terms_version is distinct from '2026-10-16-v1' or r.terms_accepted_at is null then raise exception 'Rental terms not accepted'; end if;
  if r.amount_atomic>0 then
   if r.state<>'submitted' or r.tx_hash is distinct from receipt_hash then raise exception 'Receipt not reserved'; end if;
  else
