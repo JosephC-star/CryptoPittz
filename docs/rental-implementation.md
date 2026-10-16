@@ -6,7 +6,7 @@ Confirmed terms: standard upfront BONEZ prices are 60,000 for one month, 330,000
 
 BONEZ is BONEZ-ff9a73 with 6 decimals. The only payment destination is the existing verified Pittensor team burn-pile wallet. Rental receipts must be categorized separately from voluntary contributions. A receipt is not proof of an actual token burn.
 
-Private exceptions are evaluated on the backend by exact assigned storefront and wallet. Personal status and waiver reasons must not be shown publicly. Existing access is preserved during this work.
+Private exceptions are evaluated from backend-owned storefront access records. Existing complimentary/test access remains no-charge; an optional private rental_fee_waived flag can carry a permanent exception when the billing schema is introduced. Personal status and waiver reasons must not be shown publicly. Existing access is preserved during this work.
 
 Key verification discovers holdings only in CPMK-8d8a01 and verifies balances and the on-chain Type attribute using the mainnet gateway. Type=Diamond grants the Diamond tier, Type=Hodler the regular Meta-Key tier. Names, artwork, client declarations and indexer ownership alone are insufficient. Requests fail closed on verification errors. Only wallet-held keys are currently checked; staked/delegated keys are not assumed to be eligible.
 

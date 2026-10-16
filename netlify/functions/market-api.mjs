@@ -3,7 +3,7 @@ import { isIP } from 'node:net';
 import { Address, Message, MessageComputer, UserVerifier } from '@multiversx/sdk-core';
 
 const ORIGIN = 'https://deploy-preview-17--cryptopittz.netlify.app';
-const ALLOWED_ORIGINS = new Set([ORIGIN, 'https://deploy-preview-18--cryptopittz.netlify.app', 'https://thepittzstop.com', 'https://www.thepittzstop.com', 'https://cryptopittz.netlify.app']);
+const ALLOWED_ORIGINS = new Set([ORIGIN, 'https://deploy-preview-18--cryptopittz.netlify.app', 'https://deploy-preview-20--cryptopittz.netlify.app', 'https://thepittzstop.com', 'https://www.thepittzstop.com', 'https://cryptopittz.netlify.app']);
 const COOKIE = '__Host-pittz-market';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const hash = text => createHash('sha256').update(text).digest('hex');
@@ -255,4 +255,5 @@ export function imageInput(body){
   if(!type||type!==body.type)fail(400,'Choose a JPG, PNG or WebP picture.');
   return {bytes,type,extension:{'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[type]};
 }
-export { request, db, configuration, requestOrigin, hash, fail, response, now };
+export { request, db, configuration, requestOrigin, hash, fail, response, now, session };
+
