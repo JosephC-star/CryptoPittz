@@ -44,7 +44,7 @@ test('only a matching successful mainnet receipt reaches activation',async()=>{s
 
 test('rental terms require an explicit current acknowledgement',async()=>{setup();await login();for(const patch of [{acceptTerms:false},{termsVersion:'old'}]){const r=await call('quote',{name:'Shop',months:1,...patch});assert.equal(r.statusCode,400);assert.equal(tables.market_rental_intents.length,0);}});
 
-test('test price cannot be requested by another wallet or on production',async()=>{
+test('retired test rejects all new payments while preserving submitted receipt recovery',async()=>{
  setup();await login();assert.equal((await call('quote',{name:'Test',months:1,testPayment:true})).statusCode,403);
  const {RENTAL_TEST_WALLET,RENTAL_TEST_ORIGIN}=await import('../shared/market-rental-test.mjs');
  const {hash}=await import('../netlify/functions/market-api.mjs');
@@ -53,10 +53,15 @@ test('test price cannot be requested by another wallet or on production',async()
  await asJoe(RENTAL_TEST_ORIGIN);
  const extra={rawUrl:RENTAL_TEST_ORIGIN+'/.netlify/functions/market-rental',headers:{origin:RENTAL_TEST_ORIGIN,'content-type':'application/json',cookie}};
  assert.equal((await call('quote',{name:'Test',months:6,testPayment:true},extra)).statusCode,403);
- const result=await call('quote',{name:'Test',months:1,testPayment:true,amountAtomic:'1'},extra);assert.equal(result.statusCode,200,result.body);
- const review=JSON.parse(result.body).intent;assert.equal(review.amountBonez,'1');assert.equal(review.amountAtomic,'1000000');assert.equal(review.testPayment,true);
- assert.equal((await call('reserve',{id:review.id,txHash:'ef'.repeat(32)},extra)).statusCode,200);
- assert.equal(tables.market_rental_intents.at(-1).state,'submitted');
+ const result=await call('quote',{name:'Test',months:1,testPayment:true,amountAtomic:'1'},extra);assert.equal(result.statusCode,403);
+ assert.equal(tables.market_rental_intents.length,0);
+ // A pre-existing submitted test must retain receipt recovery after retirement.
+ const row={id:randomUUID(),wallet_address:RENTAL_TEST_WALLET,origin:RENTAL_TEST_ORIGIN,months:1,tier:'standard',amount_atomic:'1000000',expected_nonce:'0',policy_version:'2026-10-16-one-bonez-test-v1',terms_version:'2026-10-16-v1',terms_accepted_at:new Date().toISOString(),created_at:new Date().toISOString(),expires_at:new Date(Date.now()+600000).toISOString(),shop_name:'Historical test',state:'review',use_standard_rate:true};
+ tables.market_rental_intents.push(row);
+ assert.equal((await call('reserve',{id:row.id,txHash:'ef'.repeat(32)},extra)).statusCode,409);
+ row.state='submitted';row.tx_hash='ef'.repeat(32);
+ const review=JSON.parse((await call('me',undefined,extra)).body).intent;
+ assert.equal(review.amountAtomic,'1000000');
  const spec=rentalSpec(RENTAL_TEST_WALLET,review);
  tx={txHash:'ef'.repeat(32),sender:RENTAL_TEST_WALLET,receiver:RENTAL_RECIPIENT,status:'success',value:'0',nonce:0,timestamp:Math.floor(Date.now()/1000),data:Buffer.from(spec.data).toString('base64'),logs:{events:[{identifier:'ESDTTransfer',address:RENTAL_TEST_WALLET,topics:[Buffer.from(RENTAL_TOKEN).toString('base64'),'',Buffer.from('0f4240','hex').toString('base64'),'fpGH2htfx9GEA2SuQbFDWV3XMryOBGq7xuSq+FIGCaQ=']}]}};
  assert.equal((await call('confirm',{id:review.id},extra)).statusCode,200);
