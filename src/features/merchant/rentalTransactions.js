@@ -1,4 +1,4 @@
-import {TransactionComputer} from '@multiversx/sdk-core';
+import {TransactionComputer} from '@multiversx/sdk-core/out/core/transactionComputer.js';
 import {getAccount} from '@multiversx/sdk-dapp/out/methods/account/getAccount';
 import {getNetworkConfig} from '@multiversx/sdk-dapp/out/methods/network/getNetworkConfig';
 import {getAccountProvider} from '@multiversx/sdk-dapp/out/providers/helpers/accountProvider';
