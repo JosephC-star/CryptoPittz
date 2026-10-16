@@ -6,6 +6,7 @@ import { ProviderFactory } from '@multiversx/sdk-dapp/out/providers/ProviderFact
 import { ProviderTypeEnum } from '@multiversx/sdk-dapp/out/providers/types/providerFactory.types';
 import { Message } from '@multiversx/sdk-dapp/out/lib/sdkCore';
 import './merchant.css';
+import ProductPhoto from './ProductPhoto';
 
 const endpoint = '/.netlify/functions/market-api?route=';
 async function api(route, body) {
@@ -48,7 +49,6 @@ export default function MerchantStudio() {
   }catch(error){setMessage(errorText(error));}finally{setBusy(false)}}
   async function visibility(product,status){setBusy(true);try{await api('product',{...product,status});await refresh();setMessage(status==='archived'?'Product removed from the storefront and archived.':'Product visibility updated.');}catch(error){setMessage(errorText(error));}finally{setBusy(false)}}
   async function saveShop(event){event.preventDefault();setBusy(true);try{const form=new FormData(event.currentTarget);const data=await api('shop',{name:form.get('name'),description:form.get('description')});setShop(data.shop);setMessage('Shop details saved.');}catch(error){setMessage(errorText(error));}finally{setBusy(false)}}
-  function selectFile(event){const f=event.target.files[0];if(!f)return;if(!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>2097152){setMessage('Choose a JPG, PNG or WebP under 2 MB.');event.target.value='';return;}setFile(f);}
   const mismatch=shop&&account.address&&account.address!==shop.owner_wallet;
   const list=products.filter(p=>(p.name+' '+p.description).toLowerCase().includes(search.toLowerCase())&&(filter==='all'?p.status!=='archived':p.status===filter));
   return <div className="merchant-live"><div className="ml-notice">MERCHANT BACKROOM · Verified wallet login · Inventory & customer inquiries</div><header><a href="/flea-market/">🐾 THE PITTZSTOP <small>Flea Market / Merchant studio</small></a><div><a href="/flea-market/">← Walk the market</a>{shop&&<button onClick={logout} disabled={busy}>Sign out of backroom</button>}</div></header>
@@ -62,7 +62,7 @@ export default function MerchantStudio() {
     <div className="ml-split"><label>Price (optional)<input inputMode="decimal" pattern="[0-9]+([.][0-9]{1,18})?" value={draft.price} onChange={e=>setDraft({...draft,price:e.target.value})}/></label><label>Display currency<select value={draft.currency} onChange={e=>setDraft({...draft,currency:e.target.value})}>{['USD','EGLD','BONEZ'].map(v=><option key={v}>{v}</option>)}</select></label></div>
     <div className="ml-split"><label>Quantity<input type="number" min="0" max="1000000" required step="1" value={draft.quantity} onChange={e=>setDraft({...draft,quantity:e.target.value})}/></label><label>Availability<select value={draft.made_to_order?'custom':'stock'} onChange={e=>setDraft({...draft,made_to_order:e.target.value==='custom'})}><option value="stock">Ready-made</option><option value="custom">Made to order</option></select></label></div>
     <label>Delivery<select value={draft.delivery} onChange={e=>setDraft({...draft,delivery:e.target.value})}>{['Arrange with merchant','Shipping available','Local pickup','Digital delivery'].map(v=><option key={v}>{v}</option>)}</select></label>
-    <label>Product photo · JPG, PNG or WebP, up to 2 MB<input key={draft.id||'new'} type="file" accept="image/jpeg,image/png,image/webp" onChange={selectFile}/></label>{(filePreview||draft.image_path)&&<><img className="ml-photo-preview" src={filePreview||draft.image_url} alt="Product preview"/><button type="button" disabled={busy} onClick={()=>{setFile(null);setDraft({...draft,image_path:null,image_url:null})}}>Remove photo</button></>}
+    <ProductPhoto key={draft.id||'new'} file={file} onSelect={setFile} disabled={busy}/>{(filePreview||draft.image_path)&&<><img className="ml-photo-preview" src={filePreview||draft.image_url} alt="Product preview"/><button type="button" disabled={busy} onClick={()=>{setFile(null);setDraft({...draft,image_path:null,image_url:null})}}>Remove photo</button></>}
     <label>Visibility<select value={draft.status} onChange={e=>setDraft({...draft,status:e.target.value})}><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></label><p role="status">{message}</p><button className="ml-primary" disabled={busy}>{busy?'Saving…':'Save product'}</button></form></dialog>
     </>}
     <div className="ml-wallet-panel" hidden={!walletOpen}><button onClick={()=>{getAccountProvider().cancelLogin();setWalletOpen(false)}}>Close wallet connection</button><p>Connect with xPortal. Open the app manually if needed.</p></div><div ref={anchor} hidden={!walletOpen}/></main></div>;
