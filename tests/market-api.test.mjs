@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { UserSecretKey, UserSigner, Message, MessageComputer } from '@multiversx/sdk-core';
-import { handler, validSignature, productInput, active } from '../netlify/functions/market-api.mjs';
+import { handler, validSignature, productInput, active, requestOrigin } from '../netlify/functions/market-api.mjs';
 import { handler as adminHandler } from '../netlify/functions/market-admin.mjs';
 
 const origin='https://deploy-preview-17--cryptopittz.netlify.app';
@@ -88,4 +88,9 @@ test('transport-encoded admin login succeeds while unassigned access stays block
  assert.equal(result.statusCode,200,result.body);
  cookie=result.headers['Set-Cookie'].split(';')[0];
  assert.equal((await adminCall('shops',undefined,{event:{isBase64Encoded:true}})).statusCode,200);
+});
+
+test('project preview origins work without a runtime deployment URL while lookalikes stay blocked',()=>{
+ for(const origin of ['https://deploy-preview-27--cryptopittz.netlify.app','https://deploy-preview-28--cryptopittz.netlify.app','https://deploy-preview-123--cryptopittz.netlify.app'])assert.equal(requestOrigin({rawUrl:origin+'/.netlify/functions/market-rental?route=config'}),origin);
+ for(const origin of ['http://deploy-preview-28--cryptopittz.netlify.app','https://deploy-preview-28--cryptopittz.netlify.app.evil.test','https://deploy-preview-28--other-project.netlify.app','https://evil.test','https://deploy-preview-0--cryptopittz.netlify.app','https://deploy-preview-28--cryptopittz.netlify.app:444'])assert.throws(()=>requestOrigin({rawUrl:origin+'/'}),error=>error.status===403);
 });
