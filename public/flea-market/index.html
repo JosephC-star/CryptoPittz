@@ -141,6 +141,7 @@ window.addEventListener('pagehide',()=>{if(rugReferenceUrl)URL.revokeObjectURL(r
    const response=await fetch('/.netlify/functions/market-api?route=catalog&booth=1',{cache:'no-store'});
    if(response.status===404){section.hidden=true;const booth=document.querySelector('article.booth[data-type="shop"]');if(booth)booth.hidden=true;if(shop.open)shop.close();return;}if(!response.ok)throw Error();
    const data=await response.json();grid.replaceChildren();section.hidden=!data.products.length;
+   let cover=document.getElementById('merchant-shop-cover');if(data.shop.cover_url){if(!cover){cover=make('img');cover.id='merchant-shop-cover';cover.style.cssText='width:100%;aspect-ratio:8/3;object-fit:cover;border-radius:12px;margin-bottom:24px';section.before(cover);}cover.src=data.shop.cover_url;cover.alt=data.shop.name+' cover';}else if(cover)cover.remove();
    for(const product of data.products){
     const card=make('article');card.className='live-product-card';
     const hasPrice=product.price!==null&&product.price!==undefined&&product.price!=='';

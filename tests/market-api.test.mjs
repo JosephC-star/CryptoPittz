@@ -9,15 +9,18 @@ const origin='https://deploy-preview-17--cryptopittz.netlify.app';
 const signer=new UserSigner(UserSecretKey.generate()),other=new UserSigner(UserSecretKey.generate());
 const address=signer.getAddress().toBech32(),otherAddress=other.getAddress().toBech32();
 const shopId=randomUUID(),foreignId=randomUUID();
-let tables,cookie,fetches,rateAllowed;
+let tables,cookie,fetches,rateAllowed,shopPictures;
 function matches(row,params){for(const [key,value] of params){if(['select','limit','order'].includes(key))continue;const i=value.indexOf('.'),op=value.slice(0,i),v=value.slice(i+1);const actual=row[key]??(key==='moderation_hidden'||key==='moderation_suspended'?false:key==='currency'?'BONEZ':undefined);if(op==='in'&&!v.slice(1,-1).split(',').includes(String(actual)))return false;if(op==='eq'&&String(actual)!==v)return false;if(op==='is'&&v==='null'&&row[key]!=null)return false;if(op==='gt'&&!(row[key]>v))return false;}return true;}
 function setup(){
- tables={market_shops:[{id:shopId,owner_wallet:address,access_status:'test',booth_number:1,name:'Test shop',description:''}],market_products:[],market_login_challenges:[],market_sessions:[],market_inquiries:[],market_admins:[],market_admin_sessions:[],market_moderation_log:[]};cookie='';fetches=[];rateAllowed=true;
+ tables={market_shops:[{id:shopId,owner_wallet:address,access_status:'test',booth_number:1,name:'Test shop',description:''}],market_products:[],market_login_challenges:[],market_sessions:[],market_inquiries:[],market_admins:[],market_admin_sessions:[],market_moderation_log:[]};cookie='';fetches=[];rateAllowed=true;shopPictures=new Set();
  process.env.SUPABASE_URL='https://xqdrecxqkldhznydglev.supabase.co';process.env.SUPABASE_SECRET_KEY='sb_secret_test';
  globalThis.fetch=async(url,options={})=>{fetches.push({url,options});const u=new URL(url),method=options.method||'GET';assert.equal(options.headers.apikey,'sb_secret_test');
  if(u.pathname.includes('/rpc/market_reserve_inquiry'))return Response.json(rateAllowed);
  if(u.pathname.includes('/rpc/market_moderate')){const data=JSON.parse(options.body);assert(tables.market_admins.some(a=>a.wallet_address===data.actor&&a.active));const table=data.kind==='shop'?'market_shops':'market_products',field=data.kind==='shop'?'moderation_suspended':'moderation_hidden';const row=tables[table].find(r=>r.id===data.target);assert(row);const previous=!!row[field];row[field]=['hide','suspend'].includes(data.action_name);row.moderation_reason=data.explanation;tables.market_moderation_log.push({id:randomUUID(),actor_wallet:data.actor,target_type:data.kind,target_id:data.target,action:data.action_name,reason:data.explanation,previous_state:previous,new_state:row[field]});return Response.json({updated:true});}
- if(u.pathname.startsWith('/storage/')){if(u.pathname.includes('/sign/'))return Response.json({signedURL:'/object/sign/'+(u.pathname.includes('market-inquiry-references')?'market-inquiry-references':'market-product-images')+'/'+shopId+'/test.png?token=test'});return Response.json({Key:'uploaded'});}
+ if(u.pathname.startsWith('/storage/')){
+ if(u.pathname.includes('/object/list/')){const body=JSON.parse(options.body);return Response.json([...shopPictures].filter(path=>path.startsWith(body.prefix+'/')).map(path=>({name:path.split('/').at(-1)})));}
+ if(method==='DELETE'){for(const path of JSON.parse(options.body).prefixes)shopPictures.delete(path);return Response.json([]);}
+ if(method==='POST'&&!u.pathname.includes('/sign/'))shopPictures.add(u.pathname.split('/market-product-images/')[1]);if(u.pathname.includes('/sign/'))return Response.json({signedURL:'/object/sign/'+(u.pathname.includes('market-inquiry-references')?'market-inquiry-references':'market-product-images')+'/'+shopId+'/test.png?token=test'});return Response.json({Key:'uploaded'});}
  const table=u.pathname.split('/').at(-1);if(!tables[table])throw Error('Unknown table '+table);
  const rows=tables[table].filter(row=>matches(row,u.searchParams));
  if(method==='GET')return Response.json(rows.slice(0,Number(u.searchParams.get('limit')||100)));
@@ -88,4 +91,21 @@ test('transport-encoded admin login succeeds while unassigned access stays block
  assert.equal(result.statusCode,200,result.body);
  cookie=result.headers['Set-Cookie'].split(';')[0];
  assert.equal((await adminCall('shops',undefined,{event:{isBase64Encoded:true}})).statusCode,200);
+});
+
+test('shop pictures require a merchant session and write only the assigned shop slots',async()=>{
+ setup();const photo={kind:'cover',type:'image/png',data:Buffer.from([137,80,78,71,13,10,26,10,0,0,0,0]).toString('base64'),shop_id:foreignId};
+ assert.equal((await call('shop-photo',photo)).statusCode,401);await login();
+ assert.equal((await call('shop-photo',{...photo,kind:'../foreign'})).statusCode,400);
+ assert.equal((await call('shop-photo',photo)).statusCode,200);assert(shopPictures.has(shopId+'/storefront-cover.jpg'));
+ assert.equal((await call('shop-photo',{...photo,data:'not-an-image'})).statusCode,400);
+ const photos=JSON.parse((await call('appearance')).body);assert(photos.cover_url.includes('kind=cover'));assert.equal(photos.default_image_url,null);
+ assert.equal((await call('shop-photo',{kind:'cover',remove:true,shop_id:foreignId})).statusCode,200);assert.equal(shopPictures.size,0);
+});
+test('catalog uses the shop default only for products without photos and suspended shop pictures stay private',async()=>{
+ setup();shopPictures.add(shopId+'/storefront-default.jpg');shopPictures.add(shopId+'/storefront-cover.jpg');
+ const ownPhoto=shopId+'/'+randomUUID()+'.png';tables.market_products.push({id:randomUUID(),shop_id:shopId,name:'With photo',status:'published',image_path:ownPhoto},{id:randomUUID(),shop_id:shopId,name:'Without photo',status:'published',image_path:null});
+ const catalog=JSON.parse((await call('catalog')).body);assert(catalog.shop.cover_url);assert(catalog.products[0].image_url.includes('route=image&product='));assert.equal(catalog.products[1].image_url,catalog.shop.default_image_url);
+ assert.equal((await call('shop-image',undefined,{query:{booth:1,kind:'cover'}})).statusCode,302);
+ tables.market_shops[0].moderation_suspended=true;assert.equal((await call('shop-image',undefined,{query:{booth:1,kind:'cover'}})).statusCode,404);
 });
