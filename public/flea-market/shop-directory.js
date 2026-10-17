@@ -8,6 +8,7 @@
   const grid=document.createElement('div');grid.className='booths';section.append(grid);
   for(const shop of shops){
    const card=document.createElement('article');card.className='booth';
+   const photo=document.createElement('img');photo.src='/.netlify/functions/market-api?route=shop-image&booth='+shop.booth_number+'&kind=cover';photo.alt=shop.name+' cover';photo.loading='lazy';photo.style.cssText='width:100%;aspect-ratio:8/3;object-fit:cover;display:block';photo.onerror=()=>photo.remove();card.append(photo);
    const body=document.createElement('div');body.className='boothinfo';
    const booth=document.createElement('div');booth.className='status';booth.textContent='BOOTH '+shop.booth_number+' / COMMUNITY MERCHANT';
    const heading=document.createElement('h3');heading.textContent=shop.name;

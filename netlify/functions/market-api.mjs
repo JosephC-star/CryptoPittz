@@ -4,7 +4,7 @@ import { isIP } from 'node:net';
 import { Address, Message, MessageComputer, UserVerifier } from '@multiversx/sdk-core';
 
 const ORIGIN = 'https://deploy-preview-17--cryptopittz.netlify.app';
-const ALLOWED_ORIGINS = new Set([ORIGIN, 'https://deploy-preview-18--cryptopittz.netlify.app', 'https://thepittzstop.com', 'https://www.thepittzstop.com', 'https://cryptopittz.netlify.app']);
+const ALLOWED_ORIGINS = new Set([ORIGIN, 'https://deploy-preview-18--cryptopittz.netlify.app', 'https://deploy-preview-29--cryptopittz.netlify.app', 'https://thepittzstop.com', 'https://www.thepittzstop.com', 'https://cryptopittz.netlify.app']);
 if(/^https:\/\/deploy-preview-\d+--cryptopittz\.netlify\.app$/.test(process.env.DEPLOY_PRIME_URL||''))ALLOWED_ORIGINS.add(process.env.DEPLOY_PRIME_URL);
 const COOKIE = '__Host-pittz-market';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -96,17 +96,23 @@ function response(statusCode, body, headers = {}) {
 }
 function cookie(token, maxAge = 7200) { return COOKIE + '=' + token + '; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=' + maxAge; }
 const imageRoute = id => '/.netlify/functions/market-api?route=image&product=' + id;
+const shopPhotoUrl = (booth,kind) => '/.netlify/functions/market-api?route=shop-image&booth='+booth+'&kind='+kind;
+async function appearance(shop){
+  const files=await request('/storage/v1/object/list/market-product-images','POST',{prefix:shop.id,limit:100,search:'storefront-'});
+  const has=kind=>Array.isArray(files)&&files.some(file=>file.name==='storefront-'+kind+'.jpg');
+  return {cover_url:has('cover')?shopPhotoUrl(shop.booth_number,'cover'):null,default_image_url:has('default')?shopPhotoUrl(shop.booth_number,'default'):null};
+}
 const withImage = p => ({ ...p, image_url: p.image_path ? imageRoute(p.id) : null });
 export async function handler(event) {
   try {
     const actualOrigin = requestOrigin(event);
     const route = event.queryStringParameters?.route || 'me';
-    const allowed = { me:'GET', shops:'GET', catalog:'GET', image:'GET', products:'GET', challenge:'POST', verify:'POST', logout:'POST', product:'POST', upload:'POST', shop:'POST', inquiry:'POST', inquiries:'GET', 'inquiry-status':'POST', 'inquiry-reference':'GET' };
+    const allowed = { appearance:'GET', 'shop-photo':'POST', 'shop-image':'GET', me:'GET', shops:'GET', catalog:'GET', image:'GET', products:'GET', challenge:'POST', verify:'POST', logout:'POST', product:'POST', upload:'POST', shop:'POST', inquiry:'POST', inquiries:'GET', 'inquiry-status':'POST', 'inquiry-reference':'GET' };
     if (!allowed[route]) fail(404, 'Unknown merchant action.');
     if (event.httpMethod !== allowed[route]) fail(405, 'Unsupported request method.');
     if (event.httpMethod !== 'GET' && event.headers?.origin !== actualOrigin) fail(403, 'Open this action from the market.');
     if (event.httpMethod !== 'GET' && !event.headers?.['content-type']?.startsWith('application/json')) fail(415, 'JSON required.');
-    const largeUpload = ['upload','inquiry'].includes(route);
+    const largeUpload = ['upload','inquiry','shop-photo'].includes(route);
     const body = readJsonRequest(event, largeUpload ? 2900000 : 32768, largeUpload ? 'The request is too large. Use an image under 2 MB.' : 'This request is too large. Please shorten the text and try again.');
 
     if (route === 'challenge') {
@@ -141,7 +147,20 @@ export async function handler(event) {
       const shops = await db('market_shops?booth_number=eq.'+booth+'&select=id,booth_number,name,description,access_status,rental_expires_at,moderation_suspended&limit=1');
       const shop = shops?.[0]; if (!active(shop)) fail(404,'This storefront is not available.');
       const products = await db('market_products?shop_id=eq.'+shop.id+'&status=eq.published&moderation_hidden=eq.false&select=id,name,description,price,currency,quantity,made_to_order,delivery,image_path&order=created_at.desc&limit=100');
-      return response(200,{shop:{id:shop.id,name:shop.name,description:shop.description,booth_number:shop.booth_number},products:products.map(withImage)});
+      const photos=await appearance(shop);
+      return response(200,{shop:{id:shop.id,name:shop.name,description:shop.description,booth_number:shop.booth_number,...photos},products:products.map(p=>({...withImage(p),image_url:p.image_path?imageRoute(p.id):photos.default_image_url}))});
+    }
+    if(route==='shop-image'){
+      const booth=Number(event.queryStringParameters?.booth),kind=event.queryStringParameters?.kind;
+      if(!Number.isSafeInteger(booth)||booth<1||!['cover','default'].includes(kind))fail(400,'Invalid shop picture.');
+      const shops=await db('market_shops?booth_number=eq.'+booth+'&select=*&limit=1'),target=shops?.[0];
+      if(!active(target))fail(404,'Shop picture not available.');
+      const photos=await appearance(target);
+      if(!photos[kind==='cover'?'cover_url':'default_image_url'])fail(404,'Shop picture not found.');
+      const signed=await request('/storage/v1/object/sign/market-product-images/'+target.id+'/storefront-'+kind+'.jpg','POST',{expiresIn:60});
+      const location=new URL('/storage/v1'+signed.signedURL,configuration().origin);
+      if(location.origin!==configuration().origin)fail(503,'Picture could not be opened.');
+      return response(302,{}, {Location:location.href});
     }
     if (route === 'image') {
       const id=event.queryStringParameters?.product;if(!UUID.test(id))fail(400,'Invalid product.');
@@ -192,6 +211,14 @@ export async function handler(event) {
       return response(201,{received:true,reference:id,message:'Your inquiry is saved in the merchant’s inbox. The merchant can reply to your email. No order or payment has been placed.'});
     }
     const auth=await session(event),shop=auth.shop;
+    if(route==='appearance')return response(200,await appearance(shop));
+    if(route==='shop-photo'){
+      if(!['cover','default'].includes(body.kind))fail(400,'Choose a cover or default inventory picture.');
+      const path=shop.id+'/storefront-'+body.kind+'.jpg';
+      if(body.remove===true){await request('/storage/v1/object/market-product-images','DELETE',{prefixes:[path]});}
+      else{const {bytes,type}=imageInput(body);await request('/storage/v1/object/market-product-images/'+path,'POST',bytes,{'Content-Type':type,'x-upsert':'true'});}
+      return response(200,{saved:true});
+    }
     if(route==='me')return response(200,{shop});
     if(route==='logout'){
       await db('market_sessions?id=eq.'+auth.current.id,'PATCH',{revoked_at:now()});
