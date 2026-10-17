@@ -109,3 +109,11 @@ test('catalog uses the shop default only for products without photos and suspend
  assert.equal((await call('shop-image',undefined,{query:{booth:1,kind:'cover'}})).statusCode,302);
  tables.market_shops[0].moderation_suspended=true;assert.equal((await call('shop-image',undefined,{query:{booth:1,kind:'cover'}})).statusCode,404);
 });
+
+test('shop photo preview accepts its own origin and keeps merchant authentication required',async()=>{
+ setup();const preview='https://deploy-preview-29--cryptopittz.netlify.app';
+ const result=await call('me',undefined,{event:{rawUrl:preview+'/.netlify/functions/market-api?route=me'},headers:{origin:preview}});
+ assert.equal(result.statusCode,401,result.body);
+ const hostile=await call('me',undefined,{event:{rawUrl:'https://deploy-preview-29--other-site.netlify.app/.netlify/functions/market-api?route=me'}});
+ assert.equal(hostile.statusCode,403);
+});
