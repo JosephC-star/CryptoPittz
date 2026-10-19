@@ -5,7 +5,7 @@ import { isIP } from 'node:net';
 import { Address, Message, MessageComputer, UserVerifier } from '@multiversx/sdk-core';
 
 const ORIGIN = 'https://deploy-preview-17--cryptopittz.netlify.app';
-const ALLOWED_ORIGINS = new Set([ORIGIN, 'https://deploy-preview-18--cryptopittz.netlify.app', 'https://deploy-preview-29--cryptopittz.netlify.app', 'https://thepittzstop.com', 'https://www.thepittzstop.com', 'https://cryptopittz.netlify.app']);
+const ALLOWED_ORIGINS = new Set([ORIGIN, 'https://deploy-preview-18--cryptopittz.netlify.app', 'https://deploy-preview-29--cryptopittz.netlify.app', 'https://deploy-preview-32--cryptopittz.netlify.app', 'https://thepittzstop.com', 'https://www.thepittzstop.com', 'https://cryptopittz.netlify.app']);
 if(/^https:\/\/deploy-preview-\d+--cryptopittz\.netlify\.app$/.test(process.env.DEPLOY_PRIME_URL||''))ALLOWED_ORIGINS.add(process.env.DEPLOY_PRIME_URL);
 const COOKIE = '__Host-pittz-market';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
