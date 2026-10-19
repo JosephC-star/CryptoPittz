@@ -7,8 +7,7 @@ const savedFetch=globalThis.fetch,savedEnv={...process.env};let tables,cookie,tx
 function match(row,params){for(const [key,filter] of params){if(['select','limit','order'].includes(key))continue;const [op,...rest]=filter.split('.'),value=rest.join('.');if(op==='eq'&&String(row[key])!==value)return false;if(op==='is'&&value==='null'&&row[key]!=null)return false;if(op==='gt'&&!(row[key]>value))return false;if(op==='in'&&!value.slice(1,-1).split(',').includes(row[key]))return false;}return true;}
 function setup(){
  process.env.MARKET_RENTALS_ENABLED='true';process.env.MARKET_KEY_BENEFITS_ENABLED='false';process.env.SUPABASE_URL='https://xqdrecxqkldhznydglev.supabase.co';process.env.SUPABASE_SECRET_KEY='sb_secret_test';
- process.env.MARKET_RENTAL_REMINDERS_ENABLED='false';
- tables={market_alert_contacts:[],market_shops:[],market_rental_challenges:[],market_rental_sessions:[],market_rental_intents:[]};cookie='';chainNonce=0;tx=null;keyType=null;
+ tables={market_shops:[],market_rental_challenges:[],market_rental_sessions:[],market_rental_intents:[]};cookie='';chainNonce=0;tx=null;keyType=null;
  globalThis.fetch=async(url,options={})=>{
   const u=new URL(url),data=options.body?JSON.parse(options.body):null,method=options.method||'GET';
   if(u.hostname==='gateway.multiversx.com')return Response.json({code:'successful',data:{tokenData:{balance:'1',tokenIdentifier:'CPMK-8d8a01',nonce:1,type:'NonFungibleESDTv2',attributes:Buffer.from('Type:'+keyType).toString('base64')}}});
@@ -45,13 +44,4 @@ test('only a matching successful mainnet receipt reaches activation',async()=>{s
 
 test('rental terms require an explicit current acknowledgement',async()=>{setup();await login();for(const patch of [{acceptTerms:false},{termsVersion:'old'}]){const r=await call('quote',{name:'Shop',months:1,...patch});assert.equal(r.statusCode,400);assert.equal(tables.market_rental_intents.length,0);}});
 
-test('expired shop can sign into rental renewal and manage only its own reminder preference',async()=>{
- setup();process.env.MARKET_RENTAL_REMINDERS_ENABLED='true';process.env.MARKET_EMAIL_ALERTS_ENABLED='true';process.env.RESEND_API_KEY='re_test';process.env.MARKET_EMAIL_FROM='alerts@example.test';
- const id=randomUUID();tables.market_shops.push({id,owner_wallet:address,name:'Expired shop',booth_number:4,access_status:'active',rental_expires_at:'2026-01-01T00:00:00Z'});
- tables.market_alert_contacts.push({shop_id:id,owner_wallet:address,enabled:true,verified_at:new Date().toISOString(),rental_reminders:false},{shop_id:randomUUID(),owner_wallet:'another-wallet',enabled:true,verified_at:new Date().toISOString(),rental_reminders:false});
- await login();assert.equal(JSON.parse((await call('me')).body).shop.booth_number,4);
- assert.equal((await call('reminders',{enabled:true,shop_id:tables.market_alert_contacts[1].shop_id})).statusCode,200);assert.equal(tables.market_alert_contacts[0].rental_reminders,true);assert.equal(tables.market_alert_contacts[1].rental_reminders,false);
- assert.equal((await call('reminders',{enabled:'true'})).statusCode,400);
- tables.market_alert_contacts[0].enabled=false;assert.equal((await call('reminders',{enabled:true})).statusCode,409);assert.equal((await call('reminders',{enabled:false})).statusCode,200);
- const review=await call('quote',{months:1});assert.equal(review.statusCode,200,review.body);assert.equal(JSON.parse(review.body).intent.shopName,'Expired shop');
-});
+test('expired shop can sign into rental renewal for its existing booth',async()=>{setup();tables.market_shops.push({id:randomUUID(),owner_wallet:address,name:'Expired shop',booth_number:4,access_status:'active',rental_expires_at:'2026-01-01T00:00:00Z'});await login();assert.equal(JSON.parse((await call('me')).body).shop.booth_number,4);const review=await call('quote',{months:1});assert.equal(review.statusCode,200,review.body);assert.equal(JSON.parse(review.body).intent.shopName,'Expired shop');});

@@ -1183,6 +1183,7 @@ function App() {
           <div className="footer-community">
             <strong>© {new Date().getFullYear()} CryptoPittz</strong>
             <span>All vibes reserved 🐾</span>
+            <a href="mailto:Cryptopittz69@gmail.com">Official contact: Cryptopittz69@gmail.com ↗</a>
           </div>
 
           <div className="footer-support">
