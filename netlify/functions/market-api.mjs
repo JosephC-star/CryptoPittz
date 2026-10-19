@@ -1,3 +1,4 @@
+import {SHOP_CATEGORIES,shopCategories,matchesShop} from '../../public/flea-market/directory-utils.mjs';
 import {readJsonRequest} from '../../server/json-request.mjs';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { isIP } from 'node:net';
@@ -107,7 +108,7 @@ export async function handler(event) {
   try {
     const actualOrigin = requestOrigin(event);
     const route = event.queryStringParameters?.route || 'me';
-    const allowed = { appearance:'GET', 'shop-photo':'POST', 'shop-image':'GET', me:'GET', shops:'GET', catalog:'GET', image:'GET', products:'GET', challenge:'POST', verify:'POST', logout:'POST', product:'POST', upload:'POST', shop:'POST', inquiry:'POST', inquiries:'GET', 'inquiry-status':'POST', 'inquiry-reference':'GET' };
+    const allowed = { appearance:'GET', 'shop-photo':'POST', 'shop-image':'GET', overview:'GET', me:'GET', shops:'GET', catalog:'GET', image:'GET', products:'GET', challenge:'POST', verify:'POST', logout:'POST', product:'POST', upload:'POST', shop:'POST', inquiry:'POST', inquiries:'GET', 'inquiry-status':'POST', 'inquiry-reference':'GET' };
     if (!allowed[route]) fail(404, 'Unknown merchant action.');
     if (event.httpMethod !== allowed[route]) fail(405, 'Unsupported request method.');
     if (event.httpMethod !== 'GET' && event.headers?.origin !== actualOrigin) fail(403, 'Open this action from the market.');
@@ -138,8 +139,21 @@ export async function handler(event) {
       return response(200,{ shop },{'Set-Cookie':cookie(token)});
     }
     if(route==='shops'){
+      const query=event.queryStringParameters?.q||'',category=event.queryStringParameters?.category||'all';
+      const offset=Number(event.queryStringParameters?.offset||0),pageSize=12;
+      if(typeof query!=='string'||query.length>120||!Number.isSafeInteger(offset)||offset<0||offset>500||!(category==='all'||SHOP_CATEGORIES.some(c=>c.id===category)))fail(400,'Check the shop search and category.');
       const rows=await db('market_shops?moderation_suspended=eq.false&access_status=in.(test,active)&select=id,booth_number,name,description,access_status,rental_expires_at,moderation_suspended&order=booth_number.asc&limit=500');
-      return response(200,{shops:rows.filter(active).map(shop=>({booth_number:shop.booth_number,name:shop.name,description:shop.description}))});
+      const live=rows.filter(active),matching=live.filter(shop=>matchesShop(shop,query,category));
+      const page=matching.slice(offset,offset+pageSize),shops=[];
+      // Keep catalog reads bounded and avoid a burst of storage requests as the market grows.
+      for(let i=0;i<page.length;i+=3){
+        const group=await Promise.all(page.slice(i,i+3).map(async shop=>{
+          const products=await db('market_products?shop_id=eq.'+shop.id+'&status=eq.published&moderation_hidden=eq.false&select=id,name,price,currency,image_path,quantity,made_to_order&order=created_at.desc&limit=100');
+          const photos=await appearance(shop);
+          return {booth_number:shop.booth_number,name:shop.name,description:shop.description,categories:shopCategories(shop),cover_url:photos.cover_url,product_count:products.length,previews:products.slice(0,3).map(p=>({id:p.id,name:p.name,price:p.price,currency:p.currency,sold_out:!p.made_to_order&&p.quantity===0,image_url:p.image_path?imageRoute(p.id):photos.default_image_url}))};
+        }));shops.push(...group);
+      }
+      return response(200,{shops,total:matching.length,hasMore:offset+pageSize<matching.length,nextOffset:offset+pageSize,categories:SHOP_CATEGORIES.map(c=>({id:c.id,label:c.label,count:live.filter(shop=>matchesShop(shop,query,c.id)).length}))});
     }
     if (route === 'catalog') {
       const booth = Number(event.queryStringParameters?.booth || 1);
@@ -218,6 +232,13 @@ export async function handler(event) {
       if(body.remove===true){await request('/storage/v1/object/market-product-images','DELETE',{prefixes:[path]});}
       else{const {bytes,type}=imageInput(body);await request('/storage/v1/object/market-product-images/'+path,'POST',bytes,{'Content-Type':type,'x-upsert':'true'});}
       return response(200,{saved:true});
+    }
+    if(route==='overview'){
+      const [term,contact]=await Promise.all([
+        db('market_rental_intents?shop_id=eq.'+shop.id+'&wallet_address=eq.'+shop.owner_wallet+'&state=eq.activated&select=tier,months,activated_at&order=activated_at.desc&limit=1'),
+        db('market_alert_contacts?shop_id=eq.'+shop.id+'&owner_wallet=eq.'+shop.owner_wallet+'&select=enabled,verified_at&limit=1')
+      ]);
+      return response(200,{rental:{tier:term[0]?.tier||(shop.rental_fee_waived||shop.access_status==='test'?'waived':null),months:term[0]?.months||null,expiresAt:shop.rental_expires_at||null,accessStatus:shop.access_status},alertsEnabled:contact[0]?.enabled===true&&!!contact[0]?.verified_at});
     }
     if(route==='me')return response(200,{shop});
     if(route==='logout'){
