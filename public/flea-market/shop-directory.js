@@ -12,7 +12,7 @@ if(anchor){
  const filters=node('div',undefined,'directory-filters');filters.setAttribute('role','group');filters.setAttribute('aria-label','Shop categories');
  const status=node('p','Opening the market directory…','directory-status');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
  const grid=node('div',undefined,'directory-grid'),more=node('button','Load more shops','directory-more'),retry=node('button','Try again','directory-more');more.type=retry.type='button';more.hidden=retry.hidden=true;
- section.append(eyebrow,heading,intro,form,filters,status,grid,more,retry);anchor.before(section);
+ section.append(eyebrow,heading,intro,form,filters,status,grid,more,retry);anchor.after(section);
  let category='all',offset=0,requestNumber=0,controller,timer,total=0,loaded=0;
  function price(p){if(!p.price)return 'Ask for price';return (p.currency==='USD'?'$':'')+p.price+(p.currency==='USD'?'':' '+p.currency);}
  function card(shop){
@@ -35,7 +35,7 @@ if(anchor){
   try{const params=new URLSearchParams({route:'shops',q:input.value.trim(),category,offset:String(offset)});const r=await fetch('/.netlify/functions/market-api?'+params,{cache:'no-store',signal:controller.signal});const data=await r.json();if(!r.ok)throw Error(data.error||'Shop directory unavailable.');if(current!==requestNumber)return;
    total=data.total;for(const shop of data.shops){grid.append(card(shop));loaded++;}offset=data.nextOffset;more.hidden=!data.hasMore;
    renderFilters(data.categories||[]);status.textContent=total?'Showing '+loaded+' of '+total+' '+(total===1?'shop':'shops')+'.':'No shops match this search. Try another category or clear the search.';
-  }catch(error){if(error.name==='AbortError'||current!==requestNumber)return;status.textContent='The shop directory could not load. Try again, or explore the featured booths below.';retry.hidden=false;more.hidden=true;}
+  }catch(error){if(error.name==='AbortError'||current!==requestNumber)return;status.textContent='The shop directory could not load. Try again, or explore the featured booths above.';retry.hidden=false;more.hidden=true;}
   finally{if(current===requestNumber){section.removeAttribute('aria-busy');more.disabled=false;}}
  }
  form.addEventListener('submit',e=>{e.preventDefault();clearTimeout(timer);load();});input.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(()=>load(),250);});
