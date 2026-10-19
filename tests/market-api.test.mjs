@@ -136,3 +136,16 @@ test('merchant overview uses only the authenticated shop rental and verified ale
  setup();assert.equal((await call('overview')).statusCode,401);await login();tables.market_shops[0].rental_expires_at='2026-12-01T00:00:00Z';tables.market_rental_intents.push({shop_id:shopId,wallet_address:address,state:'activated',tier:'diamond',months:6},{shop_id:foreignId,wallet_address:otherAddress,state:'activated',tier:'meta',months:12});tables.market_alert_contacts.push({shop_id:shopId,owner_wallet:address,enabled:true,verified_at:'2026-10-18T00:00:00Z',email:'private@example.test'});
  const response=await call('overview');assert.equal(response.statusCode,200,response.body);const data=JSON.parse(response.body);assert.equal(data.rental.tier,'diamond');assert.equal(data.rental.months,6);assert.equal(data.rental.expiresAt,'2026-12-01T00:00:00Z');assert(data.alertsEnabled);assert(!response.body.includes('private@example.test'));tables.market_alert_contacts[0].enabled=false;assert.equal(JSON.parse((await call('overview')).body).alertsEnabled,false);
 });
+
+test('extra product photos are scoped to the authenticated shop and appear in galleries without a primary picture',async()=>{
+ setup();const id=randomUUID(),otherId=randomUUID();tables.market_products.push({id,shop_id:shopId,name:'Rug',status:'published',image_path:null,moderation_hidden:false},{id:otherId,shop_id:foreignId,name:'Foreign',status:'published',image_path:null});
+ const photo={id,slot:1,type:'image/png',data:Buffer.from([137,80,78,71,13,10,26,10,0,0,0,0]).toString('base64')};
+ assert.equal((await call('product-photo',photo)).statusCode,401);await login();assert.equal((await call('product-photo',{...photo,id:otherId})).statusCode,404);assert.equal((await call('product-photo',{...photo,slot:5})).statusCode,400);assert.equal((await call('product-photo',photo)).statusCode,200);
+ let catalog=JSON.parse((await call('catalog')).body);assert.equal(catalog.products[0].image_urls.length,1);assert(catalog.products[0].image_url.includes('slot=1'));assert.equal(catalog.products[0].primary_image_url,null);
+ assert.equal((await call('image',undefined,{query:{product:id,slot:1}})).statusCode,302);
+ tables.market_products[0].moderation_hidden=true;const ownerCookie=cookie;cookie='';assert.equal((await call('image',undefined,{query:{product:id,slot:1}})).statusCode,401);assert.equal(JSON.parse((await call('catalog')).body).products.length,0);cookie=ownerCookie;
+ assert.equal((await call('product-photo',{id,slot:1,remove:true})).statusCode,200);assert.equal((await call('image',undefined,{query:{product:id,slot:1}})).statusCode,404);
+});
+test('merchant unread count excludes other shops and messages already read or closed',async()=>{
+ setup();await login();tables.market_inquiries.push({id:randomUUID(),shop_id:shopId,status:'new'},{id:randomUUID(),shop_id:shopId,status:'read'},{id:randomUUID(),shop_id:shopId,status:'closed'},{id:randomUUID(),shop_id:foreignId,status:'new'});let summary=JSON.parse((await call('overview')).body);assert.equal(summary.unreadCount,1);await call('inquiry-status',{id:tables.market_inquiries[0].id,status:'read'});summary=JSON.parse((await call('overview')).body);assert.equal(summary.unreadCount,0);
+});

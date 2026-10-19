@@ -86,9 +86,18 @@
   status = 200
   force = true
 
+[functions."market-shop-page"]
+  included_files = ["dist/index.html"]
+
 [[redirects]]
   from = "/market-shop"
-  to = "/index.html"
+  to = "/.netlify/functions/market-shop-page"
   status = 200
   force = true
 
+
+[[redirects]]
+  from = "/market-shop/"
+  to = "/.netlify/functions/market-shop-page"
+  status = 200
+  force = true

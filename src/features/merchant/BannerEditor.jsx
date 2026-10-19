@@ -1,0 +1,16 @@
+import {useEffect,useRef,useState} from 'react';
+import {coverGeometry} from '../../../shared/market-product-media.mjs';
+export default function BannerEditor({file,onPrepared,onPreparing}){
+ const canvas=useRef(null),[image,setImage]=useState(null),[mode,setMode]=useState('fit'),[x,setX]=useState(50),[y,setY]=useState(50),[zoom,setZoom]=useState(1),[error,setError]=useState('');
+ useEffect(()=>{let live=true;const url=URL.createObjectURL(file),photo=new Image();setImage(null);setError('');onPrepared(null);onPreparing(true);photo.onload=()=>{if(live)setImage(photo)};photo.onerror=()=>{if(live){setError('This picture could not be read. Try a JPG copy.');onPreparing(false);}};photo.src=url;return()=>{live=false;URL.revokeObjectURL(url);};},[file,onPrepared,onPreparing]);
+ useEffect(()=>{if(!image||!canvas.current)return;let live=true;onPreparing(true);onPrepared(null);const c=canvas.current,ctx=c.getContext('2d');if(!ctx){setError('Banner formatting is unavailable in this browser. Try another browser.');onPreparing(false);return;}
+  c.width=1600;c.height=600;ctx.fillStyle='#18211b';ctx.fillRect(0,0,1600,600);
+  if(mode==='fit'){
+   const bg=coverGeometry(image.naturalWidth,image.naturalHeight);ctx.save();ctx.filter='blur(28px)';ctx.drawImage(image,bg.sx,bg.sy,bg.sw,bg.sh,-40,-40,1680,680);ctx.restore();ctx.fillStyle='#10171345';ctx.fillRect(0,0,1600,600);
+   const scale=Math.min(1600/image.naturalWidth,600/image.naturalHeight),w=image.naturalWidth*scale,h=image.naturalHeight*scale;ctx.drawImage(image,(1600-w)/2,(600-h)/2,w,h);
+  }else{const crop=coverGeometry(image.naturalWidth,image.naturalHeight,x,y,zoom);ctx.drawImage(image,crop.sx,crop.sy,crop.sw,crop.sh,0,0,1600,600);}
+  const timer=setTimeout(()=>{c.toBlob(blob=>{if(!live)return;if(!blob||blob.size>2097152){setError('Banner could not be prepared. Try a smaller JPG.');onPreparing(false);return;}setError('');onPrepared(new File([blob],'shop-cover-1600x600.jpg',{type:'image/jpeg'}));onPreparing(false);},'image/jpeg',.9);},120);
+  return()=>{live=false;clearTimeout(timer)};
+ },[image,mode,x,y,zoom,onPrepared,onPreparing]);
+ return <div className="ml-banner-editor"><p><b>Your banner, fitted for you.</b><br/>The whole photo stays visible by default. Choose a crop if you want the image to fill the frame.</p><canvas ref={canvas} width="1600" height="600" aria-label="Your 1600 by 600 banner preview"/><fieldset><legend>Banner style</legend><label><input type="radio" name="banner-fit" checked={mode==='fit'} onChange={()=>setMode('fit')}/>Fit whole photo</label><label><input type="radio" name="banner-fit" checked={mode==='crop'} onChange={()=>setMode('crop')}/>Fill frame / adjust crop</label></fieldset>{mode==='crop'&&<div className="ml-banner-sliders"><label>Left / right<input type="range" min="0" max="100" value={x} onChange={e=>setX(Number(e.target.value))}/></label><label>Up / down<input type="range" min="0" max="100" value={y} onChange={e=>setY(Number(e.target.value))}/></label><label>Zoom<input type="range" min="1" max="2.5" step=".05" value={zoom} onChange={e=>setZoom(Number(e.target.value))}/></label><button type="button" onClick={()=>{setX(50);setY(50);setZoom(1);}}>Reset crop</button></div>}<p className="ml-photo-help">Saved as 1600 × 600 · Keep important details near the center for cover previews.</p>{error&&<p role="alert">{error}</p>}</div>;
+}
