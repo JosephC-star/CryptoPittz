@@ -1,4 +1,4 @@
-# Flea market launch preparation — November 1, 2026 target
+# Flea market preparation for the site-wide launch
 
 Preview only: PR #32. Do not merge or publish production until approved.
 
@@ -9,7 +9,7 @@ Preview only: PR #32. Do not merge or publish production until approved.
 - Removed the unreachable booth-sign prototype form, its input handlers, unused demo display script and dummy product-description function.
 - Gordon's photos are labeled portfolio examples, separate from published inventory, without invented prices, availability or merchant policies. Payment, shipping, returns and cancellation terms must be agreed with the merchant.
 - Added shopping/rental help, an accessible Gordon anchor and official CryptoPittz contact mailto links in the main footer, market footer and merchant/storefront/rental pages. Clemons Web Co. technical support and credit remain separate.
-- Added the November 1 community launch target to the market strip. No countdown or automatic production release is configured.
+- November 1, 2026 is an internal target for the entire PittzStop site. No public date announcement, countdown or automatic release is configured. See site-launch-checklist.md for the site-wide checklist.
 
 ## Verification
 
