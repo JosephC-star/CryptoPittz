@@ -9,3 +9,9 @@ The authenticated merchant backroom shows the latest activated rental tier, reco
 The collapsible merchant guide tracks four real setup steps: shop name/description, saved cover photo, first visible published item, and verified/enabled inquiry email alerts. Action buttons open the relevant settings or product editor. Merchants may reopen completed steps, and setup does not block shop access.
 
 Validation: merchant/rental/email API tests, directory privacy and pagination tests, overview ownership tests, and category/rental/setup state tests. Preview builds validate the complete app with the existing marketplace dependencies.
+
+## Clean-build dependency repair
+
+The old `@oox-marketplace/sdk@0.1.0` npm tarball returns 404. This preview uses the publisher's renamed `@oox-marketplace/sdk-core@0.1.1`, pinned in the lockfile. Upstream repository: https://github.com/Paix/oox-sdk ; rename commit: 26164ed221180a1c3be14eab7e8c15bedb654697. That commit changes package/documentation metadata without changing SDK source files. Local regression tests verify the actual published SDK's exact amount conversion and buy/list/cancel transaction payloads against this site's existing review checks. No signed transactions were broadcast during validation.
+
+Validation after dependency repair: clean `npm ci`, full `npm run build`, and all 224 repository tests pass. This branch remains preview-only pending visual review and live release approval.

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { formatAmount } from '@oox-marketplace/sdk';
+import { formatAmount } from '@oox-marketplace/sdk-core';
 import { client, json } from './trade';
 import { readListingItems } from './listingResponse';
 import { getNftImage, getNftMarketplace } from '../../utils/nftUtils';
