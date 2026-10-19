@@ -1,3 +1,4 @@
+import {remindersConfigured,setRentalReminders} from '../../server/rental-reminder-settings.mjs';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {db,requestOrigin,response,fail,hash,wallet,validSignature} from './market-api.mjs';
 import {readJsonRequest} from '../../server/json-request.mjs';
@@ -28,7 +29,7 @@ async function recheck(r,shop){
 }
 export async function handler(event){try{
  const origin=requestOrigin(event),route=event.queryStringParameters?.route||'me';
- const methods={config:'GET',me:'GET',challenge:'POST',verify:'POST',logout:'POST',quote:'POST',cancel:'POST',reserve:'POST',confirm:'POST',activate:'POST'};
+ const methods={config:'GET',me:'GET',challenge:'POST',verify:'POST',logout:'POST',quote:'POST',cancel:'POST',reserve:'POST',confirm:'POST',activate:'POST',reminders:'POST'};
  if(!methods[route])fail(404,'Unknown rental action.');if(event.httpMethod!==methods[route])fail(405,'Unsupported request method.');
  if(event.httpMethod==='POST'&&(event.headers?.origin!==origin||!event.headers?.['content-type']?.startsWith('application/json')))fail(403,'Open rental actions from the market.');
  if(route==='config')return response(200,{enabled:enabled(),benefitsEnabled:benefitsEnabled(),keyRequired:false});
@@ -50,8 +51,11 @@ export async function handler(event){try{
  }
  const auth=await identity(event,origin),address=auth.wallet_address,shop=await owner(address);
  if(route==='logout'){await db('market_rental_sessions?id=eq.'+auth.id,'PATCH',{revoked_at:new Date().toISOString()});return response(200,{signedOut:true},{'Set-Cookie':cookie('',0)});}
+ if(route==='reminders')return response(200,await setRentalReminders(shop,body.enabled));
  if(route==='me'){
-  const rows=await db('market_rental_intents?wallet_address=eq.'+address+'&state=in.(review,submitted,activated)&order=created_at.desc&limit=1');return response(200,{address,shop:shop?{name:shop.name,booth_number:shop.booth_number,rental_expires_at:shop.rental_expires_at}:null,intent:rows.length?publicIntent(rows[0]):null});
+  const contacts=shop&&remindersConfigured()?await db('market_alert_contacts?shop_id=eq.'+shop.id+'&owner_wallet=eq.'+address+'&select=enabled,verified_at,rental_reminders&limit=1'):[];
+  const reminders={configured:remindersConfigured(),eligible:contacts[0]?.enabled===true&&!!contacts[0]?.verified_at,enabled:contacts[0]?.rental_reminders===true};
+  const rows=await db('market_rental_intents?wallet_address=eq.'+address+'&state=in.(review,submitted,activated)&order=created_at.desc&limit=1');return response(200,{address,reminders,shop:shop?{name:shop.name,booth_number:shop.booth_number,access_status:shop.access_status,rental_expires_at:shop.rental_expires_at}:null,intent:rows.length?publicIntent(rows[0]):null});
  }
  if(route==='quote'){
   if(body.acceptTerms!==true||body.termsVersion!==RENTAL_TERMS_VERSION)fail(400,'Acknowledge the final-duration, no-refund and no-proration rental terms before continuing.');

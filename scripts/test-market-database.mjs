@@ -30,6 +30,11 @@ try{
  const next=await create(third);await assert.rejects(q("update market_rental_intents set tx_hash=$2 where id=$1",[next.id,'a'.repeat(64)]),/unique/);checks++;
  await q("update market_rental_intents set state='submitted',tx_hash=$2 where id=$1",[next.id,'c'.repeat(64)]);assert.equal((await activate(next,third,'c'.repeat(64))).booth_number,3);checks++;
  const suspended=await create(other);await q("update market_shops set moderation_suspended=true where owner_wallet=$1",[other]);await q("update market_rental_intents set state='submitted',tx_hash=$2 where id=$1",[suspended.id,'d'.repeat(64)]);await assert.rejects(activate(suspended,other,'d'.repeat(64)),/Store suspended/);checks++;
+ // A lapsed shop renews from now, reuses its booth, and keeps its inventory.
+ await q("update market_shops set moderation_suspended=false,rental_expires_at=now()-interval '30 days' where owner_wallet=$1",[other]);
+ await q("insert into market_products(shop_id,name,status) values($1,'Retained item','published')",[store.id]);
+ const reopenedReview=await create(other);await q("update market_rental_intents set state='submitted',tx_hash=$2 where id=$1",[reopenedReview.id,'e'.repeat(64)]);
+ const reopened=await activate(reopenedReview,other,'e'.repeat(64));assert.equal(reopened.id,store.id);assert.equal(reopened.booth_number,2);assert(+reopened.rental_expires_at>Date.now()+27*86400000);assert.equal((await q('select * from market_products where shop_id=$1',[store.id])).length,1);checks++;
  assert.equal((await q("select ('2027-01-31T12:00:00Z'::timestamptz at time zone 'UTC'+make_interval(months=>1))::text as clamped"))[0].clamped,'2027-02-28 12:00:00');checks++;
  await db.exec('set role anon');await assert.rejects(q('select * from market_rental_intents'),/permission denied/);await assert.rejects(q('select * from market_claim_alerts()'),/permission denied/);await db.exec('reset role');checks++;
  await db.exec(fs.readFileSync('supabase/setup/market-rentals-and-alerts.sql','utf8'));assert.equal((await q('select * from market_shops')).length,3);checks++;

@@ -1,0 +1,7 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {renewalWindow,reminderStage,reminderMail} from '../shared/rental-lifecycle.mjs';
+test('early renewals preserve prepaid time and clamp month-end in UTC',()=>{const term=renewalWindow('2027-01-31T12:34:56Z',1,Date.parse('2027-01-10T00:00:00Z'));assert.equal(term.endsAt,'2027-02-28T12:34:56.000Z');assert.equal(term.expired,false);});
+test('expired renewals restart now without charging for lapsed time',()=>{const term=renewalWindow('2026-01-01T00:00:00Z',6,Date.parse('2026-10-19T12:00:00Z'));assert.equal(term.startsAt,'2026-10-19T12:00:00.000Z');assert.equal(term.endsAt,'2027-04-19T12:00:00.000Z');assert.equal(term.expired,true);});
+test('reminder stages cover seven days, one day, expiry and stop after a week',()=>{const now=Date.parse('2026-10-19T12:00:00Z'),date=days=>new Date(now+days*86400000).toISOString();for(const [days,stage] of [[8,null],[7,'seven_days'],[2,'seven_days'],[1,'one_day'],[0,'expired'],[-7,'expired'],[-8,null]])assert.equal(reminderStage(date(days),now),stage);assert.equal(reminderStage(null,now),null);});
+test('expiry notice explains inventory preservation, manual approval and renewal destination',()=>{const mail=reminderMail({kind:'expired',rental_expires_at:'2026-10-19T12:00:00Z'});assert.match(mail.text,/booth and inventory are retained/);assert.match(mail.text,/https:\/\/thepittzstop.com\/market-rent/);assert.match(mail.text,/Nothing is charged automatically/);});
