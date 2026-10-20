@@ -93,3 +93,15 @@ These checks are not live financial execution tests. No transaction was signed o
 - [x] Build and all 237 existing automated tests pass.
 
 Pittensor retains its existing body-level wallet popup. Desktop connections continue to use the SDK unlock panel. This changes the site's connection panel, not OS/browser permission to open another app: xPortal may still require a user tap or manual app opening. Real phone connection, cancellation/retry, browser→app→browser handoff and small-screen modal layout remain pending hands-on checks behind the preview sign-in barrier.
+
+
+## Popup and feedback usability pass
+
+- [x] NFT arrow navigation ignores editable controls (including listing prices), modified shortcuts and already-handled events.
+- [x] NFT details lock background scrolling, focus the close control on open, wrap Tab/Shift+Tab within the panel, restore the prior focus on close, and defer keyboard events to an open native child dialog.
+- [x] Added an accessible close label and a second Close details button after long traits/content, so users reaching the bottom do not need to scroll back up to exit.
+- [x] Failed NFT artwork shows an explicit fallback while retaining identifiers and details.
+- [x] Homepage support copy feedback waits for clipboard success and explains the email/manual-copy alternatives on failure.
+- [x] Three keyboard regression tests added; all 240 automated tests and the build pass. Static authored route/anchor/asset checks still pass.
+
+These are verified source/build checks, not a completed visual or screen-reader audit. Mobile sizing, real keyboard focus with SDK dialogs, OS clipboard behavior and actual phone wallet handoff still need hands-on testing in an authenticated preview session.

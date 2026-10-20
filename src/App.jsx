@@ -53,6 +53,7 @@ function App() {
   const [mobileWalletConnecting, setMobileWalletConnecting] = useState(false);
   const [mobileWalletError, setMobileWalletError] = useState("");
   const [supportEmailCopied, setSupportEmailCopied] = useState(false);
+  const [supportCopyError,setSupportCopyError]=useState(false);
 
   const EXPLORER_PAGE_SIZE = 100;
 
@@ -1210,15 +1211,16 @@ function App() {
               </a>
               <button
                 type="button"
-                onClick={() => {
-                  navigator.clipboard.writeText("support@clemonswebco.com");
-                  setSupportEmailCopied(true);
-                  window.setTimeout(() => setSupportEmailCopied(false), 1800);
+                onClick={async () => {
+                  setSupportEmailCopied(false);setSupportCopyError(false);
+                  try{await navigator.clipboard.writeText("support@clemonswebco.com");setSupportEmailCopied(true);window.setTimeout(() => setSupportEmailCopied(false),1800);}
+                  catch{setSupportCopyError(true);}
                 }}
               >
                 {supportEmailCopied ? "Copied! ✓" : "Copy Address"}
               </button>
             </div>
+            {supportCopyError&&<p role="status">Copy unavailable. Select support@clemonswebco.com above, or choose Email Support.</p>}
           </div>
 
         </div>
