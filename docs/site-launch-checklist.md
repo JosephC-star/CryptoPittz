@@ -105,3 +105,15 @@ Pittensor retains its existing body-level wallet popup. Desktop connections cont
 - [x] Three keyboard regression tests added; all 240 automated tests and the build pass. Static authored route/anchor/asset checks still pass.
 
 These are verified source/build checks, not a completed visual or screen-reader audit. Mobile sizing, real keyboard focus with SDK dialogs, OS clipboard behavior and actual phone wallet handoff still need hands-on testing in an authenticated preview session.
+
+
+## Loading, empty and error-state pass
+
+- [x] Wallet lookup failures offer Retry wallet lookup. Disconnected users have a Connect wallet action; empty wallets explain that only Original/Vice Pittz are checked and offer sale browsing/refresh.
+- [x] Empty wallet/explorer filters offer clear/reset actions instead of an unexplained blank grid. Collection-page failures and incomplete index data offer an explicit retry, with an incomplete-results warning.
+- [x] Explorer, wallet NFT and public storefront reads use a read-only GET helper with a 15-second per-request timeout covering headers and JSON body. It supports cancellation when leaving a screen; it does not retry automatically or send mutations.
+- [x] Wallet account changes clear old displayed NFT results; cancelled requests cannot update wallet results. New searches/collection changes cancel older global-search requests.
+- [x] Public storefront read failures offer retry and another-shop navigation; a merchant with no published products still offers an inquiry.
+- [x] Added five request-helper tests for GET-only behavior, HTTP status, timeout, parent cancellation and body-read timeout. All 245 tests, build and static authored route/asset checks pass.
+
+These results cover the listed read paths, not every site request. Mutation/payment timeouts, financial API failures, actual email delivery and full mobile layout still need their separate checks. The pre-existing wallet API compatibility fallback remains read-only. No inquiry or payment was submitted during this pass.

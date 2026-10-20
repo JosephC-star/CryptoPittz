@@ -58,6 +58,8 @@ function App() {
   const EXPLORER_PAGE_SIZE = 100;
 
   const {
+    retry:retryExplorer,
+    indexError:explorerIndexError,
     activeCollection,
     allNfts: explorerAllNfts,
     clearSearch: clearGlobalSearch,
@@ -86,7 +88,7 @@ function App() {
   } = useOoxListings(activeCollection.collection);
 
   const account = useGetAccount();
-  const { nfts, loading: nftsLoading, error: nftsError } = useWalletPittz(account.address);
+  const { nfts, loading: nftsLoading, error: nftsError, retry:retryWallet } = useWalletPittz(account.address);
   const {
     market: bonezMarket,
     marketLoading: bonezMarketLoading,
@@ -840,6 +842,8 @@ function App() {
             nfts={nfts}
             loading={nftsLoading}
             error={nftsError}
+            onRetry={retryWallet}
+            onConnect={connectWallet}
             bonezUsdPrice={Number(bonezMarket?.priceUsd)}
             onOpenNft={openNftDetails}
           />
@@ -883,7 +887,9 @@ function App() {
                   <p className="subtitle">Loading the CryptoPittz collection...</p>
                 )}
 
-                {explorerError && <p className="subtitle">{explorerError}</p>}
+                {explorerError&&<div role="status"><p>{explorerError}</p><button className="btn" onClick={retryExplorer}>Retry collection</button></div>}
+                {explorerIndexError&&!explorerError&&<div role="status"><p>{explorerIndexError}</p><button className="btn" disabled={explorerAllLoading} onClick={retryExplorer}>Retry collection data</button></div>}
+                {!explorerLoading&&!explorerError&&!explorerNfts.length&&<div role="status"><p>No items were returned for this collection page.</p><button className="btn" onClick={()=>{setExplorerPage(0);retryExplorer();}}>Reload first page</button></div>}
 
                 {!explorerLoading && !explorerError && explorerNfts.length > 0 && (
                   <>
@@ -985,6 +991,7 @@ function App() {
                         );
                       })()}
 
+                    {!filteredExplorerNfts.length&&!explorerAllLoading&&<div role="status"><p>No Pittz match these filters. Try fewer traits or clear the filters.</p><button className="btn" onClick={resetExplorerFilters}>Reset filters</button></div>}
                     <div className="wallet-nft-grid explorer-nft-grid">
                       {explorerPageNfts.map((nft) => {
                         const isOwned =
