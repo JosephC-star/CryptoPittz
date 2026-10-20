@@ -83,3 +83,13 @@ Completed in preview source:
 - [x] All 237 automated tests pass; build and static route/asset audit pass.
 
 These checks are not live financial execution tests. No transaction was signed or broadcast. Pending UI state in swap/staking/liquidity is not a new durable transaction journal and can be lost when reloading or leaving the panel; use wallet history/Explorer before another action. Rental submissions already reserve a signed hash on the backend before broadcast. Next hands-on checks: switch accounts before approving a review, reject a wallet request, observe pending/failure/success receipts, verify position refresh and reinvest claim→stake, and reload a saved rental submission without paying twice. Mobile layout, guarded wallets and delivery of actual merchant inquiry email remain pending. The preview’s Netlify team sign-in barrier is unchanged.
+
+
+## Mobile xPortal popup pass
+
+- [x] Moved xPortal's connection mount into one reusable native modal, portaled to document.body, for the homepage, swap, liquidity, staking, merchant backroom, rentals and admin login. This keeps the connection options in the viewport and above the Financial District's custom modal instead of below page content.
+- [x] Added bounded viewport height, safe-area spacing, background scroll lock, a close control and Escape handling. Closing requests cancellation from the existing account provider.
+- [x] Removed the duplicate homepage wallet anchor. Connection success/error cleanup closes and clears the shared mount.
+- [x] Build and all 237 existing automated tests pass.
+
+Pittensor retains its existing body-level wallet popup. Desktop connections continue to use the SDK unlock panel. This changes the site's connection panel, not OS/browser permission to open another app: xPortal may still require a user tap or manual app opening. Real phone connection, cancellation/retry, browser→app→browser handoff and small-screen modal layout remain pending hands-on checks behind the preview sign-in barrier.

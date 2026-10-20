@@ -1,3 +1,4 @@
+import WalletConnectModal from '../../components/WalletConnectModal';
 import MarketFooter from './MarketFooter';
 import {renewalWindow} from '../../../shared/rental-lifecycle.mjs';
 import {useEffect,useRef,useState} from 'react';
@@ -35,5 +36,5 @@ export default function RentalCenter(){
  {intent.txHash&&<p><a href={'https://explorer.multiversx.com/transactions/'+intent.txHash} target="_blank" rel="noopener noreferrer">View saved payment on Explorer ↗</a></p>}
  {intent.state==='submitted'&&<><p>This payment is saved. Do not submit another payment while its status is being checked.</p><button disabled={busy} className="ml-primary" onClick={()=>run(confirm)}>Check saved payment</button></>}
  {intent.state==='activated'&&<a className="ml-link" href="/merchant-access">Enter merchant backroom ↗</a>}</section>}
- </>}<p role="status" className="ml-message">{busy?'Working… ':''}{message}</p></section><div className="ml-wallet-panel" hidden={!walletOpen}><button onClick={()=>{getAccountProvider().cancelLogin();setWalletOpen(false);}}>Close wallet connection</button><p>Open xPortal manually if needed.</p></div><div ref={anchor} hidden={!walletOpen}/></main><MarketFooter/></div>;
+ </>}<p role="status" className="ml-message">{busy?'Working… ':''}{message}</p></section><WalletConnectModal open={walletOpen} anchorRef={anchor} onClose={()=>setWalletOpen(false)}/></main><MarketFooter/></div>;
 }

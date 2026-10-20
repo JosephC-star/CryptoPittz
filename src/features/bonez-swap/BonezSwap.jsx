@@ -1,3 +1,4 @@
+import WalletConnectModal from '../../components/WalletConnectModal';
 import {transactionState} from '../../utils/transactionState.mjs';
 import { useEffect, useRef, useState } from 'react';
 import { useGetAccount } from '@multiversx/sdk-dapp/out/react/account/useGetAccount';
@@ -121,6 +122,6 @@ export default function BonezSwap({embedded=false,onBusyChange}) {
     {sent?.hash&&<a className="transaction-link" href={`https://explorer.multiversx.com/transactions/${sent.hash}`} target="_blank" rel="noreferrer">{confirmed?'✦ Swap confirmed':'View your transaction'} ↗</a>}
     </form><div className="card-foot"><span>✦</span> The PittzStop Swap · MultiversX mainnet<p>Real tokens. Separate from your game Bonez balance.</p></div></section></main>
     {!embedded&&<footer><span>THE PITTZSTOP <b>✦</b> THE PACK'S HOME BASE</span><span>You earn, we burn!</span></footer>}
-    <div className={overlay?'swap-wallet-overlay':'swap-wallet-hidden'} role={overlay?'dialog':undefined} aria-modal={overlay||undefined} aria-label="Connect xPortal">{overlay&&<button onClick={()=>{setOverlay(false);anchor.current?.replaceChildren();}}>Close</button>}<div ref={anchor}/></div>
+    <WalletConnectModal open={overlay} anchorRef={anchor} onClose={()=>setOverlay(false)}/>
     </div>;
 }

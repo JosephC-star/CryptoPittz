@@ -1,3 +1,4 @@
+import WalletConnectModal from './components/WalletConnectModal';
 import { useRef, useState } from "react";
 import "./App.css";
 
@@ -178,6 +179,8 @@ function App() {
         error instanceof Error ? error.message : "Unable to connect with xPortal.",
       );
     } finally {
+      walletConnectAnchorRef.current?.replaceChildren();
+      setWalletOverlayOpen(false);
       setMobileWalletConnecting(false);
     }
   }
@@ -1232,27 +1235,7 @@ function App() {
         onPrevious={showPreviousNft}
         onNext={showNextNft}
       />
-      {walletOverlayOpen && (
-        <button
-          className="walletconnect-close"
-          type="button"
-          aria-label="Close wallet connection"
-          onClick={() => {
-            if (walletConnectAnchorRef.current) {
-              walletConnectAnchorRef.current.replaceChildren();
-            }
-
-            setWalletOverlayOpen(false);
-            setMobileWalletConnecting(false);
-          }}
-        >
-          ✕
-        </button>
-      )}
-
-      <div ref={walletConnectAnchorRef} className="walletconnect-anchor" />
-
-      <div ref={walletConnectAnchorRef} className="walletconnect-anchor" />
+      <WalletConnectModal open={walletOverlayOpen} anchorRef={walletConnectAnchorRef} onClose={() => {setWalletOverlayOpen(false);setMobileWalletConnecting(false);}} />
     </>
   );
 }

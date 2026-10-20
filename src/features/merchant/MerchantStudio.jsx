@@ -1,3 +1,4 @@
+import WalletConnectModal from '../../components/WalletConnectModal';
 import MarketFooter from './MarketFooter';
 import { useEffect, useRef, useState } from 'react';
 import { UnlockPanelManager } from '@multiversx/sdk-dapp/out/managers/UnlockPanelManager';
@@ -45,7 +46,7 @@ export default function MerchantStudio() {
   async function inquiryStatus(id,status){setBusy(true);try{await api('inquiry-status',{id,status});setInquiries(rows=>rows.map(row=>row.id===id?{...row,status}:row));await refreshOverview();setMessage('Inquiry updated.');}catch(error){setMessage(errorText(error))}finally{setBusy(false)}}
   async function refresh(){const data=await api('products');setProducts(data.products);}
   async function connect(){setMessage('');if(!window.matchMedia('(max-width:700px)').matches){try{await UnlockPanelManager.getInstance().openUnlockPanel();}catch(error){setMessage(errorText(error))}return;}
-    setBusy(true);setWalletOpen(true);try{const provider=await ProviderFactory.create({type:ProviderTypeEnum.walletConnect,anchor:anchor.current});await provider.login();setWalletOpen(false);anchor.current?.replaceChildren();}catch(error){setMessage(errorText(error));}finally{setBusy(false);}}
+    setBusy(true);setWalletOpen(true);try{const provider=await ProviderFactory.create({type:ProviderTypeEnum.walletConnect,anchor:anchor.current});await provider.login();setWalletOpen(false);anchor.current?.replaceChildren();}catch(error){setMessage(errorText(error));}finally{anchor.current?.replaceChildren();setWalletOpen(false);setBusy(false);}}
   async function signIn(){setBusy(true);setMessage('Requesting your merchant login message…');try{
     const address=account.address;if(!address)throw Error('Connect your wallet first.');
     const challenge=await api('challenge',{address});
@@ -87,7 +88,7 @@ export default function MerchantStudio() {
     {!file&&!draft.image_path&&shopPhotos.default_image_url&&<p>Your shop’s default inventory picture will appear for this item.</p>}
     <label>Visibility<select value={draft.status} onChange={e=>setDraft({...draft,status:e.target.value})}><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></label><p role="status">{message}</p><button className="ml-primary" disabled={busy||anyPhotoBusy}>{anyPhotoBusy?'Preparing photos…':busy?'Saving…':'Save product'}</button></form></dialog>
     </>}
-    <div className="ml-wallet-panel" hidden={!walletOpen}><button onClick={()=>{getAccountProvider().cancelLogin();setWalletOpen(false)}}>Close wallet connection</button><p>Connect with xPortal. Open the app manually if needed.</p></div><div ref={anchor} hidden={!walletOpen}/></main><MarketFooter/></div>;
+    <WalletConnectModal open={walletOpen} anchorRef={anchor} onClose={()=>setWalletOpen(false)}/></main><MarketFooter/></div>;
 }
 
 
