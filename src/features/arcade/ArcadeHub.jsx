@@ -58,7 +58,7 @@ function ArcadeHub({ address = "", nfts = [], nftsLoading = false, nftsError = "
     <section id="arcade" className="arcade-hub">
       <div className="arcade-neon-sign" aria-hidden="true">
         <span>★</span>
-        <strong>CRYPTOPITTZ ARCADE</strong>
+        <strong>PITTZ PLAYGROUND</strong>
         <span>★</span>
       </div>
 

@@ -1,5 +1,5 @@
 import { Address } from '@multiversx/sdk-core';
-import { OOXClient, parseAmount } from '@oox-marketplace/sdk';
+import { OOXClient, parseAmount } from '@oox-marketplace/sdk-core';
 import { getAccount } from '@multiversx/sdk-dapp/out/methods/account/getAccount';
 import { getNetworkConfig } from '@multiversx/sdk-dapp/out/methods/network/getNetworkConfig';
 import { getAccountProvider } from '@multiversx/sdk-dapp/out/providers/helpers/accountProvider';

@@ -1,3 +1,5 @@
+import WalletConnectModal from '../../components/WalletConnectModal';
+import {transactionState} from '../../utils/transactionState.mjs';
 import { useEffect, useRef, useState } from 'react';
 import { useGetAccount } from '@multiversx/sdk-dapp/out/react/account/useGetAccount';
 import { UnlockPanelManager } from '@multiversx/sdk-dapp/out/managers/UnlockPanelManager';
@@ -24,10 +26,12 @@ export default function BonezSwap({embedded=false,onBusyChange}) {
   const [input,setInput]=useState('EGLD'),[output,setOutput]=useState(BONEZ),[amount,setAmount]=useState('0.01'),[slippage,setSlippage]=useState(50);
   const [quote,setQuote]=useState(null),[review,setReview]=useState(null),[busy,setBusy]=useState(false);
   const [status,setStatus]=useState('Connect your wallet or explore a live quote.'),[balances,setBalances]=useState(null);
-  const [sent,setSent]=useState(null),[confirmed,setConfirmed]=useState(false),[overlay,setOverlay]=useState(false);
+  const [sent,setSent]=useState(null),[confirmed,setConfirmed]=useState(false),[settled,setSettled]=useState(false),[overlay,setOverlay]=useState(false);
   const anchor=useRef(null),generation=useRef(0),lock=useRef(false);
   const payToken=getToken(input),receiveToken=getToken(output),inDecimals=payToken.decimals,outDecimals=receiveToken.decimals;
-  function invalidate(){generation.current++;setQuote(null);setReview(null);setSent(null);setConfirmed(false);}
+  const pending=!!sent&&!settled;
+  useEffect(()=>{setSent(null);setConfirmed(false);setSettled(false);setStatus(account.address?'Wallet ready. Get a fresh quote for this account.':'Connect your wallet or explore a live quote.');},[account.address]);
+  function invalidate(){if(pending)return;setSettled(false);generation.current++;setQuote(null);setReview(null);setSent(null);setConfirmed(false);}
   useEffect(()=>{
     generation.current++;setQuote(null);setReview(null);setBalances(null);
     if(!account.address)return;
@@ -49,8 +53,8 @@ export default function BonezSwap({embedded=false,onBusyChange}) {
       try{
         const tx=await getJson(`https://api.multiversx.com/transactions/${sent.hash}`);
         if(cancelled)return;
-        if(tx.status==='success'){setConfirmed(true);setStatus('Swap complete. You earn, we burn!');return;}
-        if(['fail','invalid'].includes(tx.status)){setStatus('The swap failed. Check the transaction details before trying again.');return;}
+        if(transactionState(tx)==='confirmed'){setConfirmed(true);setSettled(true);setStatus('Swap complete. You earn, we burn!');return;}
+        if(transactionState(tx)==='failed'){setSettled(true);setStatus('The swap failed. Check the transaction details before trying again.');return;}
       }catch{/* Indexing may lag after broadcast. Keep the transaction link available. */}
       if(!cancelled)timer=setTimeout(poll,6000);
     }
@@ -65,7 +69,7 @@ export default function BonezSwap({embedded=false,onBusyChange}) {
     finally{anchor.current?.replaceChildren();setOverlay(false);setBusy(false);lock.current=false;}
   }
   async function getQuote(e){
-    e.preventDefault();if(lock.current)return;
+    e.preventDefault();if(lock.current||pending)return;
     invalidate();const id=generation.current;
     lock.current=true;setBusy(true);setStatus('Finding a live route through JEX…');
     try{
@@ -89,7 +93,7 @@ export default function BonezSwap({embedded=false,onBusyChange}) {
   async function sign(){
     if(lock.current||!review)return;
     lock.current=true;setBusy(true);setStatus('Approve the swap in your wallet. Open xPortal manually if needed.');
-    try{const result=await submitSwap(review);setSent(result);setQuote(null);setReview(null);setStatus(result.hash?'Swap sent. Waiting for network confirmation…':'Swap submitted. Check your wallet history for confirmation.');}
+    try{const result=await submitSwap(review);setSent(result);setSettled(false);setQuote(null);setReview(null);setStatus(result.hash?'Swap sent. Waiting for network confirmation…':'Swap submitted. Check your wallet history for confirmation.');}
     catch(e){setStatus(e.message||'Signing was cancelled.');setReview(null);setQuote(null);}
     finally{lock.current=false;setBusy(false);}
   }
@@ -103,20 +107,21 @@ export default function BonezSwap({embedded=false,onBusyChange}) {
     invalidate();setAmount(human(available,inDecimals));
   }
   return <div className={embedded?"bonez-page bonez-embedded":"bonez-page"}>
-    <header>{!embedded&&<><a className="brand" href="/">THE PITTZ<span>STOP</span><small>WELCOME TO THE PACK</small></a><nav><a href="/#explorer">Explore Pittz</a><a className="active" href="/financial-district/">Financial District</a></nav></>}<button className="wallet-button" disabled={busy} onClick={account.address?async()=>{invalidate();await getAccountProvider().logout();}:connect}>{account.address?account.address.slice(0,7)+'…'+account.address.slice(-4)+' · Disconnect':'Connect wallet'}</button></header>
+    <header>{!embedded&&<><a className="brand" href="/">THE PITTZ<span>STOP</span><small>WELCOME TO THE PACK</small></a><nav><a href="/#explorer">Explore Pittz</a><a className="active" href="/financial-district/">Financial District</a></nav></>}<button className="wallet-button" disabled={busy||pending} onClick={account.address?async()=>{invalidate();await getAccountProvider().logout();}:connect}>{account.address?account.address.slice(0,7)+'…'+account.address.slice(-4)+' · Disconnect':'Connect wallet'}</button></header>
     <main>{!embedded&&<section className="story"><div className="gold-bone-rain" aria-hidden="true">{Array.from({length:12},(_,i)=><span className="gold-bone-drop" key={i} style={{'--bone-x':`${(i*37+7)%100}%`,'--bone-delay':`${-i*1.73}s`,'--bone-duration':`${4.2+(i*7%5)*.55}s`,'--bone-size':`${10+i%4*2}px`,'--bone-turn':`${i%2?230:-210}deg`,'--bone-angle':`${i*53%180}deg`,'--bone-drift':`${(i*19%51)-25}px`}}><svg viewBox="0 0 64 32"><defs><linearGradient id={`falling-bone-gold-${i}`} x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stopColor="#fff4b8"/><stop offset=".24" stopColor="#ffdf65"/><stop offset=".5" stopColor="#e9ac21"/><stop offset=".72" stopColor="#ffd94f"/><stop offset="1" stopColor="#995b09"/></linearGradient></defs><path fill={`url(#falling-bone-gold-${i})`} d="M16 10C13 1 3 1 3 8C3 12 6 14 7 16C6 18 3 20 3 24C3 31 13 31 16 22C25 20 39 20 48 22C51 31 61 31 61 24C61 20 58 18 57 16C58 14 61 12 61 8C61 1 51 1 48 10C39 12 25 12 16 10Z"/><path className="bone-metal-highlight" d="M17 13C27 15 37 15 47 13M8 6C11 5 12 7 13 9M51 6C54 4 57 6 57 9"/></svg><i>✦</i></span>)}</div><div className="eyebrow"><span/>THE CURRENCY OF THE CRYPTOPITTZ</div><h1>You earn,<br/><em>we burn!</em></h1><p className="intro">More than a token. Part of the pack.<br/>BONEZ and beyond. Swap with the pack.</p><div className="coin-scene"><div className="orbit"/><div className="coin"><img src={logo} alt="BONEZ logo"/></div><div className="spark s1">✦</div><div className="spark s2">✧</div><div className="coin-caption">BONEZ <span>•</span> CRYPTOPITTZ</div></div><div className="story-foot"><span>ON MULTIVERSX</span><span>ROUTES BY JEX</span><span>BUILT FOR THE PACK</span></div></section>}
     <section className="swap-card" id="swap"><div className="card-heading"><div><div className="eyebrow">FUEL THE PACK</div><h2>Swap tokens</h2></div><span className="network"><i/> Mainnet</span></div><div className="wallet-note">{account.address?'Your wallet. Your currencies.':'Welcome to the pack.'}<br/><span>{account.address?'Review every swap, then sign in your wallet.':'Connect your wallet to swap, or start with a quote.'}</span></div>
-    <form onSubmit={getQuote}><div className="amount-box"><label htmlFor="amount">You pay</label><div className="amount-row"><input id="amount" inputMode="decimal" value={amount} disabled={busy} onChange={e=>{invalidate();setAmount(e.target.value);}} autoComplete="off"/><TokenPicker value={input} label="You pay" disabled={busy} onChange={id=>{invalidate();if(id===output)setOutput(input);setInput(id);setAmount(id==='EGLD'?'0.01':'1');}}/></div><small>{balances?`Balance: ${displayAmount(balances[input]||'0',inDecimals)} ${payToken.symbol}`:'Connect to see your balance'} {balances&&<button type="button" className="max-button" disabled={busy} onClick={max}>MAX</button>}</small></div><button className="direction" type="button" disabled={busy} aria-label="Reverse swap direction" onClick={()=>{invalidate();setInput(output);setOutput(input);setAmount(output==='EGLD'?'0.01':'1');}}>↓</button>
-    <div className="amount-box receive"><label>You receive <span>estimated</span></label><div className="amount-row"><output title={quote?human(quote.q.net_amount_out,outDecimals):undefined}>{quote?displayAmount(quote.q.net_amount_out,outDecimals):'—'}</output><TokenPicker value={output} label="You receive" disabled={busy} onChange={id=>{invalidate();if(id===input){setInput(output);setAmount(output==='EGLD'?'0.01':'1');}setOutput(id);}}/></div><small>{quote?'Live quote · expires after 30 seconds':'A fresh quote for your next move'}</small></div>
-    <div className="settings"><label htmlFor="slippage">Slippage tolerance</label><select id="slippage" value={slippage} disabled={busy} onChange={e=>{setSlippage(Number(e.target.value));setReview(null);}}><option value={50}>0.5%</option><option value={100}>1%</option><option value={200}>2%</option></select></div>
+    <form onSubmit={getQuote}><div className="amount-box"><label htmlFor="amount">You pay</label><div className="amount-row"><input id="amount" inputMode="decimal" value={amount} disabled={busy||pending} onChange={e=>{invalidate();setAmount(e.target.value);}} autoComplete="off"/><TokenPicker value={input} label="You pay" disabled={busy||pending} onChange={id=>{invalidate();if(id===output)setOutput(input);setInput(id);setAmount(id==='EGLD'?'0.01':'1');}}/></div><small>{balances?`Balance: ${displayAmount(balances[input]||'0',inDecimals)} ${payToken.symbol}`:'Connect to see your balance'} {balances&&<button type="button" className="max-button" disabled={busy||pending} onClick={max}>MAX</button>}</small></div><button className="direction" type="button" disabled={busy||pending} aria-label="Reverse swap direction" onClick={()=>{invalidate();setInput(output);setOutput(input);setAmount(output==='EGLD'?'0.01':'1');}}>↓</button>
+    <div className="amount-box receive"><label>You receive <span>estimated</span></label><div className="amount-row"><output title={quote?human(quote.q.net_amount_out,outDecimals):undefined}>{quote?displayAmount(quote.q.net_amount_out,outDecimals):'—'}</output><TokenPicker value={output} label="You receive" disabled={busy||pending} onChange={id=>{invalidate();if(id===input){setInput(output);setAmount(output==='EGLD'?'0.01':'1');}setOutput(id);}}/></div><small>{quote?'Live quote · expires after 30 seconds':'A fresh quote for your next move'}</small></div>
+    <div className="settings"><label htmlFor="slippage">Slippage tolerance</label><select id="slippage" value={slippage} disabled={busy||pending} onChange={e=>{setSlippage(Number(e.target.value));setReview(null);}}><option value={50}>0.5%</option><option value={100}>1%</option><option value={200}>2%</option></select></div>
     {quote&&<div id="details"><div><span>Minimum received</span><strong>{displayAmount(minimum(quote.q,slippage),outDecimals)} {receiveToken.symbol}</strong></div><div><span>Aggregator fee</span><strong>{displayAmount(quote.q.fee_amount,getToken(quote.q.fee_token).decimals)} {getToken(quote.q.fee_token).symbol}</strong></div><div><span>Estimated network fee</span><strong>{displayAmount(quote.q.estimated_tx_fee_egld,18)} EGLD</strong></div><div><span>Route</span><strong>{[quote.q.route.token_in,...quote.q.route.hops.map(h=>h.token_out)].map(t=>t.split('-')[0]).join(' → ')}</strong></div></div>}
-    <button className="gold-button" type="submit" disabled={busy}>{busy?'Please wait…':quote?'Refresh quote':'Get live quote'}<span>↗</span></button>
-    {quote&&!review&&<button className="gold-button swap-action" type="button" disabled={busy} onClick={account.address?prepare:connect}>{account.address?'Review swap':'Connect wallet to swap'} <span>→</span></button>}
-    {review&&<div className="swap-review"><h3>Confirm your swap</h3><p>You pay <strong>{displayAmount(review.amount,inDecimals)} {payToken.symbol}</strong></p><p>You receive at least <strong>{displayAmount(minimum(review.q,review.slippage),outDecimals)} {receiveToken.symbol}</strong></p><p>Maximum network fee <strong>{displayAmount(review.feeCap,18,true)} EGLD</strong></p>{review.guardian&&<p>Your wallet is protected. Complete the guardian approval in your wallet; the fee above includes the guardian gas allowance.</p>}<small>Network fees apply even if the swap fails. Your wallet shows exact amounts.</small><button type="button" className="gold-button swap-action" disabled={busy} onClick={sign}>Approve in wallet <span>→</span></button><button type="button" className="cancel-review" disabled={busy} onClick={()=>setReview(null)}>Back</button></div>}
+    <button className="gold-button" type="submit" disabled={busy||pending}>{busy?'Please wait…':quote?'Refresh quote':'Get live quote'}<span>↗</span></button>
+    {quote&&!review&&<button className="gold-button swap-action" type="button" disabled={busy||pending} onClick={account.address?prepare:connect}>{account.address?'Review swap':'Connect wallet to swap'} <span>→</span></button>}
+    {review&&<div className="swap-review"><h3>Confirm your swap</h3><p>You pay <strong>{displayAmount(review.amount,inDecimals)} {payToken.symbol}</strong></p><p>You receive at least <strong>{displayAmount(minimum(review.q,review.slippage),outDecimals)} {receiveToken.symbol}</strong></p><p>Maximum network fee <strong>{displayAmount(review.feeCap,18,true)} EGLD</strong></p>{review.guardian&&<p>Your wallet is protected. Complete the guardian approval in your wallet; the fee above includes the guardian gas allowance.</p>}<small>Network fees apply even if the swap fails. Your wallet shows exact amounts.</small><button type="button" className="gold-button swap-action" disabled={busy||pending} onClick={sign}>Approve in wallet <span>→</span></button><button type="button" className="cancel-review" disabled={busy||pending} onClick={()=>setReview(null)}>Back</button></div>}
     <p id="status" role="status" aria-live="polite">{status}</p>
+    {pending&&<p role="status">Waiting for the transaction and its cross-shard results. Keep the receipt below; do not submit the same swap again.</p>}
     {sent?.hash&&<a className="transaction-link" href={`https://explorer.multiversx.com/transactions/${sent.hash}`} target="_blank" rel="noreferrer">{confirmed?'✦ Swap confirmed':'View your transaction'} ↗</a>}
     </form><div className="card-foot"><span>✦</span> The PittzStop Swap · MultiversX mainnet<p>Real tokens. Separate from your game Bonez balance.</p></div></section></main>
     {!embedded&&<footer><span>THE PITTZSTOP <b>✦</b> THE PACK'S HOME BASE</span><span>You earn, we burn!</span></footer>}
-    <div className={overlay?'swap-wallet-overlay':'swap-wallet-hidden'} role={overlay?'dialog':undefined} aria-modal={overlay||undefined} aria-label="Connect xPortal">{overlay&&<button onClick={()=>{setOverlay(false);anchor.current?.replaceChildren();}}>Close</button>}<div ref={anchor}/></div>
+    <WalletConnectModal open={overlay} anchorRef={anchor} onClose={()=>setOverlay(false)}/>
     </div>;
 }

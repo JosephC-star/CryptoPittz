@@ -1,3 +1,4 @@
+import {readJson} from '../../utils/readJson.mjs';
 import { useEffect, useState } from "react";
 
 const PITTZ_COLLECTIONS = ["PITTZ-1a4c2d", "PITTZVICE-c3ec94"];
@@ -9,13 +10,9 @@ async function fetchWalletPage(address, from, signal, collection = "") {
     size: String(PAGE_SIZE),
   });
   if (collection) params.set("collections", collection);
-  const response = await fetch(
-    `https://api.multiversx.com/accounts/${address}/nfts?${params}`,
-    { signal },
-  );
-
-  if (!response.ok) throw new Error(`Unable to load wallet NFTs (${response.status})`);
-  return response.json();
+  const data=await readJson(`https://api.multiversx.com/accounts/${address}/nfts?${params}`,{signal});
+  if(!Array.isArray(data))throw Error('Wallet response was not a list.');
+  return data;
 }
 
 async function fetchFilteredWalletPittz(address, signal) {
@@ -59,6 +56,7 @@ async function fetchAllWalletPittz(address, signal) {
 }
 
 export default function useWalletPittz(address) {
+  const [retryTick,setRetryTick]=useState(0),[loadedAddress,setLoadedAddress]=useState('');
   const [nfts, setNfts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -66,16 +64,18 @@ export default function useWalletPittz(address) {
   useEffect(() => {
     const controller = new AbortController();
 
-    if (!address) return () => controller.abort();
+    setNfts([]);setError('');setLoadedAddress(address||'');
+    if (!address){setLoading(false);return () => controller.abort();}
 
     async function fetchWalletPittz() {
       try {
         setLoading(true);
         setError("");
 
-        setNfts(await fetchAllWalletPittz(address, controller.signal));
+        const found=await fetchAllWalletPittz(address, controller.signal);
+        if(!controller.signal.aborted)setNfts(found);
       } catch (fetchError) {
-        if (fetchError.name !== "AbortError") {
+        if (!controller.signal.aborted && fetchError.name !== "AbortError") {
           console.error("NFT lookup failed:", fetchError);
           setError("We couldn't load NFTs from this wallet.");
           setNfts([]);
@@ -87,11 +87,12 @@ export default function useWalletPittz(address) {
 
     fetchWalletPittz();
     return () => controller.abort();
-  }, [address]);
+  }, [address,retryTick]);
 
   return {
-    nfts: address ? nfts : [],
-    loading: Boolean(address) && loading,
-    error: address ? error : "",
+    nfts: address&&loadedAddress===address ? nfts : [],
+    loading: Boolean(address) && (loadedAddress!==address||loading),
+    error: address&&loadedAddress===address ? error : "",
+    retry:()=>setRetryTick(tick=>tick+1),
   };
 }

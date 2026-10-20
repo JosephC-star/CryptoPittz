@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Address } from '@multiversx/sdk-core';
-import { OOXClient, formatAmount } from '@oox-marketplace/sdk';
+import { OOXClient, formatAmount } from '@oox-marketplace/sdk-core';
 import { readListingItems } from './listingResponse';
 import { CONTRACT, validateListing, validateQuote } from './validation';
 import './preview.css';

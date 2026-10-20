@@ -12,7 +12,7 @@ const shopId=randomUUID(),foreignId=randomUUID();
 let tables,cookie,fetches,rateAllowed,shopPictures;
 function matches(row,params){for(const [key,value] of params){if(['select','limit','order'].includes(key))continue;const i=value.indexOf('.'),op=value.slice(0,i),v=value.slice(i+1);const actual=row[key]??(key==='moderation_hidden'||key==='moderation_suspended'?false:key==='currency'?'BONEZ':undefined);if(op==='in'&&!v.slice(1,-1).split(',').includes(String(actual)))return false;if(op==='eq'&&String(actual)!==v)return false;if(op==='is'&&v==='null'&&row[key]!=null)return false;if(op==='gt'&&!(row[key]>v))return false;}return true;}
 function setup(){
- tables={market_shops:[{id:shopId,owner_wallet:address,access_status:'test',booth_number:1,name:'Test shop',description:''}],market_products:[],market_login_challenges:[],market_sessions:[],market_inquiries:[],market_admins:[],market_admin_sessions:[],market_moderation_log:[]};cookie='';fetches=[];rateAllowed=true;shopPictures=new Set();
+ tables={market_shops:[{id:shopId,owner_wallet:address,access_status:'test',booth_number:1,name:'Test shop',description:''}],market_products:[],market_login_challenges:[],market_sessions:[],market_inquiries:[],market_admins:[],market_admin_sessions:[],market_moderation_log:[],market_rental_intents:[],market_alert_contacts:[]};cookie='';fetches=[];rateAllowed=true;shopPictures=new Set();
  process.env.SUPABASE_URL='https://xqdrecxqkldhznydglev.supabase.co';process.env.SUPABASE_SECRET_KEY='sb_secret_test';
  globalThis.fetch=async(url,options={})=>{fetches.push({url,options});const u=new URL(url),method=options.method||'GET';assert.equal(options.headers.apikey,'sb_secret_test');
  if(u.pathname.includes('/rpc/market_reserve_inquiry'))return Response.json(rateAllowed);
@@ -117,3 +117,37 @@ test('shop photo preview accepts its own origin and keeps merchant authenticatio
  const hostile=await call('me',undefined,{event:{rawUrl:'https://deploy-preview-29--other-site.netlify.app/.netlify/functions/market-api?route=me'}});
  assert.equal(hostile.statusCode,403);
 });
+
+test('shop directory previews contain only published visible inventory and no private shop fields',async()=>{
+ setup();tables.market_shops[0].name='Stache Rugs';tables.market_shops[0].description='Custom hand-tufted rugs';tables.market_shops[0].inquiry_email='private@example.test';
+ for(const [name,status,hidden] of [['Visible rug','published',false],['Hidden rug','published',true],['Draft rug','draft',false],['Archived rug','archived',false]])tables.market_products.push({id:randomUUID(),shop_id:shopId,name,status,moderation_hidden:hidden,quantity:1,image_path:null});
+ const response=await call('shops',undefined,{query:{category:'home',q:'stache'}});assert.equal(response.statusCode,200,response.body);const data=JSON.parse(response.body);assert.equal(data.total,1);assert.equal(data.shops[0].product_count,1);assert.deepEqual(data.shops[0].previews.map(p=>p.name),['Visible rug']);assert(data.shops[0].categories.includes('custom'));assert(!response.body.includes(address));assert(!response.body.includes('private@example.test'));
+ assert.equal(JSON.parse((await call('shops',undefined,{query:{category:'digital'}})).body).total,0);
+ assert.equal((await call('shops',undefined,{query:{category:'invalid'}})).statusCode,400);
+ assert.equal((await call('shops',undefined,{query:{offset:-1}})).statusCode,400);
+ tables.market_shops[0].moderation_suspended=true;assert.equal(JSON.parse((await call('shops')).body).total,0);
+});
+test('directory pagination has stable boundaries and includes empty shops',async()=>{
+ setup();tables.market_shops=[];for(let n=1;n<=14;n++)tables.market_shops.push({id:randomUUID(),name:'Shop '+n,description:'',booth_number:n,access_status:'test'});
+ const first=JSON.parse((await call('shops')).body);assert.equal(first.shops.length,12);assert(first.hasMore);assert.equal(first.total,14);assert.equal(first.shops[0].product_count,0);
+ const second=JSON.parse((await call('shops',undefined,{query:{offset:first.nextOffset}})).body);assert.equal(second.shops.length,2);assert(!second.hasMore);assert.equal(second.shops[0].booth_number,13);
+});
+test('merchant overview uses only the authenticated shop rental and verified alert records',async()=>{
+ setup();assert.equal((await call('overview')).statusCode,401);await login();tables.market_shops[0].rental_expires_at='2026-12-01T00:00:00Z';tables.market_rental_intents.push({shop_id:shopId,wallet_address:address,state:'activated',tier:'diamond',months:6},{shop_id:foreignId,wallet_address:otherAddress,state:'activated',tier:'meta',months:12});tables.market_alert_contacts.push({shop_id:shopId,owner_wallet:address,enabled:true,verified_at:'2026-10-18T00:00:00Z',email:'private@example.test'});
+ const response=await call('overview');assert.equal(response.statusCode,200,response.body);const data=JSON.parse(response.body);assert.equal(data.rental.tier,'diamond');assert.equal(data.rental.months,6);assert.equal(data.rental.expiresAt,'2026-12-01T00:00:00Z');assert(data.alertsEnabled);assert(!response.body.includes('private@example.test'));tables.market_alert_contacts[0].enabled=false;assert.equal(JSON.parse((await call('overview')).body).alertsEnabled,false);
+});
+
+test('extra product photos are scoped to the authenticated shop and appear in galleries without a primary picture',async()=>{
+ setup();const id=randomUUID(),otherId=randomUUID();tables.market_products.push({id,shop_id:shopId,name:'Rug',status:'published',image_path:null,moderation_hidden:false},{id:otherId,shop_id:foreignId,name:'Foreign',status:'published',image_path:null});
+ const photo={id,slot:1,type:'image/png',data:Buffer.from([137,80,78,71,13,10,26,10,0,0,0,0]).toString('base64')};
+ assert.equal((await call('product-photo',photo)).statusCode,401);await login();assert.equal((await call('product-photo',{...photo,id:otherId})).statusCode,404);assert.equal((await call('product-photo',{...photo,slot:5})).statusCode,400);assert.equal((await call('product-photo',photo)).statusCode,200);
+ let catalog=JSON.parse((await call('catalog')).body);assert.equal(catalog.products[0].image_urls.length,1);assert(catalog.products[0].image_url.includes('slot=1'));assert.equal(catalog.products[0].primary_image_url,null);
+ assert.equal((await call('image',undefined,{query:{product:id,slot:1}})).statusCode,302);
+ tables.market_products[0].moderation_hidden=true;const ownerCookie=cookie;cookie='';assert.equal((await call('image',undefined,{query:{product:id,slot:1}})).statusCode,401);assert.equal(JSON.parse((await call('catalog')).body).products.length,0);cookie=ownerCookie;
+ assert.equal((await call('product-photo',{id,slot:1,remove:true})).statusCode,200);assert.equal((await call('image',undefined,{query:{product:id,slot:1}})).statusCode,404);
+});
+test('merchant unread count excludes other shops and messages already read or closed',async()=>{
+ setup();await login();tables.market_inquiries.push({id:randomUUID(),shop_id:shopId,status:'new'},{id:randomUUID(),shop_id:shopId,status:'read'},{id:randomUUID(),shop_id:shopId,status:'closed'},{id:randomUUID(),shop_id:foreignId,status:'new'});let summary=JSON.parse((await call('overview')).body);assert.equal(summary.unreadCount,1);await call('inquiry-status',{id:tables.market_inquiries[0].id,status:'read'});summary=JSON.parse((await call('overview')).body);assert.equal(summary.unreadCount,0);
+});
+
+test('term expiry pauses public catalog and editing without deleting inventory; renewal restores both',async()=>{setup();await login();const id=randomUUID();tables.market_products.push({id,shop_id:shopId,status:'published',name:'Saved item',quantity:1});tables.market_shops[0].access_status='active';tables.market_shops[0].rental_expires_at=new Date(Date.now()-1000).toISOString();assert.equal((await call('catalog')).statusCode,404);assert.equal((await call('products')).statusCode,403);assert.equal(tables.market_products.length,1);tables.market_shops[0].rental_expires_at=new Date(Date.now()+86400000).toISOString();assert.equal((await call('catalog')).statusCode,200);assert.equal((await call('products')).statusCode,200);assert.equal(tables.market_products[0].id,id);});

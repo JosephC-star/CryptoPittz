@@ -51,7 +51,7 @@ export async function handler(event){try{
  const auth=await identity(event,origin),address=auth.wallet_address,shop=await owner(address);
  if(route==='logout'){await db('market_rental_sessions?id=eq.'+auth.id,'PATCH',{revoked_at:new Date().toISOString()});return response(200,{signedOut:true},{'Set-Cookie':cookie('',0)});}
  if(route==='me'){
-  const rows=await db('market_rental_intents?wallet_address=eq.'+address+'&state=in.(review,submitted,activated)&order=created_at.desc&limit=1');return response(200,{address,shop:shop?{name:shop.name,booth_number:shop.booth_number,rental_expires_at:shop.rental_expires_at}:null,intent:rows.length?publicIntent(rows[0]):null});
+  const rows=await db('market_rental_intents?wallet_address=eq.'+address+'&state=in.(review,submitted,activated)&order=created_at.desc&limit=1');return response(200,{address,shop:shop?{name:shop.name,booth_number:shop.booth_number,access_status:shop.access_status,rental_expires_at:shop.rental_expires_at}:null,intent:rows.length?publicIntent(rows[0]):null});
  }
  if(route==='quote'){
   if(body.acceptTerms!==true||body.termsVersion!==RENTAL_TERMS_VERSION)fail(400,'Acknowledge the final-duration, no-refund and no-proration rental terms before continuing.');

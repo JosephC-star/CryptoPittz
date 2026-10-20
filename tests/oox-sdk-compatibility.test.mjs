@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {Address} from '@multiversx/sdk-core';
+import {OOXClient,parseAmount,formatAmount} from '@oox-marketplace/sdk-core';
+import {checkTransaction} from '../src/features/oox/transactionValidation.js';
+import {CONTRACT} from '../src/features/oox/validation.js';
+const sender=Address.newFromHex('11'.repeat(32)).toBech32();
+const client=new OOXClient({network:'mainnet',marketplaceContract:CONTRACT});
+const hex=text=>Buffer.from(text).toString('hex');
+test('renamed official SDK preserves exact atomic amount conversion',()=>{assert.equal(parseAmount('0.123456789012345678',18),123456789012345678n);assert.equal(formatAmount(123456789012345678n,18),'0.123456789012345678');});
+test('renamed SDK buy builder matches the existing reviewed purchase fields',async()=>{const tx=await client.tx.buy({sender,nonce:7n,auctionId:7,collection:'PITTZ-1a4c2d',nftNonce:1,amount:1000000000000000000n,paymentToken:'EGLD'});const data='buy@07@'+hex('PITTZ-1a4c2d')+'@01';const payload=checkTransaction(tx,{sender,receiver:CONTRACT,value:'1000000000000000000',gasLimit:16000000,data:Buffer.from(data).toString('base64')});assert.equal(payload.nonce,7);});
+test('renamed SDK listing builder preserves self-transfer and exact listing arguments',async()=>{const amount=1000000000000000000n,deadline=1900000000;const [tx]=await client.tx.list({sender,nonce:8n,nfts:[{collection:'PITTZ-1a4c2d',nftNonce:1,quantity:1n}],minBid:amount,maxBid:amount,paymentToken:'EGLD',deadline});const contractHex=Buffer.from(Address.newFromBech32(CONTRACT).getPublicKey()).toString('hex');const data='ESDTNFTTransfer@'+hex('PITTZ-1a4c2d')+'@01@01@'+contractHex+'@'+hex('auctionToken')+'@0de0b6b3a7640000@0de0b6b3a7640000@713fb300@'+hex('EGLD')+'@@';checkTransaction(tx,{sender,receiver:sender,value:'0',gasLimit:12000000,data:Buffer.from(data).toString('base64')});});
+test('renamed SDK cancellation withdraws the reviewed listing without a payment',async()=>{const tx=await client.tx.cancel({sender,nonce:9n,auctionId:7});checkTransaction(tx,{sender,receiver:CONTRACT,value:'0',gasLimit:11000000,data:Buffer.from('withdraw@07').toString('base64')});});

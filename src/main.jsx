@@ -16,6 +16,17 @@ const Pittensor = lazy(() => import("./features/bonez-burn/Pittensor.jsx"));
 const FinancialDistrict = lazy(() => import("./features/financial-district/FinancialDistrict.jsx"));
 const pagePath = window.location.pathname.replace(/\/$/, "");
 
+const pageTitles = {
+  "/financial-district": "Financial District · The PittzStop",
+  "/pittensor": "Pittensor · The PittzStop",
+  "/bonez-swap": "Token Swap · The PittzStop",
+  "/merchant-access": "Merchant Backroom · The PittzStop",
+  "/market-rent": "Storefront Rentals · The PittzStop",
+  "/market-admin": "Market Administration · The PittzStop",
+};
+// Storefront titles come from the server so shared shop links retain their identity.
+if (pageTitles[pagePath]) document.title = pageTitles[pagePath];
+
 const config = {
   storage: {
     getStorageCallback: () => sessionStorage,
@@ -53,6 +64,15 @@ initApp(config)
   })
   .catch((error) => {
     console.error("MultiversX initialization failed:", error);
+    const root = document.getElementById("root");
+    const panel = document.createElement("main");
+    panel.style.cssText = "max-width:640px;margin:12vh auto;padding:28px;color:#f5e6c8;background:#171b20;border:1px solid #9e8650;border-radius:14px;font:16px/1.7 system-ui";
+    panel.setAttribute("role", "alert");
+    const title = document.createElement("h1");title.textContent = "The PittzStop could not finish loading.";
+    const message = document.createElement("p");message.textContent = "Check your connection and try again. If you just approved a transaction, check its status in your wallet before submitting another.";
+    const retry = document.createElement("button");retry.type = "button";retry.textContent = "Try loading again";retry.onclick = () => window.location.reload();
+    const help = document.createElement("a");help.href = "mailto:support@clemonswebco.com";help.textContent = "Contact technical support";help.style.marginLeft = "18px";
+    panel.append(title, message, retry, help);root.replaceChildren(panel);
   });
 
 

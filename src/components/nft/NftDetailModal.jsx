@@ -1,4 +1,5 @@
-import { Component, lazy, Suspense, useEffect, useState, useCallback } from "react";
+import {nftArrowDirection} from '../../utils/modalKeyboard.mjs';
+import { Component, lazy, Suspense, useEffect, useState, useCallback, useRef } from "react";
 import { loadPreview } from "../../features/oox/loadPreview";
 const OoxPurchasePreview = lazy(loadPreview);
 class PurchasePreviewBoundary extends Component {
@@ -23,15 +24,34 @@ export default function NftDetailModal({
   onPrevious,
   onNext,
 }) {
+  const panelRef=useRef(null);
+  const open=!!nft;
+  const [imageFailed,setImageFailed]=useState(false);
+  useEffect(()=>{setImageFailed(false);},[nft?.identifier]);
+  useEffect(()=>{
+    if(!open)return;
+    const previousFocus=document.activeElement,previousOverflow=document.body.style.overflow;
+    document.body.style.overflow='hidden';
+    panelRef.current?.querySelector('button')?.focus({preventScroll:true});
+    return()=>{document.body.style.overflow=previousOverflow;if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});};
+  },[open]);
   const [purchaseAvailability,setPurchaseAvailability]=useState(null);
   const onPurchaseAvailable=useCallback((identifier,available)=>setPurchaseAvailability({identifier,available}),[]);
   useEffect(() => {
     if (!nft) return undefined;
 
     function handleKeyDown(event) {
-      if (event.key === "Escape") onClose();
-      if (event.key === "ArrowLeft" && hasMultipleNfts) onPrevious();
-      if (event.key === "ArrowRight" && hasMultipleNfts) onNext();
+      if(event.defaultPrevented||document.querySelector('dialog[open]'))return;
+      if(event.key==='Tab'){
+        const nodes=[...panelRef.current.querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]')].filter(node=>node.getClientRects().length);
+        const first=nodes[0],last=nodes.at(-1);
+        if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
+        else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
+        return;
+      }
+      if(event.key==='Escape'){event.preventDefault();onClose();return;}
+      const direction=nftArrowDirection(event);
+      if(hasMultipleNfts&&direction){event.preventDefault();if(direction<0)onPrevious();else onNext();}
     }
 
     window.addEventListener("keydown", handleKeyDown);
@@ -51,11 +71,12 @@ export default function NftDetailModal({
 
       <div
         className="nft-detail-panel"
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label="CryptoPittz NFT details"
       >
-        <button className="nft-detail-close" type="button" onClick={onClose}>
+        <button className="nft-detail-close" type="button" aria-label="Close NFT details" onClick={onClose}>
           ✕
         </button>
 
@@ -82,16 +103,17 @@ export default function NftDetailModal({
             </>
           )}
 
-          {image && (
+          {image && !imageFailed && (
             <img
               src={image}
               alt={nft.name || nft.identifier}
-              onError={(event) => {
-                event.currentTarget.style.display = "none";
+              onError={() => {
+                setImageFailed(true);
               }}
             />
           )}
 
+          {(!image||imageFailed)&&<p role="status">This Pittz image could not load. The identifier and details are still available below.</p>}
           {isOwned && <span className="owned-badge">OWNED ✓</span>}
         </div>
 
@@ -163,6 +185,7 @@ export default function NftDetailModal({
               </div>
             ))}
           </div>
+          <button className="btn" type="button" onClick={onClose}>Close details</button>
         </div>
       </div>
     </div>

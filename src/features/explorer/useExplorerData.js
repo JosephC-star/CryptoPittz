@@ -1,8 +1,10 @@
+import {readJson} from '../../utils/readJson.mjs';
 import { useEffect, useRef, useState } from "react";
 
 import { EXPLORER_COLLECTIONS } from "../../config/collections";
 
 export default function useExplorerData(pageSize) {
+  const [retryTick,setRetryTick]=useState(0),[indexError,setIndexError]=useState('');
   const [collection, setCollection] = useState(() => new URLSearchParams(window.location.search).get("collection") === "vice" ? "vice" : "original");
   const [page, setPage] = useState(0);
   const [pageNfts, setPageNfts] = useState([]);
@@ -18,6 +20,7 @@ export default function useExplorerData(pageSize) {
   const [searchResult, setSearchResult] = useState(null);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
+  const searchController=useRef(null);
   const cacheRef = useRef({ original: null, vice: null });
 
   const activeCollection = EXPLORER_COLLECTIONS[collection];
@@ -29,31 +32,30 @@ export default function useExplorerData(pageSize) {
       try {
         setPageLoading(true);
         setPageError("");
+        setPageNfts([]);
 
         const from = page * pageSize;
         const [nftsResponse, countResponse] = await Promise.all([
-          fetch(
+          readJson(
             `https://api.multiversx.com/collections/${activeCollection.collection}/nfts?from=${from}&size=${pageSize}`,
             { signal: controller.signal },
           ),
-          fetch(`https://api.multiversx.com/collections/${activeCollection.collection}/nfts/count`, {
+          readJson(`https://api.multiversx.com/collections/${activeCollection.collection}/nfts/count`, {
             signal: controller.signal,
           }),
         ]);
 
-        if (!nftsResponse.ok || !countResponse.ok) {
-          throw new Error("Unable to load collection");
-        }
-
         const [nftData, totalCount] = await Promise.all([
-          nftsResponse.json(),
-          countResponse.json(),
+          nftsResponse,
+          countResponse,
         ]);
 
+        if(controller.signal.aborted)return;
+        if(!Array.isArray(nftData)||!Number.isSafeInteger(totalCount)||totalCount<0)throw Error('Collection response was incomplete.');
         setPageNfts(nftData);
         setCollectionTotal(totalCount);
       } catch (error) {
-        if (error.name !== "AbortError") {
+        if (!controller.signal.aborted && error.name !== "AbortError") {
           console.error("Explorer lookup failed:", error);
           setPageError("The collection could not be loaded.");
         }
@@ -64,12 +66,13 @@ export default function useExplorerData(pageSize) {
 
     fetchCollectionPage();
     return () => controller.abort();
-  }, [activeCollection.collection, page, pageSize]);
+  }, [activeCollection.collection, page, pageSize,retryTick]);
 
   useEffect(() => {
     let cancelled = false;
     let readyTimeout;
     const controller = new AbortController();
+    setIndexError('');
     const cacheKey = collection;
     const cachedCollection = cacheRef.current[cacheKey];
 
@@ -87,29 +90,24 @@ export default function useExplorerData(pageSize) {
         setIndexReady(false);
         setLoadProgress({ loaded: 0, total: 0 });
 
-        const countResponse = await fetch(
+        const countResponse = await readJson(
           `https://api.multiversx.com/collections/${activeCollection.collection}/nfts/count`,
           { signal: controller.signal },
         );
 
-        if (!countResponse.ok) throw new Error("Unable to load collection count");
-
-        const totalCount = await countResponse.json();
+        const totalCount = countResponse;
+        if(!Number.isSafeInteger(totalCount)||totalCount<0)throw Error('Collection count was incomplete.');
         if (!cancelled) setLoadProgress({ loaded: 0, total: totalCount });
 
         const indexedNfts = [];
 
         for (let from = 0; from < totalCount; from += pageSize) {
-          const response = await fetch(
+          const response = await readJson(
             `https://api.multiversx.com/collections/${activeCollection.collection}/nfts?from=${from}&size=${pageSize}`,
             { signal: controller.signal },
           );
 
-          if (!response.ok) {
-            throw new Error(`Unable to load collection page starting at ${from}`);
-          }
-
-          indexedNfts.push(...(await response.json()));
+          indexedNfts.push(...(await response));
 
           if (!cancelled) {
             setAllNfts([...indexedNfts]);
@@ -126,6 +124,7 @@ export default function useExplorerData(pageSize) {
       } catch (error) {
         if (error.name !== "AbortError") {
           console.error("Global Explorer dataset failed:", error);
+          if(!cancelled)setIndexError('Some collection data could not load. Trait and filter results may be incomplete.');
         }
       } finally {
         if (!cancelled) setIndexLoading(false);
@@ -139,7 +138,7 @@ export default function useExplorerData(pageSize) {
       controller.abort();
       clearTimeout(readyTimeout);
     };
-  }, [activeCollection.collection, collection, pageSize]);
+  }, [activeCollection.collection, collection, pageSize,retryTick]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -147,21 +146,17 @@ export default function useExplorerData(pageSize) {
     async function fetchCollectionTotals() {
       try {
         const [originalResponse, viceResponse] = await Promise.all([
-          fetch("https://api.multiversx.com/collections/PITTZ-1a4c2d/nfts/count", {
+          readJson("https://api.multiversx.com/collections/PITTZ-1a4c2d/nfts/count", {
             signal: controller.signal,
           }),
-          fetch("https://api.multiversx.com/collections/PITTZVICE-c3ec94/nfts/count", {
+          readJson("https://api.multiversx.com/collections/PITTZVICE-c3ec94/nfts/count", {
             signal: controller.signal,
           }),
         ]);
 
-        if (!originalResponse.ok || !viceResponse.ok) {
-          throw new Error("Unable to load collection totals");
-        }
-
         const [originalCount, viceCount] = await Promise.all([
-          originalResponse.json(),
-          viceResponse.json(),
+          originalResponse,
+          viceResponse,
         ]);
 
         setOriginalTotal(originalCount);
@@ -173,9 +168,13 @@ export default function useExplorerData(pageSize) {
 
     fetchCollectionTotals();
     return () => controller.abort();
-  }, []);
+  }, [retryTick]);
+
+  useEffect(()=>{clearSearch();return()=>searchController.current?.abort();},[activeCollection.collection]);
 
   function clearSearch() {
+    searchController.current?.abort();
+    setSearchLoading(false);
     setSearchResult(null);
     setSearchError("");
   }
@@ -188,6 +187,8 @@ export default function useExplorerData(pageSize) {
       return;
     }
 
+    searchController.current?.abort();
+    const controller=new AbortController();searchController.current=controller;
     try {
       setSearchLoading(true);
       setSearchError("");
@@ -199,13 +200,11 @@ export default function useExplorerData(pageSize) {
         normalizedSearch.startsWith("pittz-") || normalizedSearch.startsWith("pittzvice-");
 
       if (looksLikeFullIdentifier) {
-        const response = await fetch(
-          `https://api.multiversx.com/nfts/${encodeURIComponent(search)}`,
+        const response = await readJson(
+          `https://api.multiversx.com/nfts/${encodeURIComponent(search)}`,{signal:controller.signal}
         );
 
-        if (!response.ok) throw new Error("NFT not found");
-
-        const nft = await response.json();
+        const nft = await response;if(controller.signal.aborted)return;
         if (nft.collection !== collectionId) {
           setSearchError("That Pitt belongs to a different CryptoPittz collection.");
           return;
@@ -222,15 +221,14 @@ export default function useExplorerData(pageSize) {
           : `CryptoPittz #${pittNumber}`
         : search;
 
-      const response = await fetch(
+      const response = await readJson(
         `https://api.multiversx.com/collections/${collectionId}/nfts?name=${encodeURIComponent(
           searchName,
-        )}&size=10`,
+        )}&size=10`,{signal:controller.signal}
       );
 
-      if (!response.ok) throw new Error("Unable to search CryptoPittz");
-
-      const data = await response.json();
+      const data = await response;if(controller.signal.aborted)return;
+      if(!Array.isArray(data))throw Error('Search response was incomplete.');
       if (!data.length) {
         setSearchError(`No ${activeCollection.name} matching that search was found.`);
         return;
@@ -241,10 +239,11 @@ export default function useExplorerData(pageSize) {
 
       setSearchResult(exactMatch);
     } catch (error) {
+      if(controller.signal.aborted)return;
       console.error("CryptoPittz search failed:", error);
-      setSearchError("The collection search could not be completed.");
+      setSearchError(error.status===404?"No Pittz with that identifier was found. Check the identifier or try a number or name.":"The collection search could not be completed. Please try again.");
     } finally {
-      setSearchLoading(false);
+      if(!controller.signal.aborted)setSearchLoading(false);
     }
   }
 
@@ -254,6 +253,8 @@ export default function useExplorerData(pageSize) {
     clearSearch,
     collection,
     collectionTotal,
+    indexError,
+    retry:()=>{cacheRef.current[collection]=null;setRetryTick(tick=>tick+1);},
     indexLoading,
     indexReady,
     loadProgress,

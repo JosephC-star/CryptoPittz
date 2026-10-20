@@ -11,7 +11,7 @@ const PITTZ_PER_PAGE = 40;
 import { loadMyListings } from '../oox/loadPreview';
 const MyListings=lazy(loadMyListings);
 
-function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNft }) {
+function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNft, onRetry, onConnect }) {
   const [expanded, setExpanded] = useState(true);
   const headingRef = useRef(null);
   const toggleRef = useRef(null);
@@ -162,11 +162,11 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
 
       <div className="panel">
         <div className="inner">
-          {!address && <p className="subtitle">Connect your wallet to see your NFTs.</p>}
-          {address && loading && <p className="subtitle">Searching your wallet...</p>}
-          {address && error && <p className="subtitle">{error}</p>}
+          {!address&&<div><p>Connect your wallet to see your Original and Vice Pittz.</p><button className="btn" onClick={onConnect}>Connect wallet</button></div>}
+          {address && loading && <p className="subtitle" role="status">Searching your wallet...</p>}
+          {address&&error&&<div role="status"><p>{error}</p><button className="btn" onClick={onRetry} disabled={loading}>Retry wallet lookup</button></div>}
           {address && !loading && !error && nfts.length === 0 && (
-            <p className="subtitle">No NFTs were found in this wallet.</p>
+            <div role="status"><p>No Original or Vice Pittz were found in this wallet. Other NFTs are not shown here.</p><a className="btn" href="/?sale=listed&collection=original#explorer">Browse Pittz for sale</a><button className="btn" onClick={onRetry}>Refresh wallet</button></div>
           )}
 
           {address && !loading && !error && nfts.length > 0 && (
@@ -326,6 +326,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                 )}
               </div>
 
+              {!filteredNfts.length&&<div role="status"><p>No Pittz in this collection match your filters. Clear the filters or try the other collection tab.</p><button className="btn" onClick={resetFilters}>Clear filters</button></div>}
               <div className="wallet-nft-grid owned-nft-grid">
                 {visibleNfts.map((nft) => (
                   <NftCard

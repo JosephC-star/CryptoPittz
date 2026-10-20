@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useGetAccount } from '@multiversx/sdk-dapp/out/react/account/useGetAccount';
-import { formatAmount } from '@oox-marketplace/sdk';
+import { formatAmount } from '@oox-marketplace/sdk-core';
 import { client, json, prepare, submit } from './trade';
 import { readListingItems } from './listingResponse';
 import { CONTRACT, validateListing } from './validation';

@@ -1,3 +1,4 @@
+import WalletConnectModal from './components/WalletConnectModal';
 import { useRef, useState } from "react";
 import "./App.css";
 
@@ -52,10 +53,13 @@ function App() {
   const [mobileWalletConnecting, setMobileWalletConnecting] = useState(false);
   const [mobileWalletError, setMobileWalletError] = useState("");
   const [supportEmailCopied, setSupportEmailCopied] = useState(false);
+  const [supportCopyError,setSupportCopyError]=useState(false);
 
   const EXPLORER_PAGE_SIZE = 100;
 
   const {
+    retry:retryExplorer,
+    indexError:explorerIndexError,
     activeCollection,
     allNfts: explorerAllNfts,
     clearSearch: clearGlobalSearch,
@@ -84,7 +88,7 @@ function App() {
   } = useOoxListings(activeCollection.collection);
 
   const account = useGetAccount();
-  const { nfts, loading: nftsLoading, error: nftsError } = useWalletPittz(account.address);
+  const { nfts, loading: nftsLoading, error: nftsError, retry:retryWallet } = useWalletPittz(account.address);
   const {
     market: bonezMarket,
     marketLoading: bonezMarketLoading,
@@ -106,6 +110,15 @@ function App() {
   });
   function closeMobileMenu() {
     setMobileOpen(false);
+  }
+
+  function navigateExplorer(target) {
+    setExplorerExpanded(true);
+    setMobileOpen(false);
+    setDesktopGroup(null);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      document.getElementById(target)?.scrollIntoView({ block: "start", behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? "instant" : "smooth" });
+    }));
   }
 
   function toggleMobileGroup(group) {
@@ -169,6 +182,8 @@ function App() {
         error instanceof Error ? error.message : "Unable to connect with xPortal.",
       );
     } finally {
+      walletConnectAnchorRef.current?.replaceChildren();
+      setWalletOverlayOpen(false);
       setMobileWalletConnecting(false);
     }
   }
@@ -382,10 +397,10 @@ function App() {
                   Explore <span className="caret" aria-hidden="true"></span>
                 </button>
                 <div className="dropdown" role="menu">
-                  <a href="#arcade" onClick={() => setDesktopGroup(null)}>CryptoPittz Arcade</a>
+                  <a href="#arcade" onClick={() => setDesktopGroup(null)}>Pittz Playground</a>
                   <a href="#my-pittz" onClick={() => setDesktopGroup(null)}>My Pittz</a>
-                  <a href="#explorer" onClick={() => setDesktopGroup(null)}>CryptoPittz Explorer</a>
-                  <a href="#traits" onClick={() => setDesktopGroup(null)}>Traits</a>
+                  <a href="#explorer" onClick={() => navigateExplorer("explorer")}>CryptoPittz Explorer</a>
+                  <a href="#traits" onClick={() => navigateExplorer("traits")}>Traits</a>
                   <a href="#merch" onClick={() => setDesktopGroup(null)}>Pittz Flea Market</a>
                 </div>
               </div>
@@ -501,18 +516,18 @@ function App() {
 
               <div className="mobile-links">
                 <a href="#arcade" onClick={closeMobileMenu}>
-                  CryptoPittz Arcade
+                  Pittz Playground
                 </a>
 
                 <a href="#my-pittz" onClick={closeMobileMenu}>
                   My Pittz
                 </a>
 
-                <a href="#explorer" onClick={closeMobileMenu}>
+                <a href="#explorer" onClick={() => navigateExplorer("explorer")}>
                   CryptoPittz Explorer
                 </a>
 
-                <a href="#traits" onClick={closeMobileMenu}>
+                <a href="#traits" onClick={() => navigateExplorer("traits")}>
                   Traits
                 </a>
 
@@ -827,6 +842,8 @@ function App() {
             nfts={nfts}
             loading={nftsLoading}
             error={nftsError}
+            onRetry={retryWallet}
+            onConnect={connectWallet}
             bonezUsdPrice={Number(bonezMarket?.priceUsd)}
             onOpenNft={openNftDetails}
           />
@@ -870,7 +887,9 @@ function App() {
                   <p className="subtitle">Loading the CryptoPittz collection...</p>
                 )}
 
-                {explorerError && <p className="subtitle">{explorerError}</p>}
+                {explorerError&&<div role="status"><p>{explorerError}</p><button className="btn" onClick={retryExplorer}>Retry collection</button></div>}
+                {explorerIndexError&&!explorerError&&<div role="status"><p>{explorerIndexError}</p><button className="btn" disabled={explorerAllLoading} onClick={retryExplorer}>Retry collection data</button></div>}
+                {!explorerLoading&&!explorerError&&!explorerNfts.length&&<div role="status"><p>No items were returned for this collection page.</p><button className="btn" onClick={()=>{setExplorerPage(0);retryExplorer();}}>Reload first page</button></div>}
 
                 {!explorerLoading && !explorerError && explorerNfts.length > 0 && (
                   <>
@@ -916,6 +935,7 @@ function App() {
                     />
 
                     <TraitFinder
+                      id="traits"
                       nfts={explorerAllNfts}
                       loading={explorerAllLoading}
                       selected={explorerTraits}
@@ -971,6 +991,7 @@ function App() {
                         );
                       })()}
 
+                    {!filteredExplorerNfts.length&&!explorerAllLoading&&<div role="status"><p>No Pittz match these filters. Try fewer traits or clear the filters.</p><button className="btn" onClick={resetExplorerFilters}>Reset filters</button></div>}
                     <div className="wallet-nft-grid explorer-nft-grid">
                       {explorerPageNfts.map((nft) => {
                         const isOwned =
@@ -1118,15 +1139,13 @@ function App() {
 
                     <h3>Pittensor</h3>
 
-                    <p>View the Pittensor account and its activity through TaoStats.</p>
+                    <p>Add BONEZ to the pack’s monthly burn pile. Deposits join the pile; the team carries out the monthly burn.</p>
 
                     <a
                       className="btn primary"
-                      href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxikVdFCh3ndX6vXVMa7/transactions"
-                      target="_blank"
-                      rel="noreferrer"
+                      href="/pittensor/"
                     >
-                      View TaoStats ↗
+                      Enter Pittensor →
                     </a>
                   </div>
                   <div className="ecosystem-card">
@@ -1161,7 +1180,10 @@ function App() {
 
             <div className="panel">
               <div className="inner">
-                <p className="subtitle">Official contact information will be added here.</p>
+                <p className="subtitle">Questions about CryptoPittz, the community, or the flea market? Contact the team.</p>
+                <a className="btn primary" href="mailto:Cryptopittz69@gmail.com">Email CryptoPittz ↗</a>
+                <p><a href="mailto:Cryptopittz69@gmail.com">Cryptopittz69@gmail.com</a></p>
+                <p>For website bugs or technical help, <a href="mailto:support@clemonswebco.com">contact Clemons Web Co.</a> For an item or order, contact its merchant directly.</p>
               </div>
             </div>
           </section>
@@ -1183,6 +1205,7 @@ function App() {
           <div className="footer-community">
             <strong>© {new Date().getFullYear()} CryptoPittz</strong>
             <span>All vibes reserved 🐾</span>
+            <a href="mailto:Cryptopittz69@gmail.com">Official contact: Cryptopittz69@gmail.com ↗</a>
           </div>
 
           <div className="footer-support">
@@ -1195,15 +1218,16 @@ function App() {
               </a>
               <button
                 type="button"
-                onClick={() => {
-                  navigator.clipboard.writeText("support@clemonswebco.com");
-                  setSupportEmailCopied(true);
-                  window.setTimeout(() => setSupportEmailCopied(false), 1800);
+                onClick={async () => {
+                  setSupportEmailCopied(false);setSupportCopyError(false);
+                  try{await navigator.clipboard.writeText("support@clemonswebco.com");setSupportEmailCopied(true);window.setTimeout(() => setSupportEmailCopied(false),1800);}
+                  catch{setSupportCopyError(true);}
                 }}
               >
                 {supportEmailCopied ? "Copied! ✓" : "Copy Address"}
               </button>
             </div>
+            {supportCopyError&&<p role="status">Copy unavailable. Select support@clemonswebco.com above, or choose Email Support.</p>}
           </div>
 
         </div>
@@ -1220,27 +1244,7 @@ function App() {
         onPrevious={showPreviousNft}
         onNext={showNextNft}
       />
-      {walletOverlayOpen && (
-        <button
-          className="walletconnect-close"
-          type="button"
-          aria-label="Close wallet connection"
-          onClick={() => {
-            if (walletConnectAnchorRef.current) {
-              walletConnectAnchorRef.current.replaceChildren();
-            }
-
-            setWalletOverlayOpen(false);
-            setMobileWalletConnecting(false);
-          }}
-        >
-          ✕
-        </button>
-      )}
-
-      <div ref={walletConnectAnchorRef} className="walletconnect-anchor" />
-
-      <div ref={walletConnectAnchorRef} className="walletconnect-anchor" />
+      <WalletConnectModal open={walletOverlayOpen} anchorRef={walletConnectAnchorRef} onClose={() => {setWalletOverlayOpen(false);setMobileWalletConnecting(false);}} />
     </>
   );
 }
