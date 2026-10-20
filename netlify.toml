@@ -101,3 +101,22 @@
   to = "/.netlify/functions/market-shop-page"
   status = 200
   force = true
+
+# Keep bookmarked rental and legacy merchant URLs on the active pages.
+[[redirects]]
+  from = "/market-rent/"
+  to = "/market-rent"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/flea-market/merchant"
+  to = "/merchant-access"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/flea-market/merchant/*"
+  to = "/merchant-access"
+  status = 301
+  force = true

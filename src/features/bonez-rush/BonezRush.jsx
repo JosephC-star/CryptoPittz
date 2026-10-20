@@ -275,7 +275,7 @@ function BonezRush({ embedded = false, equippedPittz = null }) {
   return (
     <Wrapper id="bonez-rush" className={`bonez-rush-section ${embedded ? "is-embedded" : ""}`}>
       {!embedded && <div className="section-title bonez-rush-title">
-        <span>🎮 CryptoPittz Arcade</span>
+        <span>🎮 Pittz Playground</span>
         <h2>BONEZ Rush</h2>
         <p>Tap, click or swipe the falling BONEZ. Dodge the bad bones. Chase the crunch.</p>
       </div>}
@@ -391,7 +391,7 @@ function BonezRush({ embedded = false, equippedPittz = null }) {
             onClick={() => setSoundEnabled((current) => !current)}
             aria-pressed={soundEnabled}
           >
-            {soundEnabled ? "🔊 Arcade Sound On" : "🔇 Arcade Sound Off"}
+            {soundEnabled ? "🔊 Game Sound On" : "🔇 Game Sound Off"}
           </button>
         </div>
       </div>

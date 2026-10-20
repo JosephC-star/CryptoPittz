@@ -48,3 +48,22 @@ Internal target: November 1, 2026 for the entire site, including the flea market
 - [ ] Obtain owner approval of the final preview and launch scope.
 - [ ] Publish the approved changes, then check key live-domain paths and inquiry delivery.
 - [ ] Keep a known working release available for rollback.
+
+## Pass 1 — content, routes and startup (October 19)
+
+Completed in preview source:
+
+- [x] Filled the homepage Contact panel with the official team email and separate technical support route.
+- [x] Renamed remaining authored Arcade menu/game labels to Playground or Game Sound; retained internal route/class names to preserve bookmarks and styling.
+- [x] Corrected the homepage Pittensor card to open /pittensor/ and describe adding to the monthly burn pile.
+- [x] Added a branded homepage title, description and Open Graph/Twitter metadata using the existing CryptoPittz logo. The actual social-platform crop is still unverified.
+- [x] Added page-specific browser titles for the Financial District, Pittensor, swap and merchant routes while preserving server-generated shop titles.
+- [x] Added a visible retry/support message if wallet SDK startup fails, replacing a blank root; added a no-JavaScript notice.
+- [x] Redirected the obsolete merchant demo to the real merchant backroom and added the bookmarked trailing-slash rental route.
+- [x] Explorer/Traits navigation now opens collapsed Explorer content before scrolling.
+- [x] Authored static route/anchor/asset audit: 65 unique local references resolve. Existing market audit: 73 authored references resolve. Compiled playground script syntax checks pass.
+- [x] All 234 automated tests pass; Vite build succeeds (existing large-chunk warning remains).
+
+Visual review was attempted but the preview opens Netlify's “This site is private” team sign-in screen in the available browser. No preview authentication was performed. Source audits do not verify responsive layout, dynamic/API links, third-party content, mail delivery or wallet transactions. The broader checkboxes above remain pending until those checks are actually completed.
+
+Next hands-on pass: mobile/desktop navigation and modal layout, wallet connect/disconnect and account switching, NFT listing/purchase recovery, financial tool displays, one full game round per cabinet, and a merchant inquiry. Keep the Playground's existing WORK IN PROGRESS label until the owner confirms release scope. No live financial transaction, inquiry email or production deployment was performed in this pass.

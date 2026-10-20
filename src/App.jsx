@@ -108,6 +108,15 @@ function App() {
     setMobileOpen(false);
   }
 
+  function navigateExplorer(target) {
+    setExplorerExpanded(true);
+    setMobileOpen(false);
+    setDesktopGroup(null);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      document.getElementById(target)?.scrollIntoView({ block: "start", behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? "instant" : "smooth" });
+    }));
+  }
+
   function toggleMobileGroup(group) {
     setMobileGroup((current) => (current === group ? null : group));
   }
@@ -382,10 +391,10 @@ function App() {
                   Explore <span className="caret" aria-hidden="true"></span>
                 </button>
                 <div className="dropdown" role="menu">
-                  <a href="#arcade" onClick={() => setDesktopGroup(null)}>CryptoPittz Arcade</a>
+                  <a href="#arcade" onClick={() => setDesktopGroup(null)}>Pittz Playground</a>
                   <a href="#my-pittz" onClick={() => setDesktopGroup(null)}>My Pittz</a>
-                  <a href="#explorer" onClick={() => setDesktopGroup(null)}>CryptoPittz Explorer</a>
-                  <a href="#traits" onClick={() => setDesktopGroup(null)}>Traits</a>
+                  <a href="#explorer" onClick={() => navigateExplorer("explorer")}>CryptoPittz Explorer</a>
+                  <a href="#traits" onClick={() => navigateExplorer("traits")}>Traits</a>
                   <a href="#merch" onClick={() => setDesktopGroup(null)}>Pittz Flea Market</a>
                 </div>
               </div>
@@ -501,18 +510,18 @@ function App() {
 
               <div className="mobile-links">
                 <a href="#arcade" onClick={closeMobileMenu}>
-                  CryptoPittz Arcade
+                  Pittz Playground
                 </a>
 
                 <a href="#my-pittz" onClick={closeMobileMenu}>
                   My Pittz
                 </a>
 
-                <a href="#explorer" onClick={closeMobileMenu}>
+                <a href="#explorer" onClick={() => navigateExplorer("explorer")}>
                   CryptoPittz Explorer
                 </a>
 
-                <a href="#traits" onClick={closeMobileMenu}>
+                <a href="#traits" onClick={() => navigateExplorer("traits")}>
                   Traits
                 </a>
 
@@ -916,6 +925,7 @@ function App() {
                     />
 
                     <TraitFinder
+                      id="traits"
                       nfts={explorerAllNfts}
                       loading={explorerAllLoading}
                       selected={explorerTraits}
@@ -1118,15 +1128,13 @@ function App() {
 
                     <h3>Pittensor</h3>
 
-                    <p>View the Pittensor account and its activity through TaoStats.</p>
+                    <p>Add BONEZ to the pack’s monthly burn pile. Deposits join the pile; the team carries out the monthly burn.</p>
 
                     <a
                       className="btn primary"
-                      href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxikVdFCh3ndX6vXVMa7/transactions"
-                      target="_blank"
-                      rel="noreferrer"
+                      href="/pittensor/"
                     >
-                      View TaoStats ↗
+                      Enter Pittensor →
                     </a>
                   </div>
                   <div className="ecosystem-card">
@@ -1161,7 +1169,10 @@ function App() {
 
             <div className="panel">
               <div className="inner">
-                <p className="subtitle">Official contact information will be added here.</p>
+                <p className="subtitle">Questions about CryptoPittz, the community, or the flea market? Contact the team.</p>
+                <a className="btn primary" href="mailto:Cryptopittz69@gmail.com">Email CryptoPittz ↗</a>
+                <p><a href="mailto:Cryptopittz69@gmail.com">Cryptopittz69@gmail.com</a></p>
+                <p>For website bugs or technical help, <a href="mailto:support@clemonswebco.com">contact Clemons Web Co.</a> For an item or order, contact its merchant directly.</p>
               </div>
             </div>
           </section>
