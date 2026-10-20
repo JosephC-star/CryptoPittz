@@ -117,3 +117,17 @@ These are verified source/build checks, not a completed visual or screen-reader 
 - [x] Added five request-helper tests for GET-only behavior, HTTP status, timeout, parent cancellation and body-read timeout. All 245 tests, build and static authored route/asset checks pass.
 
 These results cover the listed read paths, not every site request. Mutation/payment timeouts, financial API failures, actual email delivery and full mobile layout still need their separate checks. The pre-existing wallet API compatibility fallback remains read-only. No inquiry or payment was submitted during this pass.
+
+## Release approval and sharing/configuration review — October 20
+
+Joe reports the mobile walkthrough and hands-on checks passed and confirms owner approval to push the listed fixes. This is user-reported acceptance, not an independent browser observation. Merchants own their prices, payment methods, delivery, returns and cancellation information; verifying those details is not a site-release gate. Earlier pass notes describe the status at that time.
+
+- [x] Owner release approval reported by Joe.
+- [x] Public homepage, flea market and Playground supply canonical, Open Graph and Twitter metadata before JavaScript runs. Financial District, Pittensor and swap get built static HTML with their own share metadata; shop links retain server-generated merchant metadata.
+- [x] Social metadata replacement preserves literal merchant names (including dollar substitutions), escapes markup and keeps app scripts intact.
+- [x] Repository explicitly sets Netlify build command, dist publish directory and functions directory. Production public wallet build flags stay true; preview transaction flags remain controlled separately. No secret value was read or changed.
+- [x] Production-mode build, all 248 automated tests and authored route/asset checks pass.
+
+Live pre-release checks: homepage and market respond; public catalog/storage connection works. The public rental configuration reports enabled=false and benefitsEnabled=false. If still false after deployment, Netlify Functions scope must set MARKET_RENTALS_ENABLED=true and MARKET_KEY_BENEFITS_ENABLED=true for Production, followed by a production redeploy. These are existing non-secret runtime switches; build-time TOML settings do not establish their Functions runtime values. This connection cannot edit Netlify's private environment settings. No new reminder variable or SQL is needed. Existing verified email settings are reused.
+
+Public metadata/image reachability is checked after deploy; actual Facebook/X card rendering and old scraper caches remain platform-dependent. No wallet transaction, inquiry email or merchant policy change is performed during this release.
