@@ -14,6 +14,7 @@ async function api(route,body){const r=await fetch('/.netlify/functions/market-r
 export default function RentalCenter(){
  const account=useGetAccount(),anchor=useRef(null);
  const [config,setConfig]=useState(null),[current,setCurrent]=useState(null),[intent,setIntent]=useState(null),[prepared,setPrepared]=useState(null),[name,setName]=useState(''),[months,setMonths]=useState(1),[standard,setStandard]=useState(false),[accepted,setAccepted]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[walletOpen,setWalletOpen]=useState(false);
+ useEffect(()=>{setPrepared(null);},[account.address,current?.address,intent?.id,intent?.state]);
  async function refresh(){const data=await api('me');setCurrent(data);setIntent(data.intent);return data;}
  useEffect(()=>{UnlockPanelManager.init({loginHandler:()=>{}});api('config').then(async c=>{setConfig(c);if(c.enabled)try{await refresh();}catch{}}).catch(e=>setMessage(e.message));},[]);
  async function run(work){setBusy(true);setMessage('');try{await work();}catch(e){setMessage(e.message);}finally{setBusy(false);}}

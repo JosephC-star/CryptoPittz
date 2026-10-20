@@ -16,5 +16,5 @@ const rewardClaim={txHash:claimHash,sender:wallet,receiver:CONTRACT,status:'succ
 test('Reinvestment uses only received BONEZ from the confirmed wallet pool-49 claim',()=>{
  assert.equal(reinvestClaimAmount(rewardClaim,wallet,claimHash),'2500000');
  assert.equal(reinvestClaimAmount({...rewardClaim,operations:[...rewardClaim.operations,{action:'transfer',type:'esdt',identifier:'OTHER-123456',sender:CONTRACT,receiver:wallet,value:'999999999'}]},wallet,claimHash),'2500000');
- for(const patch of [{status:'pending'},{receiver:wallet},{sender:CONTRACT},{txHash:'cd'.repeat(32)},{data:btoa('userClaim@32')},{operations:[]},{operations:[{...rewardClaim.operations[0],receiver:CONTRACT}]},{operations:[{...rewardClaim.operations[0],sender:wallet}]},{operations:[{...rewardClaim.operations[0],value:'1.2'}]}])assert.throws(()=>reinvestClaimAmount({...rewardClaim,...patch},wallet,claimHash));
+ for(const patch of [{status:'pending'},{pendingResults:true},{receiver:wallet},{sender:CONTRACT},{txHash:'cd'.repeat(32)},{data:btoa('userClaim@32')},{operations:[]},{operations:[{...rewardClaim.operations[0],receiver:CONTRACT}]},{operations:[{...rewardClaim.operations[0],sender:wallet}]},{operations:[{...rewardClaim.operations[0],value:'1.2'}]}])assert.throws(()=>reinvestClaimAmount({...rewardClaim,...patch},wallet,claimHash));
 });

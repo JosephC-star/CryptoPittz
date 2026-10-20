@@ -1,3 +1,4 @@
+import {transactionState} from '../../utils/transactionState.mjs';
 import { getAccount } from '@multiversx/sdk-dapp/out/methods/account/getAccount';
 import { getNetworkConfig } from '@multiversx/sdk-dapp/out/methods/network/getNetworkConfig';
 import { getAccountProvider } from '@multiversx/sdk-dapp/out/providers/helpers/accountProvider';
@@ -38,7 +39,7 @@ async function assertNoPending(){
  if(submissionUncertain)throw Error('Check the previous liquidity transaction in your wallet history before reloading and trying again.');
  if(!pendingHash)return;
  const previous=await getJson(`https://api.multiversx.com/transactions/${pendingHash}`);
- if(!['success','fail','invalid'].includes(previous.status))throw Error('Wait for your previous liquidity transaction to finish.');
+ if(transactionState(previous)==='pending')throw Error('Wait for your previous liquidity transaction to finish.');
  pendingHash=null;
 }
 export async function submitLiquidity(review,onProgress=()=>{}){

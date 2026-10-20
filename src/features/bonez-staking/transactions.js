@@ -1,3 +1,4 @@
+import {transactionState} from '../../utils/transactionState.mjs';
 import { getAccount } from '@multiversx/sdk-dapp/out/methods/account/getAccount';
 import { getNetworkConfig } from '@multiversx/sdk-dapp/out/methods/network/getNetworkConfig';
 import { getAccountProvider } from '@multiversx/sdk-dapp/out/providers/helpers/accountProvider';
@@ -24,7 +25,7 @@ let pendingHash=null;
 async function previousTransaction(){
  if(!pendingHash)return;
  let tx;try{tx=await getJson(`https://api.multiversx.com/transactions/${pendingHash}`);}catch{throw Error('Your previous staking transaction is still being indexed. Check wallet history and wait for confirmation.');}
- if(!['success','fail','invalid'].includes(tx.status))throw Error('Wait for your previous staking transaction to finish before another action.');
+ if(transactionState(tx)==='pending')throw Error('Wait for your previous staking transaction to finish before another action.');
  pendingHash=null;
 }
 export async function prepareStaking(action,amount){

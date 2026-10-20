@@ -67,3 +67,19 @@ Completed in preview source:
 Visual review was attempted but the preview opens Netlify's “This site is private” team sign-in screen in the available browser. No preview authentication was performed. Source audits do not verify responsive layout, dynamic/API links, third-party content, mail delivery or wallet transactions. The broader checkboxes above remain pending until those checks are actually completed.
 
 Next hands-on pass: mobile/desktop navigation and modal layout, wallet connect/disconnect and account switching, NFT listing/purchase recovery, financial tool displays, one full game round per cabinet, and a merchant inquiry. Keep the Playground's existing WORK IN PROGRESS label until the owner confirms release scope. No live financial transaction, inquiry email or production deployment was performed in this pass.
+
+
+## Pass 2 — transaction state and recovery
+
+Completed in preview source:
+
+- [x] Swap, staking and liquidity UI confirmation waits until the carrier transaction succeeds and cross-shard results are no longer pending.
+- [x] Staking/liquidity module guards also wait for those results before clearing their previous-transaction lock.
+- [x] Reinvestment rejects a reward claim whose cross-shard results are still pending.
+- [x] Failed liquidity receipts keep their Explorer link; a terminal failure releases editing controls for a fresh reviewed attempt.
+- [x] Pending swap/staking controls cannot clear the in-page receipt through amount/action/refresh changes.
+- [x] Swap/liquidity clear the prior account’s displayed receipt and confirmation when accounts change; prepared rental transfers clear on wallet/session/intent changes. Core transaction functions already recheck the current wallet before signing/broadcast.
+- [x] Added receipt-state regression tests, including successful carrier transactions with pending cross-shard results, and expanded the reinvestment rejection test.
+- [x] All 237 automated tests pass; build and static route/asset audit pass.
+
+These checks are not live financial execution tests. No transaction was signed or broadcast. Pending UI state in swap/staking/liquidity is not a new durable transaction journal and can be lost when reloading or leaving the panel; use wallet history/Explorer before another action. Rental submissions already reserve a signed hash on the backend before broadcast. Next hands-on checks: switch accounts before approving a review, reject a wallet request, observe pending/failure/success receipts, verify position refresh and reinvest claim→stake, and reload a saved rental submission without paying twice. Mobile layout, guarded wallets and delivery of actual merchant inquiry email remain pending. The preview’s Netlify team sign-in barrier is unchanged.
