@@ -12,7 +12,7 @@
   VITE_OOX_TRANSACTIONS = "true"
 
 [context.deploy-preview]
-  command = 'if [ "$HEAD" = "feature/oox-purchase-preview" ] || [ "$HEAD" = "feature/xoxno-purchases" ]; then VITE_OOX_PREVIEW=true VITE_OOX_TRANSACTIONS=true npm run build; else VITE_OOX_TRANSACTIONS=false npm run build; fi'
+  command = 'if [ "$HEAD" = "feature/oox-purchase-preview" ] || [ "$HEAD" = "feature/xoxno-purchases" ]; then VITE_OOX_PREVIEW=true VITE_OOX_TRANSACTIONS=true npm run build; elif [ "$HEAD" = "feature/oct-21-fixes-preview" ]; then VITE_OOX_OFFERS=true VITE_OOX_TRANSACTIONS=false npm run build; else VITE_OOX_OFFERS=false VITE_OOX_TRANSACTIONS=false npm run build; fi'
 
 [context.deploy-preview.environment]
   VITE_OOX_PREVIEW = "true"
@@ -125,3 +125,7 @@
   to = "/merchant-access"
   status = 301
   force = true
+
+# On-site offer trial is isolated to the daily preview. Production remains off.
+[context."feature/oct-21-fixes-preview".environment]
+  VITE_OOX_OFFERS = "true"

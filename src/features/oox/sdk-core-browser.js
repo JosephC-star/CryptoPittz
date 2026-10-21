@@ -6,3 +6,5 @@ export { OptionType, OptionValue } from '@multiversx/sdk-core/out/abi/typesystem
 export { SmartContractTransactionsFactory } from '@multiversx/sdk-core/out/smartContracts/smartContractTransactionsFactory.js';
 export { Token, TokenTransfer } from '@multiversx/sdk-core/out/core/tokens.js';
 export { TransactionsFactoryConfig } from '@multiversx/sdk-core/out/core/transactionsFactoryConfig.js';
+export { BinaryCodec } from '@multiversx/sdk-core/out/abi/codec/binary.js';
+export { TransactionComputer } from '@multiversx/sdk-core/out/core/transactionComputer.js';

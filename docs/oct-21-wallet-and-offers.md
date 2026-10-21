@@ -12,12 +12,8 @@ Sources checked: installed sdk-dapp 5.7.2 ProviderFactory/restoreProvider/Webvie
 
 ## Offers for unlisted Pittz
 
-The installed OOX SDK-core 0.1.1 has buy/list/auction-bid methods, not an unlisted-NFT offer builder. The modal therefore offers an explicitly external **Make an offer on OOX** link for supported Pittz collections when the connected user is not known to own it and no listing/purchase is known. It opens the exact NFT page, not a collection search. Known listings retain existing purchase controls. Link text explains continuation on OOX, and that an offer does not guarantee a sale. No offer amount is collected, no owner notification is promised, and no local signature/payment is requested.
+The external link implementation has been replaced by on-site offer controls. See `docs/onsite-nft-offers.md` for contract evidence, escrow behavior, preview gating, tests and outstanding device acceptance.
 
-HTTP check: https://www.oox.art/marketplace/nfts/PITTZ-1a4c2d-01 returned 200 with title CryptoPittz #1 | OOX Marketplace. OOX offer availability, supported currencies, escrow/cancellation and terms must be reviewed there; no external offer was submitted or guaranteed available for every asset.
+## Embedded-wallet acceptance
 
-## Checks and device acceptance
-
-262 Node tests pass, including bridge routing, iOS generic-webkit exclusion, desktop-view native routing, handshake failure, cancellation, exact NFT links, owned/listed suppression and malformed-identifier rejection. Build and local link audit pass. Existing bundle-size warning remains.
-
-Hands-on: open preview inside xPortal on Android/iOS, connect and approve login, check My Pittz loads, reject a second login and confirm clear feedback. Repeat on a merchant/financial page and in desktop-view mode. Check ordinary Chrome/Safari still shows the WalletConnect popup and desktop still shows the provider picker. Inspect an unlisted Original/Vice Pittz, follow the exact OOX asset link and review offer controls there without submitting until ready. Device acceptance remains outstanding.
+Open preview inside xPortal on Android/iOS, connect and approve login, check My Pittz loads, reject a second login and confirm clear feedback. Repeat on a merchant/financial page and in desktop-view mode. Check ordinary Chrome/Safari still shows the WalletConnect popup and desktop still shows the provider picker. Device acceptance remains outstanding.

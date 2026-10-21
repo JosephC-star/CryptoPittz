@@ -1,12 +1,12 @@
-import {nftOfferUrl,canOffer} from '../../utils/nftOffers.mjs';
 import {nftArrowDirection} from '../../utils/modalKeyboard.mjs';
 import { Component, lazy, Suspense, useEffect, useState, useCallback, useRef } from "react";
-import { loadPreview } from "../../features/oox/loadPreview";
+import { loadPreview, loadOffersPanel } from "../../features/oox/loadPreview";
 const OoxPurchasePreview = lazy(loadPreview);
+const OfferPanel = lazy(loadOffersPanel);
 class PurchasePreviewBoundary extends Component {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
-  render() { return this.state.failed ? <p role="alert">Marketplace controls could not load. You can still view this Pitt on OOX.</p> : this.props.children; }
+  render() { return this.state.failed ? <p role="alert">Marketplace controls could not load. Close these details and reopen them to try again.</p> : this.props.children; }
 }
 
 import {
@@ -143,7 +143,7 @@ export default function NftDetailModal({
             </a>
           </div>}
 
-          {canOffer({nft,isOwned,listed,purchaseAvailable:purchaseAvailability?.identifier===nft.identifier&&purchaseAvailability.available})&&<section className="nft-offer-panel" aria-label="Make an offer"><strong>Got your eye on this Pittz?</strong><p>A Pittz doesn’t have to be listed for you to ask. Open its OOX page to check offer availability and terms.</p><a className="btn primary" href={nftOfferUrl(nft)} target="_blank" rel="noopener noreferrer">🤝 Make an offer on OOX ↗</a><small>Continues on OOX. An offer does not guarantee the owner will sell. Review any wallet request there before approving.</small></section>}
+          <PurchasePreviewBoundary key={'offers-'+nft.identifier}><Suspense fallback={<p>Loading offer controls…</p>}><OfferPanel key={nft.identifier} nft={nft} listed={listed||Boolean(purchaseAvailability?.identifier===nft.identifier&&purchaseAvailability.available)}/></Suspense></PurchasePreviewBoundary>
 
           {import.meta.env.VITE_OOX_PREVIEW === "true" && (
             <PurchasePreviewBoundary key={nft.identifier}><Suspense fallback={<p>Loading marketplace…</p>}>
