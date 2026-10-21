@@ -8,8 +8,9 @@ import TraitFinder from "../traits/TraitFinder";
 
 const PITTZ_PER_PAGE = 40;
 
-import { loadMyListings } from '../oox/loadPreview';
+import { loadMyListings, loadReceivedOffersView } from '../oox/loadPreview';
 const MyListings=lazy(loadMyListings);
+const MyReceivedOffers=lazy(loadReceivedOffersView);
 
 function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNft, onRetry, onConnect }) {
   const [expanded, setExpanded] = useState(true);
@@ -130,8 +131,9 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
       {import.meta.env.VITE_OOX_PREVIEW === 'true' && <div className="explorer-tabs my-pittz-tabs" aria-label="Wallet views">
         <button className={`explorer-tab ${view==='wallet'?'active':''}`} onClick={()=>setView('wallet')}>In My Wallet</button>
         <button className={`explorer-tab ${view==='listings'?'active':''}`} onClick={()=>setView('listings')}>My Listings</button>
+        <button className={`explorer-tab ${view==='offers'?'active':''}`} onClick={()=>setView('offers')}>Offers received</button>
       </div>}
-      {view==='listings' ? <Suspense fallback={<p>Loading listings…</p>}><MyListings key={address||'disconnected'} address={address}/></Suspense> : <>
+      {view==='offers' ? <Suspense fallback={<p>Loading offers…</p>}><MyReceivedOffers key={address||'disconnected'} address={address} nfts={nfts} loading={loading} error={error} onRetry={onRetry} onConnect={onConnect} onOpenNft={onOpenNft}/></Suspense> : view==='listings' ? <Suspense fallback={<p>Loading listings…</p>}><MyListings key={address||'disconnected'} address={address}/></Suspense> : <>
       <div className="explorer-tabs my-pittz-tabs">
         <button
           type="button"

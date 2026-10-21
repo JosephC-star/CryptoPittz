@@ -9,9 +9,9 @@ import {human} from '../bonez-swap/validation';
 const egld=value=>human(String(value),18);
 const short=value=>value.slice(0,10)+'…'+value.slice(-6);
 const enabled=import.meta.env.VITE_OOX_OFFERS==='true';
-export default function OfferPanel({nft,listed=false,isOwned=false}){
+export default function OfferPanel({nft,listed=false,isOwned=false,initialOpen=false}){
  const account=useGetAccount(),anchor=useRef(null),lock=useRef(false),generation=useRef(0);
- const [open,setOpen]=useState(false),[walletOpen,setWalletOpen]=useState(false),[amount,setAmount]=useState(''),[days,setDays]=useState(1),[data,setData]=useState(null),[review,setReview]=useState(null),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[pending,setPending]=useState(null),[refresh,setRefresh]=useState(0),[loading,setLoading]=useState(false);
+ const [open,setOpen]=useState(initialOpen),[walletOpen,setWalletOpen]=useState(false),[amount,setAmount]=useState(''),[days,setDays]=useState(1),[data,setData]=useState(null),[review,setReview]=useState(null),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[pending,setPending]=useState(null),[refresh,setRefresh]=useState(0),[loading,setLoading]=useState(false);
  useEffect(()=>{generation.current++;setReview(null);setData(null);setPending(null);setMessage('');try{setPending(pendingOffer(account.address));}catch(e){setMessage(e.message);}return()=>{generation.current++;};},[account.address,nft.identifier]);
  useEffect(()=>{if(!open)return;let live=true;setLoading(true);setData(null);loadOffers(nft,account.address).then(result=>{if(live)setData(result);}).catch(e=>{if(live)setMessage(e.message);}).finally(()=>{if(live)setLoading(false);});return()=>{live=false;};},[open,nft.identifier,account.address,refresh]);
  useEffect(()=>{if(!pending?.hash||pending.state&&pending.state!=='pending'||!account.address)return;let live=true,timer;

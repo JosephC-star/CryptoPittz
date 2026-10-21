@@ -30,6 +30,10 @@ The signed hash is computed and saved in localStorage before broadcast. Unknown 
 
 ## Validation / remaining device acceptance
 
-271 tests pass, including exact offer payloads, actual simulation fixtures, ABI decoding, malformed amounts, incorrect owner, wrong currency/NFT, expired offers, rejected simulation, wallet changes, signed payload mutation, stale reviews, pending cross-shard receipts, unknown broadcast outcomes, tracking failures, and disabled build switches. Preview-mode build and local link audit pass (existing large-chunk warning).
+275 tests pass, including exact offer payloads, actual simulation fixtures, ABI decoding, malformed amounts, incorrect owner, wrong currency/NFT, expired offers, rejected simulation, wallet changes, signed payload mutation, stale reviews, pending cross-shard receipts, unknown broadcast outcomes, tracking failures, and disabled build switches. Preview-mode build and local link audit pass (existing large-chunk warning).
 
 Still required: user hands-on in preview with a small real offer, confirmation, reload recovery, and withdrawal; a cooperative owner acceptance test; Android/iOS xPortal and browser wallet checks; and desktop/mobile layout review. No production merge yet.
+
+## My Pittz offers filter
+
+My Pittz → Offers received reads getOffersByNftOwner once per connected wallet/refresh, intersects it with the current wallet NFT list, and groups active direct EGLD offers by Pittz. It combines Original/Vice, sorts by exact highest offer, shows per-NFT count and highest amount, and paginates 40 cards. Opening a result expands that Pittz's offer controls immediately. Expired, previous-owner, self, wrong-currency and unowned-NFT offers are excluded. Timer checks remove newly expired offers; refresh rechecks contract state, and confirmed on-site offer actions trigger an automatic refresh. Wallet changes cancel previous reads and clear results. Contract errors have retry controls and are not represented as zero offers. Collection/trait offers are outside this filter.

@@ -28,6 +28,7 @@ function App() {
   const [mobileGroup, setMobileGroup] = useState(null);
   const [desktopGroup, setDesktopGroup] = useState(null);
   const [selectedNft, setSelectedNft] = useState(null);
+  const [initialOffersOpen,setInitialOffersOpen]=useState(false);
   const [modalNfts, setModalNfts] = useState([]);
   const [explorerExpanded, setExplorerExpanded] = useState(true);
   const explorerHeadingRef = useRef(null);
@@ -183,7 +184,8 @@ function App() {
     }
   }
 
-  function openNftDetails(nft, nftList = [nft]) {
+  function openNftDetails(nft, nftList = [nft], offersOpen = false) {
+    setInitialOffersOpen(offersOpen);
     setSelectedNft(nft);
     setModalNfts(nftList);
   }
@@ -1230,6 +1232,7 @@ function App() {
 
       <NftDetailModal
         nft={selectedNft}
+        offersOpen={initialOffersOpen}
         listed={Boolean(explorerListingMap.get(selectedNft?.identifier))}
         hasMultipleNfts={modalNfts.length > 1}
         isOwned={
