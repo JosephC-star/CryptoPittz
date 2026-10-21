@@ -9,7 +9,7 @@ import {human} from '../bonez-swap/validation';
 const egld=value=>human(String(value),18);
 const short=value=>value.slice(0,10)+'…'+value.slice(-6);
 const enabled=import.meta.env.VITE_OOX_OFFERS==='true';
-export default function OfferPanel({nft,listed=false}){
+export default function OfferPanel({nft,listed=false,isOwned=false}){
  const account=useGetAccount(),anchor=useRef(null),lock=useRef(false),generation=useRef(0);
  const [open,setOpen]=useState(false),[walletOpen,setWalletOpen]=useState(false),[amount,setAmount]=useState(''),[days,setDays]=useState(1),[data,setData]=useState(null),[review,setReview]=useState(null),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[pending,setPending]=useState(null),[refresh,setRefresh]=useState(0),[loading,setLoading]=useState(false);
  useEffect(()=>{generation.current++;setReview(null);setData(null);setPending(null);setMessage('');try{setPending(pendingOffer(account.address));}catch(e){setMessage(e.message);}return()=>{generation.current++;};},[account.address,nft.identifier]);
@@ -25,8 +25,8 @@ export default function OfferPanel({nft,listed=false}){
  const waiting=!!pending&&(!pending.state||pending.state==='pending');
  const owner=data?.owner===account.address;
  const canCreate=data&&!owner&&!listed&&data.owner!==OFFER_CONTRACT;
- return <section className="nft-offer-panel" aria-label="On-site Pittz offers"><strong>Make your move.</strong><p>Make and manage EGLD offers right here on The PittzStop.</p><button className="btn primary" type="button" onClick={()=>setOpen(v=>!v)}>{open?'Hide offer controls':listed?'View my offers':'🤝 Make an offer'}</button>
- {open&&<div className="pittz-offer-controls"><p>Offers use the OOX marketplace contract. Submitting deposits your EGLD with that contract until accepted or withdrawn. Expiry ends acceptance; it does not automatically refund your deposit. Network fees apply.</p>{!enabled&&<p>Preview only: signing is disabled in this build.</p>}
+ return <section className={"nft-offer-panel"+(open?"":" is-collapsed")} aria-label="On-site Pittz offers"><button className={listed||isOwned?"btn":"btn primary"} type="button" onClick={()=>setOpen(v=>!v)}>{open?'Hide offers':listed||isOwned?'View offers':'🤝 Make an offer'}</button>
+ {open&&<div className="pittz-offer-controls"><strong>Make your move.</strong><p>Offers use the OOX marketplace contract. Submitting deposits your EGLD with that contract until accepted or withdrawn. Expiry ends acceptance; it does not automatically refund your deposit. Network fees apply.</p>{!enabled&&<p>Preview only: signing is disabled in this build.</p>}
  {!account.address?<button className="btn" type="button" disabled={busy} onClick={connect}>Connect wallet to make an offer</button>:<><p className="pittz-offer-wallet">Connected: {short(account.address)}</p>{loading?<p>Reading ownership and contract offers…</p>:<button className="btn" disabled={busy||waiting} type="button" onClick={()=>setRefresh(n=>n+1)}>Refresh offers</button>}
  {canCreate&&!waiting&&<form onSubmit={e=>{e.preventDefault();prepare('offer');}}><label>Offer amount · EGLD<input required inputMode="decimal" autoComplete="off" placeholder="0.1" value={amount} disabled={busy} onChange={e=>{setAmount(e.target.value);setReview(null);}}/></label><label>Expires in<select value={days} disabled={busy} onChange={e=>{setDays(Number(e.target.value));setReview(null);}}>{[1,3,7].map(n=><option key={n} value={n}>{n} {n===1?'day':'days'}</option>)}</select></label><button className="btn primary" disabled={busy||!amount} type="submit">{busy?'Checking…':'Review offer'}</button></form>}
  {owner&&<p>You own this Pittz. Review incoming offers below.</p>}

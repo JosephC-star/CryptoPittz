@@ -6833,3 +6833,5 @@ footer .container > div:hover {
 .nft-offer-panel strong{color:#f3d478}.nft-offer-panel p{line-height:1.6}.nft-offer-panel small{display:block;margin-top:12px;line-height:1.6;opacity:.75}.nft-offer-panel .btn{max-width:100%;white-space:normal;text-align:center}
 
 .pittz-offer-controls{margin-top:18px}.pittz-offer-controls form{display:grid;gap:12px;margin:16px 0}.pittz-offer-controls label{display:grid;gap:8px}.pittz-offer-controls input,.pittz-offer-controls select{box-sizing:border-box;width:100%;padding:12px;color:#fff;background:#101827;border:1px solid #ffffff50;border-radius:8px}.pittz-offer-list article,.pittz-offer-review{margin-top:16px;padding:16px;border:1px solid #ffffff30;border-radius:12px}.pittz-offer-review .btn{margin:6px 6px 0 0}.pittz-offer-contract{overflow-wrap:anywhere;font-size:11px}.pittz-offer-controls button:disabled{opacity:.5;cursor:wait}.pittz-offer-controls a{color:#f3d478}
+
+.nft-offer-panel.is-collapsed{padding:0;border:0;background:none}

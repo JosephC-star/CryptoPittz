@@ -13,7 +13,6 @@ import {
   decodePittzAttributes,
   getCollectionBadge,
   getNftImage,
-  getNftMarketplace,
   getPittzStats,
 } from "../../utils/nftUtils";
 
@@ -132,18 +131,7 @@ export default function NftDetailModal({
             </div>
           </div>
 
-          {!(purchaseAvailability?.identifier===nft.identifier&&purchaseAvailability.available)&&<div className="nft-detail-actions">
-            <a
-              className="btn primary"
-              href={getNftMarketplace(nft)}
-              target="_blank"
-              rel="noreferrer"
-            >
-              🛒 View on OOX Marketplace ↗
-            </a>
-          </div>}
-
-          <PurchasePreviewBoundary key={'offers-'+nft.identifier}><Suspense fallback={<p>Loading offer controls…</p>}><OfferPanel key={nft.identifier} nft={nft} listed={listed||Boolean(purchaseAvailability?.identifier===nft.identifier&&purchaseAvailability.available)}/></Suspense></PurchasePreviewBoundary>
+          <PurchasePreviewBoundary key={'offers-'+nft.identifier}><Suspense fallback={<p>Loading offer controls…</p>}><OfferPanel key={nft.identifier} nft={nft} isOwned={isOwned} listed={listed||Boolean(purchaseAvailability?.identifier===nft.identifier&&purchaseAvailability.available)}/></Suspense></PurchasePreviewBoundary>
 
           {import.meta.env.VITE_OOX_PREVIEW === "true" && (
             <PurchasePreviewBoundary key={nft.identifier}><Suspense fallback={<p>Loading marketplace…</p>}>
