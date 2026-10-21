@@ -10,7 +10,7 @@ async function admin(address){const rows=await db('market_admins?wallet_address=
 async function session(event){const token=(event.headers?.cookie||'').split(';').map(v=>v.trim()).find(v=>v.startsWith(COOKIE+'='))?.slice(COOKIE.length+1);if(!token||!/^[0-9a-f]{64}$/.test(token))fail(401,'Sign in with an assigned admin wallet.');const rows=await db('market_admin_sessions?token_hash=eq.'+hash(requestOrigin(event)+'|admin|'+token)+'&revoked_at=is.null&expires_at=gt.'+encodeURIComponent(now())+'&select=*&limit=1');if(!rows?.[0])fail(401,'Your admin session expired. Sign in again.');return {session:rows[0],admin:await admin(rows[0].wallet_address)};}
 export async function handler(event){try{
   const origin=requestOrigin(event),route=event.queryStringParameters?.route||'me';
-  const methods={me:'GET',challenge:'POST',verify:'POST',logout:'POST',shops:'GET',products:'GET',audit:'GET',moderate:'POST',image:'GET'};
+  const methods={me:'GET',challenge:'POST',verify:'POST',logout:'POST',shops:'GET',products:'GET',audit:'GET',moderate:'POST',image:'GET',reviews:'GET','review-history':'GET','review-moderate':'POST'};
   if(!methods[route])fail(404,'Unknown admin action.');if(event.httpMethod!==methods[route])fail(405,'Unsupported request method.');
   if(event.httpMethod!=='GET'&&event.headers?.origin!==origin)fail(403,'Open this action from the market admin page.');
   if(event.httpMethod!=='GET'&&!event.headers?.['content-type']?.startsWith('application/json'))fail(415,'JSON required.');
@@ -37,6 +37,21 @@ export async function handler(event){try{
   if(route==='me')return response(200,{admin:auth.admin});
   if(route==='logout'){await db('market_admin_sessions?id=eq.'+auth.session.id,'PATCH',{revoked_at:now()});return response(200,{signedOut:true},{'Set-Cookie':cookie('',0)});}
   const offset=Number(event.queryStringParameters?.offset||0);if(!Number.isSafeInteger(offset)||offset<0||offset>100000)fail(400,'Invalid page.');
+  if(route==='review-history'){
+    const rows=await db('market_review_actions?select=id,review_id,actor_wallet,previous_status,new_status,reason,created_at&order=created_at.desc,id.desc&limit=51&offset='+offset);
+    return response(200,{'review-history':rows.slice(0,50).map(row=>({...row,action:row.previous_status+' → '+row.new_status,target_type:'review',target_id:row.review_id})),hasMore:rows.length>50});
+  }
+  if(route==='reviews'){
+    const rows=await db('market_reviews?select=id,shop_id,display_name,rating,comment,status,created_at,shop:market_shops(name,booth_number)&order=created_at.desc,id.desc&limit=51&offset='+offset);
+    return response(200,{reviews:rows.slice(0,50),hasMore:rows.length>50});
+  }
+  if(route==='review-moderate'){
+    if(!UUID.test(body.id)||!['published','hidden'].includes(body.action))fail(400,'Invalid review action.');
+    const reason=typeof body.reason==='string'?body.reason.trim():'';
+    if(reason.length<5||reason.length>1000)fail(400,'Add a reason of 5 to 1000 characters.');
+    const result=await db('rpc/market_moderate_review','POST',{actor:auth.admin.wallet_address,target:body.id,next_status:body.action,explanation:reason});
+    return response(200,result);
+  }
   if(route==='shops'){
     const rows=await db('market_shops?select=id,booth_number,name,owner_wallet,access_status,rental_expires_at,moderation_suspended,moderation_reason&order=booth_number.asc&limit=51&offset='+offset);
     return response(200,{shops:rows.slice(0,50),hasMore:rows.length>50});
