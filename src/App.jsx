@@ -1,3 +1,4 @@
+import {loginWithWallet,hasWalletBridge,usesDirectWalletConnection} from './utils/connectWallet';
 import WalletConnectModal from './components/WalletConnectModal';
 import { useRef, useState } from "react";
 import "./App.css";
@@ -6,8 +7,6 @@ import { UnlockPanelManager } from "@multiversx/sdk-dapp/out/managers/UnlockPane
 import { useGetAccount } from "@multiversx/sdk-dapp/out/react/account/useGetAccount";
 import { getAccountProvider } from "@multiversx/sdk-dapp/out/providers/helpers/accountProvider";
 
-import { ProviderFactory } from "@multiversx/sdk-dapp/out/providers/ProviderFactory";
-import { ProviderTypeEnum } from "@multiversx/sdk-dapp/out/providers/types/providerFactory.types";
 
 import ExplorerControls from "./components/explorer/ExplorerControls";
 import ExplorerPagination from "./components/explorer/ExplorerPagination";
@@ -142,10 +141,11 @@ function App() {
   }
 
   function isMobileDevice() {
-    return window.matchMedia("(max-width: 700px)").matches;
+    return usesDirectWalletConnection();
   }
 
   async function connectWallet() {
+    if (mobileWalletConnecting) return;
     if (!isMobileDevice()) {
       void UnlockPanelManager.getInstance().openUnlockPanel();
       return;
@@ -161,14 +161,9 @@ function App() {
     try {
       setMobileWalletConnecting(true);
       setMobileWalletError("");
-      setWalletOverlayOpen(true);
+      setWalletOverlayOpen(!hasWalletBridge());
 
-      const provider = await ProviderFactory.create({
-        type: ProviderTypeEnum.walletConnect,
-        anchor: walletConnectAnchorRef.current,
-      });
-
-      await provider.login();
+      await loginWithWallet(walletConnectAnchorRef.current);
 
       if (walletConnectAnchorRef.current) {
         walletConnectAnchorRef.current.replaceChildren();
@@ -1235,6 +1230,7 @@ function App() {
 
       <NftDetailModal
         nft={selectedNft}
+        listed={Boolean(explorerListingMap.get(selectedNft?.identifier))}
         hasMultipleNfts={modalNfts.length > 1}
         isOwned={
           Boolean(account.address) &&

@@ -1,11 +1,10 @@
+import {loginWithWallet,hasWalletBridge,usesDirectWalletConnection} from '../../utils/connectWallet';
 import WalletConnectModal from '../../components/WalletConnectModal';
 import MarketFooter from './MarketFooter';
 import {renewalWindow} from '../../../shared/rental-lifecycle.mjs';
 import {useEffect,useRef,useState} from 'react';
 import {useGetAccount} from '@multiversx/sdk-dapp/out/react/account/useGetAccount';
 import {UnlockPanelManager} from '@multiversx/sdk-dapp/out/managers/UnlockPanelManager';
-import {ProviderFactory} from '@multiversx/sdk-dapp/out/providers/ProviderFactory';
-import {ProviderTypeEnum} from '@multiversx/sdk-dapp/out/providers/types/providerFactory.types';
 import {getAccountProvider} from '@multiversx/sdk-dapp/out/providers/helpers/accountProvider';
 import {Message} from '@multiversx/sdk-dapp/out/lib/sdkCore';
 import {prepareRental,submitRental} from './rentalTransactions';
@@ -19,7 +18,7 @@ export default function RentalCenter(){
  async function refresh(){const data=await api('me');setCurrent(data);setIntent(data.intent);return data;}
  useEffect(()=>{UnlockPanelManager.init({loginHandler:()=>{}});api('config').then(async c=>{setConfig(c);if(c.enabled)try{await refresh();}catch{}}).catch(e=>setMessage(e.message));},[]);
  async function run(work){setBusy(true);setMessage('');try{await work();}catch(e){setMessage(e.message);}finally{setBusy(false);}}
- async function connect(){if(!window.matchMedia('(max-width:700px)').matches){await UnlockPanelManager.getInstance().openUnlockPanel();return;}setWalletOpen(true);try{const p=await ProviderFactory.create({type:ProviderTypeEnum.walletConnect,anchor:anchor.current});await p.login();}finally{setWalletOpen(false);anchor.current?.replaceChildren();}}
+ async function connect(){if(!usesDirectWalletConnection()){await UnlockPanelManager.getInstance().openUnlockPanel();return;}setWalletOpen(!hasWalletBridge());try{await loginWithWallet(anchor.current);}finally{setWalletOpen(false);anchor.current?.replaceChildren();}}
  async function verify(){const c=await api('challenge',{address:account.address});setMessage('Approve the rental sign-in message in your wallet. No payment is requested.');const signed=await getAccountProvider().signMessage(new Message({data:new TextEncoder().encode(c.message)}));if(!signed?.signature)throw Error('Wallet signing was cancelled.');const signature=typeof signed.signature==='string'?signed.signature.replace(/^0x/,''):Array.from(signed.signature,b=>b.toString(16).padStart(2,'0')).join('');await api('verify',{id:c.id,nonce:c.nonce,signature});await refresh();setMessage('Wallet verified. Keys are optional; qualifying benefits are checked on mainnet.');}
  async function confirm(){const result=await api('confirm',{id:intent.id});await refresh();setMessage(result.activated?'Rental confirmed. Booth '+result.booth+' is ready. Sign in to the merchant backroom to stock your shop.':'Payment is awaiting mainnet confirmation. Check again shortly.');}
  const renewal=current?.shop?renewalWindow(current.shop.rental_expires_at,Number(intent?.state==='review'?intent.months:months)):null;

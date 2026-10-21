@@ -6828,3 +6828,6 @@ footer .container > div:hover {
 
 #my-pittz { scroll-margin-top: 100px; }
 #my-pittz-content[hidden] { display: none; }
+
+.nft-offer-panel{margin:18px 0;padding:18px;border:1px solid #d4af3760;border-radius:14px;background:linear-gradient(135deg,#d4af3715,#101827)}
+.nft-offer-panel strong{color:#f3d478}.nft-offer-panel p{line-height:1.6}.nft-offer-panel small{display:block;margin-top:12px;line-height:1.6;opacity:.75}.nft-offer-panel .btn{max-width:100%;white-space:normal;text-align:center}

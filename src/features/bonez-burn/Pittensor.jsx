@@ -1,9 +1,8 @@
+import {loginWithWallet,hasWalletBridge,usesDirectWalletConnection} from '../../utils/connectWallet';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useGetAccount } from '@multiversx/sdk-dapp/out/react/account/useGetAccount';
 import { UnlockPanelManager } from '@multiversx/sdk-dapp/out/managers/UnlockPanelManager';
-import { ProviderFactory } from '@multiversx/sdk-dapp/out/providers/ProviderFactory';
-import { ProviderTypeEnum } from '@multiversx/sdk-dapp/out/providers/types/providerFactory.types';
 import BonezBurner from './BonezBurner';
 import EmberField from './EmberField';
 import './pittensor.css';
@@ -25,10 +24,9 @@ export default function Pittensor() {
     if (connecting) return;
     setConnecting(true); setWalletError('');
     try {
-      if (window.matchMedia('(max-width: 700px)').matches) {
-        setWalletOpen(true);
-        const provider = await ProviderFactory.create({ type: ProviderTypeEnum.walletConnect, anchor: anchor.current });
-        await provider.login(); anchor.current?.replaceChildren(); setWalletOpen(false);
+      if (usesDirectWalletConnection()) {
+        setWalletOpen(!hasWalletBridge());
+        await loginWithWallet(anchor.current); anchor.current?.replaceChildren(); setWalletOpen(false);
       } else {
         UnlockPanelManager.init({ loginHandler: () => {} });
         await UnlockPanelManager.getInstance().openUnlockPanel();

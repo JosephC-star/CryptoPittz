@@ -1,10 +1,9 @@
+import {loginWithWallet,hasWalletBridge,usesDirectWalletConnection} from '../../utils/connectWallet';
 import WalletConnectModal from '../../components/WalletConnectModal';
 import {transactionState} from '../../utils/transactionState.mjs';
 import { useEffect,useRef,useState } from 'react';
 import { useGetAccount } from '@multiversx/sdk-dapp/out/react/account/useGetAccount';
 import { UnlockPanelManager } from '@multiversx/sdk-dapp/out/managers/UnlockPanelManager';
-import { ProviderFactory } from '@multiversx/sdk-dapp/out/providers/ProviderFactory';
-import { ProviderTypeEnum } from '@multiversx/sdk-dapp/out/providers/types/providerFactory.types';
 import { atomic,human } from '../bonez-swap/validation.js';
 import { getJson } from '../bonez-swap/transactions.js';
 import { CONTRACT } from './validation.js';
@@ -27,7 +26,7 @@ export default function BonezStaking({onBusyChange}){
  useEffect(()=>{if(!review||busy)return;const timer=setTimeout(()=>{setReview(null);setStatus('Review expired. Review again for fresh checks.');},Math.max(0,review.created+60000-Date.now()));return()=>clearTimeout(timer);},[review,busy]);
  useEffect(()=>{if(!sent?.hash)return;let active=true,timer;async function poll(){try{const tx=await getJson(`https://api.multiversx.com/transactions/${sent.hash}`);if(!active)return;if(transactionState(tx)==='confirmed'){setConfirmed(true);setSettled(true);setRefreshTick(n=>n+1);setStatus(sent.reinvestStep==='claim'?'Step 1 confirmed: rewards are in your wallet. Review step 2 to restake them.':'Staking transaction confirmed. Your position is refreshing.');return;}if(transactionState(tx)==='failed'){setSettled(true);setReinvestClaim(null);setStatus('Transaction failed. Check the saved transaction details before reviewing another attempt.');return;}}catch{/* Indexing may lag. */}if(active)timer=setTimeout(poll,6000);}poll();return()=>{active=false;clearTimeout(timer);};},[sent]);
  function change(){if(pending)return;setReinvestClaim(null);setReview(null);setSent(null);setConfirmed(false);setSettled(false);}
- async function connect(){if(lock.current)return;if(!window.matchMedia('(max-width: 700px)').matches){void UnlockPanelManager.getInstance().openUnlockPanel();return;}lock.current=true;setBusy(true);setOverlay(true);try{const provider=await ProviderFactory.create({type:ProviderTypeEnum.walletConnect,anchor:anchor.current});await provider.login();setStatus('Wallet connected. Review your staking action.');}catch(e){setStatus(e.message||'Connection cancelled.');}finally{anchor.current?.replaceChildren();setOverlay(false);setBusy(false);lock.current=false;}}
+ async function connect(){if(lock.current)return;if(!usesDirectWalletConnection()){void UnlockPanelManager.getInstance().openUnlockPanel();return;}lock.current=true;setBusy(true);setOverlay(!hasWalletBridge());try{await loginWithWallet(anchor.current);setStatus('Wallet connected. Review your staking action.');}catch(e){setStatus(e.message||'Connection cancelled.');}finally{anchor.current?.replaceChildren();setOverlay(false);setBusy(false);lock.current=false;}}
 
  async function refresh(){if(lock.current||pending)return;lock.current=true;setBusy(true);change();try{const [p,b]=await Promise.all([fetchStaking(account.address),account.address?fetchStakingBalances(account.address):Promise.resolve(null)]);setPool(p);setBalances(b);setStatus('Pool and wallet position refreshed.');}catch(e){setPool(null);setStatus(e.message);}finally{setBusy(false);lock.current=false;}}
  async function prepare(){if(lock.current)return;lock.current=true;setBusy(true);setStatus('Verifying your staking position and simulating the transaction…');try{const next=await prepareStaking(action==='reinvest'?'claim':action,['stake','unstake'].includes(action)?atomic(amount.trim(),6):'0');setReview(action==='reinvest'?{...next,reinvestStep:'claim'}:next);setStatus('Review the action, then approve in your wallet.');}catch(e){setReview(null);setStatus(e.message);}finally{setBusy(false);lock.current=false;}}
