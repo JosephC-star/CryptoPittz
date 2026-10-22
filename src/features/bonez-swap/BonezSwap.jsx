@@ -1,10 +1,9 @@
+import {loginWithWallet,hasWalletBridge,usesDirectWalletConnection} from '../../utils/connectWallet';
 import WalletConnectModal from '../../components/WalletConnectModal';
 import {transactionState} from '../../utils/transactionState.mjs';
 import { useEffect, useRef, useState } from 'react';
 import { useGetAccount } from '@multiversx/sdk-dapp/out/react/account/useGetAccount';
 import { UnlockPanelManager } from '@multiversx/sdk-dapp/out/managers/UnlockPanelManager';
-import { ProviderFactory } from '@multiversx/sdk-dapp/out/providers/ProviderFactory';
-import { ProviderTypeEnum } from '@multiversx/sdk-dapp/out/providers/types/providerFactory.types';
 import { getAccountProvider } from '@multiversx/sdk-dapp/out/providers/helpers/accountProvider';
 import { BONEZ, atomic, human, minimum, MAX_AGE } from './validation';
 import { getJson, reviewSwap, submitSwap, verifyQuote } from './transactions';
@@ -62,9 +61,9 @@ export default function BonezSwap({embedded=false,onBusyChange}) {
   },[sent]);
   async function connect(){
     if(lock.current)return;
-    if(!window.matchMedia('(max-width: 700px)').matches){void UnlockPanelManager.getInstance().openUnlockPanel();return;}
-    lock.current=true;setBusy(true);setOverlay(true);setStatus('Connect using xPortal.');
-    try{const provider=await ProviderFactory.create({type:ProviderTypeEnum.walletConnect,anchor:anchor.current});await provider.login();setStatus('Wallet connected. Get a fresh quote.');}
+    if(!usesDirectWalletConnection()){void UnlockPanelManager.getInstance().openUnlockPanel();return;}
+    lock.current=true;setBusy(true);setOverlay(!hasWalletBridge());setStatus('Connect using xPortal.');
+    try{await loginWithWallet(anchor.current);setStatus('Wallet connected. Get a fresh quote.');}
     catch(e){setStatus(e.message||'Wallet connection was cancelled.');}
     finally{anchor.current?.replaceChildren();setOverlay(false);setBusy(false);lock.current=false;}
   }

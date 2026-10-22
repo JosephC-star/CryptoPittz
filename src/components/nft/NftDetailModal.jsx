@@ -1,18 +1,18 @@
 import {nftArrowDirection} from '../../utils/modalKeyboard.mjs';
 import { Component, lazy, Suspense, useEffect, useState, useCallback, useRef } from "react";
-import { loadPreview } from "../../features/oox/loadPreview";
+import { loadPreview, loadOffersPanel } from "../../features/oox/loadPreview";
 const OoxPurchasePreview = lazy(loadPreview);
+const OfferPanel = lazy(loadOffersPanel);
 class PurchasePreviewBoundary extends Component {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
-  render() { return this.state.failed ? <p role="alert">Marketplace controls could not load. You can still view this Pitt on OOX.</p> : this.props.children; }
+  render() { return this.state.failed ? <p role="alert">Marketplace controls could not load. Close these details and reopen them to try again.</p> : this.props.children; }
 }
 
 import {
   decodePittzAttributes,
   getCollectionBadge,
   getNftImage,
-  getNftMarketplace,
   getPittzStats,
 } from "../../utils/nftUtils";
 
@@ -20,6 +20,8 @@ export default function NftDetailModal({
   nft,
   hasMultipleNfts,
   isOwned,
+  listed = false,
+  offersOpen = false,
   onClose,
   onPrevious,
   onNext,
@@ -130,16 +132,7 @@ export default function NftDetailModal({
             </div>
           </div>
 
-          {!(purchaseAvailability?.identifier===nft.identifier&&purchaseAvailability.available)&&<div className="nft-detail-actions">
-            <a
-              className="btn primary"
-              href={getNftMarketplace(nft)}
-              target="_blank"
-              rel="noreferrer"
-            >
-              🛒 View on OOX Marketplace ↗
-            </a>
-          </div>}
+          <PurchasePreviewBoundary key={'offers-'+nft.identifier}><Suspense fallback={<p>Loading offer controls…</p>}><OfferPanel key={nft.identifier} initialOpen={offersOpen} nft={nft} isOwned={isOwned} listed={listed||Boolean(purchaseAvailability?.identifier===nft.identifier&&purchaseAvailability.available)}/></Suspense></PurchasePreviewBoundary>
 
           {import.meta.env.VITE_OOX_PREVIEW === "true" && (
             <PurchasePreviewBoundary key={nft.identifier}><Suspense fallback={<p>Loading marketplace…</p>}>

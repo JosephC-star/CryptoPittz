@@ -1,0 +1,191 @@
+{
+  "name": "EsdtNftMarketplace",
+  "endpoints": [
+    {
+      "name": "sendOffer",
+      "rustMethodName": "send_offer",
+      "mutability": "mutable",
+      "payableInTokens": [
+        "*"
+      ],
+      "inputs": [
+        {
+          "name": "desired_nft_id",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "desired_nft_nonce",
+          "type": "u64"
+        },
+        {
+          "name": "desired_amount",
+          "type": "BigUint"
+        },
+        {
+          "name": "deadline",
+          "type": "u64"
+        },
+        {
+          "name": "nft_owner",
+          "type": "Address"
+        },
+        {
+          "name": "opt_auction_id",
+          "type": "optional<u64>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": [
+        {
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "withdrawOffer",
+      "rustMethodName": "withdraw_offer",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "offer_id",
+          "type": "u64"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "acceptOffer",
+      "rustMethodName": "accept_offer",
+      "mutability": "mutable",
+      "payableInTokens": [
+        "*"
+      ],
+      "inputs": [
+        {
+          "name": "offer_id",
+          "type": "u64"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "getFullOfferData",
+      "rustMethodName": "try_get_offer",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "offer_id",
+          "type": "u64"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "OfferV2"
+        }
+      ]
+    },
+    {
+      "name": "getOffersByOwner",
+      "rustMethodName": "get_offers_by_owner",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "owner",
+          "type": "Address"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "variadic<OfferV2>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
+      "name": "getOffersByNftOwner",
+      "rustMethodName": "get_offers_by_nft_owner",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "nft_owner",
+          "type": "Address"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "variadic<OfferV2>",
+          "multi_result": true
+        }
+      ]
+    }
+  ],
+  "types": {
+    "OfferV2": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "offer_id",
+          "type": "u64"
+        },
+        {
+          "name": "offer_token",
+          "type": "EsdtTokenPayment"
+        },
+        {
+          "name": "payment",
+          "type": "EgldOrEsdtTokenPayment"
+        },
+        {
+          "name": "start_time",
+          "type": "u64"
+        },
+        {
+          "name": "deadline",
+          "type": "u64"
+        },
+        {
+          "name": "offer_owner",
+          "type": "Address"
+        },
+        {
+          "name": "nft_owner",
+          "type": "Address"
+        }
+      ]
+    },
+    "EsdtTokenPayment": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "token_identifier",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "token_nonce",
+          "type": "u64"
+        },
+        {
+          "name": "amount",
+          "type": "BigUint"
+        }
+      ]
+    },
+    "EgldOrEsdtTokenPayment": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "token_identifier",
+          "type": "EgldOrEsdtTokenIdentifier"
+        },
+        {
+          "name": "token_nonce",
+          "type": "u64"
+        },
+        {
+          "name": "amount",
+          "type": "BigUint"
+        }
+      ]
+    }
+  }
+}

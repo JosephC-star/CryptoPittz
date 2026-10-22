@@ -4036,46 +4036,7 @@ section {
   text-shadow: 0 0 10px rgba(0, 229, 255, 0.12);
 }
 
-#contact .panel::after {
-  content: "";
 
-  position: absolute;
-  top: 18px;
-  right: 18px;
-
-  width: 10px;
-  height: 10px;
-
-  border-radius: 50%;
-
-  background: #00e5ff;
-
-  box-shadow:
-    0 0 0 0 rgba(0, 229, 255, 0.35),
-    0 0 12px rgba(0, 229, 255, 0.65);
-
-  animation: contactSignal 2.6s ease-out infinite;
-}
-
-@keyframes contactSignal {
-  0% {
-    box-shadow:
-      0 0 0 0 rgba(0, 229, 255, 0.35),
-      0 0 12px rgba(0, 229, 255, 0.65);
-  }
-
-  70% {
-    box-shadow:
-      0 0 0 12px rgba(0, 229, 255, 0),
-      0 0 16px rgba(255, 61, 247, 0.22);
-  }
-
-  100% {
-    box-shadow:
-      0 0 0 0 rgba(0, 229, 255, 0),
-      0 0 12px rgba(0, 229, 255, 0.45);
-  }
-}
 
 footer {
   position: relative;
@@ -4143,7 +4104,7 @@ footer .container > div:hover {
 
 .footer-inner {
   display: grid;
-  grid-template-columns: minmax(210px, 280px) minmax(125px, 165px) minmax(260px, 390px);
+  grid-template-columns: minmax(210px, 280px) minmax(0, 1fr) minmax(260px, 320px);
   align-items: center;
   justify-content: start;
   gap: 16px;
@@ -4160,7 +4121,7 @@ footer .container > div:hover {
   display: block;
 }
 
-.footer-community { padding-left: 3px; white-space: nowrap; }
+.footer-community { min-width: 0; padding-left: 3px; overflow-wrap: anywhere; }
 .footer-community strong { color: rgba(255, 255, 255, 0.72); font-size: 0.68rem; }
 .footer-community span { margin-top: 3px; color: rgba(255, 255, 255, 0.42); font-size: 0.63rem; }
 
@@ -4721,7 +4682,6 @@ footer .container > div:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #contact .panel::after,
   footer::before {
     animation: none;
   }
@@ -6868,3 +6828,12 @@ footer .container > div:hover {
 
 #my-pittz { scroll-margin-top: 100px; }
 #my-pittz-content[hidden] { display: none; }
+
+.nft-offer-panel{margin:18px 0;padding:18px;border:1px solid #d4af3760;border-radius:14px;background:linear-gradient(135deg,#d4af3715,#101827)}
+.nft-offer-panel strong{color:#f3d478}.nft-offer-panel p{line-height:1.6}.nft-offer-panel small{display:block;margin-top:12px;line-height:1.6;opacity:.75}.nft-offer-panel .btn{max-width:100%;white-space:normal;text-align:center}
+
+.pittz-offer-controls{margin-top:18px}.pittz-offer-controls form{display:grid;gap:12px;margin:16px 0}.pittz-offer-controls label{display:grid;gap:8px}.pittz-offer-controls input,.pittz-offer-controls select{box-sizing:border-box;width:100%;padding:12px;color:#fff;background:#101827;border:1px solid #ffffff50;border-radius:8px}.pittz-offer-list article,.pittz-offer-review{margin-top:16px;padding:16px;border:1px solid #ffffff30;border-radius:12px}.pittz-offer-review .btn{margin:6px 6px 0 0}.pittz-offer-contract{overflow-wrap:anywhere;font-size:11px}.pittz-offer-controls button:disabled{opacity:.5;cursor:wait}.pittz-offer-controls a{color:#f3d478}
+
+.nft-offer-panel.is-collapsed{padding:0;border:0;background:none}
+
+.my-offers-heading{display:flex;justify-content:space-between;align-items:start;gap:16px;flex-wrap:wrap}.my-offers-heading h3{margin:0}.my-received-offer{min-width:0;border:1px solid #d4af3740;border-radius:16px;overflow:hidden;background:#101827}.my-received-offer-summary{display:grid;gap:10px;padding:14px}.my-received-offer-summary strong{color:#f3d478}.my-received-offer-summary span,.pittz-offer-note{font-size:12px;line-height:1.6;overflow-wrap:anywhere}.my-received-offer-summary .btn{white-space:normal}

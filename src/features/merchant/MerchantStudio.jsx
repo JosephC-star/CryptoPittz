@@ -1,11 +1,10 @@
+import {loginWithWallet,hasWalletBridge,usesDirectWalletConnection} from '../../utils/connectWallet';
 import WalletConnectModal from '../../components/WalletConnectModal';
 import MarketFooter from './MarketFooter';
 import { useEffect, useRef, useState } from 'react';
 import { UnlockPanelManager } from '@multiversx/sdk-dapp/out/managers/UnlockPanelManager';
 import { useGetAccount } from '@multiversx/sdk-dapp/out/react/account/useGetAccount';
 import { getAccountProvider } from '@multiversx/sdk-dapp/out/providers/helpers/accountProvider';
-import { ProviderFactory } from '@multiversx/sdk-dapp/out/providers/ProviderFactory';
-import { ProviderTypeEnum } from '@multiversx/sdk-dapp/out/providers/types/providerFactory.types';
 import { Message } from '@multiversx/sdk-dapp/out/lib/sdkCore';
 import './merchant.css';
 import AlertSettings from './AlertSettings';
@@ -45,8 +44,8 @@ export default function MerchantStudio() {
   async function refreshInbox(){setInboxLoading(true);try{const data=await api('inquiries&offset='+inboxOffset);setInquiries(data.inquiries);setHasMore(data.hasMore);await refreshOverview();}catch(error){setMessage(errorText(error))}finally{setInboxLoading(false)}}
   async function inquiryStatus(id,status){setBusy(true);try{await api('inquiry-status',{id,status});setInquiries(rows=>rows.map(row=>row.id===id?{...row,status}:row));await refreshOverview();setMessage('Inquiry updated.');}catch(error){setMessage(errorText(error))}finally{setBusy(false)}}
   async function refresh(){const data=await api('products');setProducts(data.products);}
-  async function connect(){setMessage('');if(!window.matchMedia('(max-width:700px)').matches){try{await UnlockPanelManager.getInstance().openUnlockPanel();}catch(error){setMessage(errorText(error))}return;}
-    setBusy(true);setWalletOpen(true);try{const provider=await ProviderFactory.create({type:ProviderTypeEnum.walletConnect,anchor:anchor.current});await provider.login();setWalletOpen(false);anchor.current?.replaceChildren();}catch(error){setMessage(errorText(error));}finally{anchor.current?.replaceChildren();setWalletOpen(false);setBusy(false);}}
+  async function connect(){setMessage('');if(!usesDirectWalletConnection()){try{await UnlockPanelManager.getInstance().openUnlockPanel();}catch(error){setMessage(errorText(error))}return;}
+    setBusy(true);setWalletOpen(!hasWalletBridge());try{await loginWithWallet(anchor.current);setWalletOpen(false);anchor.current?.replaceChildren();}catch(error){setMessage(errorText(error));}finally{anchor.current?.replaceChildren();setWalletOpen(false);setBusy(false);}}
   async function signIn(){setBusy(true);setMessage('Requesting your merchant login message…');try{
     const address=account.address;if(!address)throw Error('Connect your wallet first.');
     const challenge=await api('challenge',{address});

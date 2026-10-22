@@ -33,7 +33,7 @@ const config = {
   },
 
   dAppConfig: {
-    environment: (["/bonez-swap", "/financial-district", "/pittensor", "/merchant-access", "/market-admin", "/market-rent", "/market-shop"].includes(pagePath) || (import.meta.env.VITE_OOX_TRANSACTIONS === "true" && import.meta.env.VITE_OOX_PREVIEW === "true")) ? EnvironmentsEnum.mainnet : EnvironmentsEnum.devnet,
+    environment: (["/bonez-swap", "/financial-district", "/pittensor", "/merchant-access", "/market-admin", "/market-rent", "/market-shop"].includes(pagePath) || (import.meta.env.VITE_OOX_OFFERS === "true" || (import.meta.env.VITE_OOX_TRANSACTIONS === "true" && import.meta.env.VITE_OOX_PREVIEW === "true"))) ? EnvironmentsEnum.mainnet : EnvironmentsEnum.devnet,
 
     providers: {
       walletConnect: {

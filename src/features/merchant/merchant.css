@@ -10,3 +10,29 @@
 .merchant-live .ml-renewal-summary{margin:24px 0;padding:20px;border:1px solid #64704b;border-radius:12px;background:#19231bcc}.merchant-live .ml-renewal-summary h2{font-size:24px;margin-top:0}.merchant-live .ml-renewal-summary p{font-size:14px;line-height:1.65}
 
 .merchant-live .ml-market-footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:18px;padding:28px max(20px,5vw);border-top:1px solid var(--ml-border);font-size:13px}.merchant-live .ml-market-footer a{text-decoration:underline;text-underline-offset:4px}
+
+/* Shop reviews: a playful scale with explicit numeric and text equivalents. */
+.ml-reviews{margin-top:32px;scroll-margin-top:24px}
+.ml-review-disclaimer{font-size:.85rem;opacity:.8}
+.ml-review-summary{display:flex;align-items:center;gap:16px;padding:20px 0}
+.ml-review-summary>span{font-size:2.6rem}
+.ml-review-summary strong,.ml-review-summary small{display:block}
+.ml-review-summary strong{font-size:1.4rem;color:#eaff69}
+.ml-review-list article{border-top:1px solid #ffffff25;padding:20px 0;background:transparent}
+.ml-review-byline{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;overflow-wrap:anywhere}
+.ml-review-byline time{font-size:.8rem;opacity:.7}
+.ml-review-score{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.ml-review-score>span:first-child{letter-spacing:3px}
+.ml-review-comment{white-space:pre-wrap;overflow-wrap:anywhere}
+.ml-reviews fieldset{border:1px solid #ffffff30;border-radius:12px;padding:16px;margin:12px 0}
+.ml-poop-picker{display:flex;flex-wrap:wrap;gap:8px}
+.merchant-live .ml-poop-picker label{position:relative;display:grid;place-items:center;width:48px;height:48px;margin:0;cursor:pointer;border:1px solid #ffffff35;border-radius:10px}
+.merchant-live .ml-poop-picker input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.ml-poop-picker label>span[aria-hidden]{font-size:1.9rem;opacity:.3;pointer-events:none}
+.ml-poop-picker label.is-filled>span[aria-hidden]{opacity:1}
+.ml-poop-picker label:has(input:checked){border-color:#eaff69;background:#eaff6915}
+.ml-poop-picker label:focus-within{outline:2px solid #eaff69;outline-offset:3px}
+.ml-review-rating-label{min-height:1.6em}
+.ml-visually-hidden,.ml-review-trap{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.merchant-live .ml-review-consent{display:flex;align-items:flex-start;gap:12px}
+.merchant-live .ml-review-consent input{width:20px;min-width:20px;margin-top:4px}
