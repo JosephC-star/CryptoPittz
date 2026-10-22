@@ -6,3 +6,17 @@
 .featured-banner-name{padding:24px;overflow-wrap:anywhere;text-align:center}
 .featured-merchant .boothinfo h3{overflow-wrap:anywhere}.featured-merchant .btn{white-space:normal;text-align:center}
 .directory-description{font-size:14px;line-height:1.75;color:#dbd9cb!important}
+
+/* Street-poster framing surrounds each merchant's own uncropped artwork. */
+.featured-merchant{border-color:#55dfdc!important;background:#19211e;box-shadow:0 0 40px #49dcd914,7px 10px 20px #0007}
+.featured-marquee{position:relative;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:18px 20px;background:linear-gradient(115deg,#102a29,#17201e);border-bottom:1px solid #55dfdc55}
+.featured-booth-label{font:700 10px Inter,system-ui;letter-spacing:2px;color:#ded9bf}
+.featured-marquee .featured-community{position:static;display:inline-block;flex-shrink:0;transform:rotate(-4deg);font-size:13px;padding:8px 12px;box-shadow:3px 4px 0 #080f0e}
+.featured-merchant .featured-banner{border-bottom:4px solid #55dfdc;box-shadow:0 4px 16px #55dfdc25}
+.featured-signature{position:relative;padding:20px 64px 19px 22px;background:linear-gradient(105deg,#102c29,#19211e);border-bottom:1px solid #55dfdc40}
+.featured-signature>span:first-child{display:block;font:clamp(23px,3vw,32px)/1.15 'Permanent Marker',Impact,sans-serif;color:#ff8ad1;text-shadow:2px 3px #101318;overflow-wrap:anywhere}
+.featured-signature small{display:block;margin-top:9px;font:700 9px/1.5 Inter,system-ui;letter-spacing:2px;color:#fff0d3}
+.featured-arrow{position:absolute;right:22px;top:22px;font-size:32px;color:#eaff69}
+.featured-merchant .boothinfo .status{color:#64e6df;font-weight:700;letter-spacing:1.7px;line-height:1.7}
+.featured-merchant .boothinfo h3{color:#fff0cf}.featured-merchant .btn{box-shadow:4px 4px 0 #080f0e}
+@media(max-width:600px){.featured-marquee{padding:15px;gap:14px}.featured-booth-label{font-size:9px;letter-spacing:1px}.featured-marquee .featured-community{font-size:12px}.featured-signature{padding-left:18px}}
