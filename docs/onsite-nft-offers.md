@@ -8,7 +8,7 @@ OOX's existing contract handles escrow and settlement; there is no new PittzStop
 
 ## Preview configuration
 
-`VITE_OOX_OFFERS=true` is set only for `feature/oct-21-fixes-preview` by the Netlify deploy-preview command and branch environment. It puts this preview's SDK on mainnet and enables user-approved offer signing. Existing buy/list transactions remain disabled for this preview (`VITE_OOX_TRANSACTIONS=false`). Production offer signing stays disabled until separately approved. Main has not been changed.
+`VITE_OOX_OFFERS=true` is set for `feature/oct-21-fixes-preview` by the Netlify deploy-preview command and branch environment, and for the authorized production release. It puts this preview's SDK on mainnet and enables user-approved offer signing. Existing buy/list transactions remain disabled for this preview (`VITE_OOX_TRANSACTIONS=false`). The user approved the daily batch for production release. Production now explicitly enables VITE_OOX_OFFERS alongside existing purchase/listing flags.
 
 This preview uses **real mainnet EGLD** when the user approves an offer. Start with a small amount, then check confirmation and withdrawal. Codex did not sign or broadcast any financial transaction.
 
@@ -32,7 +32,7 @@ The signed hash is computed and saved in localStorage before broadcast. Unknown 
 
 275 tests pass, including exact offer payloads, actual simulation fixtures, ABI decoding, malformed amounts, incorrect owner, wrong currency/NFT, expired offers, rejected simulation, wallet changes, signed payload mutation, stale reviews, pending cross-shard receipts, unknown broadcast outcomes, tracking failures, and disabled build switches. Preview-mode build and local link audit pass (existing large-chunk warning).
 
-Still required: user hands-on in preview with a small real offer, confirmation, reload recovery, and withdrawal; a cooperative owner acceptance test; Android/iOS xPortal and browser wallet checks; and desktop/mobile layout review. No production merge yet.
+Still required: user hands-on in preview with a small real offer, confirmation, reload recovery, and withdrawal; a cooperative owner acceptance test; Android/iOS xPortal and browser wallet checks; and desktop/mobile layout review. User authorized the production merge after this preview batch. Outstanding hands-on checks above have not been independently confirmed.
 
 ## My Pittz offers filter
 

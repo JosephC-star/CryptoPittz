@@ -6,6 +6,7 @@
 [context.production.environment]
   VITE_OOX_PREVIEW = "true"
   VITE_OOX_TRANSACTIONS = "true"
+  VITE_OOX_OFFERS = "true"
 
 [context."feature/oox-purchase-preview".environment]
   VITE_OOX_PREVIEW = "true"
@@ -126,6 +127,6 @@
   status = 301
   force = true
 
-# On-site offer trial is isolated to the daily preview. Production remains off.
+# Daily preview also enables user-approved on-site offers.
 [context."feature/oct-21-fixes-preview".environment]
   VITE_OOX_OFFERS = "true"
