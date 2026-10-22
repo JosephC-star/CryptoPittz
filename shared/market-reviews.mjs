@@ -1,4 +1,4 @@
-export const REVIEW_LABELS=['','Needs work','Room to improve','Solid shop','Pack approved','This shop is the sh*t'];
+export const REVIEW_LABELS=['','This shop smells like sh*t','Room to improve','Solid shop','Pack approved','This shop is the sh*t'];
 export function reviewInput(body){
  const name=typeof body.name==='string'?body.name.trim():'';
  const comment=typeof body.comment==='string'?body.comment.trim():'';
