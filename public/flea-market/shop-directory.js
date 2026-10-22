@@ -1,3 +1,4 @@
+import {plainCopy} from './merchant-copy.mjs';
 import {categoryLabel} from './directory-utils.mjs';
 // One shared directory for every active storefront, including the original rug shop.
 const anchor=document.getElementById('booths');
@@ -22,7 +23,7 @@ if(anchor){
   if(shop.cover_url){const img=node('img');img.src=shop.cover_url;img.alt=shop.name+' cover';img.loading='lazy';img.width=800;img.height=300;img.addEventListener('error',()=>img.remove(),{once:true});cover.append(img);}
   const body=node('div',undefined,'directory-card-body'),booth=node('p','Booth '+String(shop.booth_number).padStart(2,'0')+' · Community merchant','directory-booth'),title=node('h3'),titleLink=node('a',shop.name);titleLink.href=url;title.append(titleLink);
   const tags=node('div',undefined,'directory-tags');for(const c of shop.categories||[])tags.append(node('span',categoryLabel(c)));
-  const description=node('p',shop.description||'A new maker is settling into the market.','directory-description');
+  const description=node('p',plainCopy(shop.description)||'A new maker is settling into the market.','directory-description');
   const shelf=node('div',undefined,'directory-shelf');
   for(const product of shop.previews||[]){const item=node('a',undefined,'directory-product');item.href=url;item.setAttribute('aria-label',product.name+' · '+(product.sold_out?'Sold out':price(product)));const visual=node('span',undefined,'directory-product-visual');visual.setAttribute('aria-hidden','true');visual.textContent='🐾';if(product.image_url){const img=node('img');img.src=product.image_url;img.alt='';img.loading='lazy';img.width=180;img.height=180;img.addEventListener('error',()=>img.remove(),{once:true});visual.append(img);}item.append(visual,node('b',product.name),node('small',product.sold_out?'Sold out':price(product)));shelf.append(item);}
   if(!shop.previews?.length)shelf.append(node('p','Stocking the shelves · You can still contact this merchant.','directory-shelf-empty'));

@@ -22,7 +22,9 @@ export async function handler(event){try{
   if(!isIP(ip||''))fail(503,'Review submission could not be verified. Try again later.');
   const accepted=await db('rpc/market_submit_review','POST',{review_id:body.request_id,shop_key:shop.id,reviewer_name:review.name,review_text:review.comment,score:review.rating,client_hash:hash(configuration().headers.apikey+'|review-ip|'+ip)});
   if(accepted!==true)fail(429,'Review limit reached. Please try again tomorrow.');
-  return response(200,{message:'Review received! An admin will check it before publication. Your rating counts once published.'});
+  // Publish only this accepted pending submission. Retrying a hidden review must never restore it.
+  await db('market_reviews?id=eq.'+body.request_id+'&shop_id=eq.'+shop.id+'&status=eq.pending','PATCH',{status:'published'});
+  return response(200,{message:'Pack verdict submitted! New reviews appear immediately. Admins can hide reviews that need attention.'});
  }
  const offset=Number(event.queryStringParameters?.offset||0);
  if(!Number.isSafeInteger(offset)||offset<0||offset>100000)fail(400,'Invalid page.');

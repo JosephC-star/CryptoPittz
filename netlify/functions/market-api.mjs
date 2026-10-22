@@ -1,3 +1,4 @@
+import {featuredShop} from '../../shared/featured-shop.mjs';
 import {GALLERY_SLOTS,galleryFileName} from '../../shared/market-product-media.mjs';
 import {SHOP_CATEGORIES,shopCategories,matchesShop} from '../../public/flea-market/directory-utils.mjs';
 import {readJsonRequest} from '../../server/json-request.mjs';
@@ -120,7 +121,7 @@ export async function handler(event) {
   try {
     const actualOrigin = requestOrigin(event);
     const route = event.queryStringParameters?.route || 'me';
-    const allowed = { appearance:'GET', 'shop-photo':'POST', 'product-photo':'POST', 'shop-image':'GET', overview:'GET', me:'GET', shops:'GET', catalog:'GET', image:'GET', products:'GET', challenge:'POST', verify:'POST', logout:'POST', product:'POST', upload:'POST', shop:'POST', inquiry:'POST', inquiries:'GET', 'inquiry-status':'POST', 'inquiry-reference':'GET' };
+    const allowed = { appearance:'GET', 'shop-photo':'POST', 'product-photo':'POST', 'shop-image':'GET', overview:'GET', me:'GET', shops:'GET', featured:'GET', catalog:'GET', image:'GET', products:'GET', challenge:'POST', verify:'POST', logout:'POST', product:'POST', upload:'POST', shop:'POST', inquiry:'POST', inquiries:'GET', 'inquiry-status':'POST', 'inquiry-reference':'GET' };
     if (!allowed[route]) fail(404, 'Unknown merchant action.');
     if (event.httpMethod !== allowed[route]) fail(405, 'Unsupported request method.');
     if (event.httpMethod !== 'GET' && event.headers?.origin !== actualOrigin) fail(403, 'Open this action from the market.');
@@ -149,6 +150,11 @@ export async function handler(event) {
       const token = randomBytes(32).toString('hex');
       await db('market_sessions','POST',{shop_id:shop.id,wallet_address:challenge.wallet_address,token_hash:hash(actualOrigin+token),expires_at:new Date(Date.now()+7200000).toISOString()});
       return response(200,{ shop },{'Set-Cookie':cookie(token)});
+    }
+    if (route === 'featured') {
+      const rows=await db('market_shops?moderation_suspended=eq.false&access_status=in.(test,active)&select=id,booth_number,name,description,access_status,rental_expires_at,moderation_suspended&order=booth_number.asc&limit=500');
+      const shop=featuredShop(rows.filter(active));
+      return response(200,{shop:shop?{booth_number:shop.booth_number,name:shop.name,description:shop.description,cover_url:(await appearance(shop)).cover_url}:null});
     }
     if(route==='shops'){
       const query=event.queryStringParameters?.q||'',category=event.queryStringParameters?.category||'all';

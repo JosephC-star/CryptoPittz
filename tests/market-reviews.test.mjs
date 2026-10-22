@@ -17,8 +17,9 @@ test('public reviews are scoped, paginated and never request private submitter h
  if(u.pathname.endsWith('/market_reviews')){assert.equal(u.searchParams.get('shop_id'),'eq.'+shopId);assert.equal(u.searchParams.get('status'),'eq.published');assert.equal(u.searchParams.get('offset'),'10');assert(!u.searchParams.get('select').includes('client_hash'));return Response.json(Array.from({length:11},(_,n)=>({id:n,rating:4,display_name:'Friend',comment:'Good shop experience.'})));}
  assert(u.pathname.endsWith('/market_review_summary'));assert.equal(JSON.parse(options.body).shop_key,shopId);return Response.json({count:21,average:4.2});
 },async()=>{const r=await handler(event(undefined,{offset:'10'}));assert.equal(r.statusCode,200);const d=JSON.parse(r.body);assert.equal(d.reviews.length,10);assert.equal(d.hasMore,true);assert.equal(d.count,21);assert.equal(d.average,4.2);}));
-test('submissions use trusted hashed IP and atomic pending-review RPC',async()=>using(async(url,options)=>{
+test('submissions use trusted hashed IP and rate-limited RPC then publish only the accepted pending review',async()=>using(async(url,options)=>{
  if(url.includes('/market_shops?'))return Response.json([shop]);
+ if(options.method==='PATCH'){const u=new URL(url);assert.equal(u.searchParams.get('id'),'eq.'+id);assert.equal(u.searchParams.get('shop_id'),'eq.'+shopId);assert.equal(u.searchParams.get('status'),'eq.pending');assert.deepEqual(JSON.parse(options.body),{status:'published'});return new Response(null,{status:204});}
  assert(url.endsWith('/rpc/market_submit_review'));const b=JSON.parse(options.body);assert.equal(b.review_id,id);assert.equal(b.shop_key,shopId);assert.equal(b.score,5);assert.match(b.client_hash,/^[0-9a-f]{64}$/);assert(!JSON.stringify(b).includes('203.0.113.8'));assert(!('status' in b));return Response.json(true);
 },async()=>{assert.equal((await handler(event(input))).statusCode,200);}));
 test('cross-origin, missing trusted client IP, inactive shops and limits reject submissions',async()=>{
