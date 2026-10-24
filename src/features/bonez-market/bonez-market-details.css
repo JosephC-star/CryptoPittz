@@ -1,0 +1,9 @@
+
+/* Keep the graph visible while extra market figures are optional on phones. */
+.bonez-stats-toggle{display:none}
+@media(max-width:700px){
+ .bonez-market-details:not(.is-expanded){display:none}
+ .bonez-stats-toggle{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin:16px 0 0;padding:11px 16px;border:1px solid #55dfdc70;border-radius:12px;background:#102a36;color:#9df7ef;font-family:inherit;font-size:13px;font-weight:700;line-height:1.4;cursor:pointer}
+ .bonez-stats-toggle:focus-visible{outline:3px solid #ffd86b;outline-offset:3px}
+ .bonez-stats-retract{margin-top:20px}
+}
