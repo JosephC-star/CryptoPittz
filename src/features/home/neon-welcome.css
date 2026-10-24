@@ -35,8 +35,6 @@
 /* A small, living ecosystem around the portrait; motion stays in the scenery. */
 .galaxy-orbit{animation:galaxy-ring-turn 32s ease-in-out infinite alternate}
 .galaxy-stars{animation:galaxy-breathe 9s ease-in-out infinite alternate,galaxy-star-travel 70s linear infinite}
-.galaxy-satellite{position:absolute;z-index:1;width:22px;height:22px;color:#edd28f;offset-path:ellipse(43% 32% at 50% 58%);offset-rotate:0deg;animation:galaxy-satellite-orbit 32s linear infinite;filter:drop-shadow(0 0 5px #eac47755)}
-.galaxy-satellite svg{display:block;width:100%;height:100%}.galaxy-satellite-two{color:#6ae5ef;width:17px;height:17px;animation-delay:-16s;filter:drop-shadow(0 0 5px #6ae5ef55)}
 .galaxy-planet{position:absolute;z-index:1;border-radius:50%;box-shadow:inset -7px -5px 12px #040719bb,0 0 20px #ad5bdc35;animation:galaxy-planet-drift 16s ease-in-out infinite alternate}
 .galaxy-planet-violet{width:29px;height:29px;right:13%;top:29%;background:linear-gradient(135deg,#ed93d8,#7343aa 60%,#281847)}
 .galaxy-planet-violet:after{content:'';position:absolute;inset:9px -12px;border:2px solid #dd9ced60;border-radius:50%;transform:rotate(-28deg)}
@@ -47,11 +45,10 @@
 .galaxy-shooting-star-one{left:6%;top:18%;animation-delay:-7s}.galaxy-shooting-star-two{left:66%;top:10%;width:45px;animation-duration:27s;animation-delay:-20s}
 .galaxy-constellation{position:absolute;left:8%;top:35%;width:40px;height:42px;transform:rotate(-15deg);border-left:1px solid #a392df38;border-bottom:1px solid #a392df38;animation:galaxy-breathe 12s ease-in-out infinite alternate}
 .galaxy-constellation i{position:absolute;width:3px;height:3px;background:#c1c4ef;border-radius:50%}.galaxy-constellation i:first-child{left:-2px;top:0}.galaxy-constellation i:nth-child(2){left:-2px;bottom:-2px}.galaxy-constellation i:last-child{right:0;bottom:-2px}
-@keyframes galaxy-satellite-orbit{from{offset-distance:0%}to{offset-distance:100%}}
 @keyframes galaxy-ring-turn{from{transform:rotate(-23deg) scale(.96)}to{transform:rotate(-8deg) scale(1.04)}}
 @keyframes galaxy-star-travel{to{transform:translateY(-12px)}}
 @keyframes galaxy-planet-drift{to{transform:translate(5px,-9px)}}
 @keyframes galaxy-dust-rise{0%,100%{opacity:.15;transform:translate(0,8px)}50%{opacity:.75;transform:translate(7px,-15px)}}
 @keyframes galaxy-shoot{0%,73%,100%{opacity:0;transform:translate(0,0) rotate(28deg)}75%{opacity:.65}81%{opacity:0;transform:translate(120px,64px) rotate(28deg)}}
-@media(max-width:700px){.galaxy-satellite{width:18px;height:18px}.galaxy-satellite-two{width:15px;height:15px}.galaxy-planet-violet{right:9%;width:23px;height:23px}.galaxy-planet-cyan{left:9%;width:13px;height:13px}}
-@media(prefers-reduced-motion:reduce){.neon-welcome *{animation:none!important}.galaxy-shooting-star{display:none}.galaxy-satellite-one{offset-distance:12%}.galaxy-satellite-two{offset-distance:62%}}
+@media(max-width:700px){.galaxy-planet-violet{right:9%;width:23px;height:23px}.galaxy-planet-cyan{left:9%;width:13px;height:13px}}
+@media(prefers-reduced-motion:reduce){.neon-welcome *{animation:none!important}.galaxy-shooting-star{display:none}}
