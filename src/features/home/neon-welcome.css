@@ -1,0 +1,57 @@
+.hero-copy-panel.hero-neon-panel .hero-pitbull-wrap{display:none}
+.neon-welcome{position:relative;isolation:isolate;margin:-22px -22px 20px;overflow:hidden;border-bottom:1px solid #55dfdc70;background:#080b1c}
+.neon-galaxy{position:relative;height:310px;overflow:hidden;background:radial-gradient(ellipse at 50% 70%,#282052 0%,#101127 52%,#070b18 90%)}
+.galaxy-aura{position:absolute;width:75%;height:105%;top:-12%;filter:blur(30px);opacity:.55;will-change:transform;animation:galaxy-drift 18s ease-in-out infinite alternate}
+.galaxy-aura-pink{left:-18%;background:radial-gradient(ellipse,#be2eab60,#7025ae50 38%,transparent 68%);transform:rotate(-24deg)}
+.galaxy-aura-cyan{right:-18%;background:radial-gradient(ellipse,#00daf965,#146abb40 38%,transparent 68%);animation-delay:-9s;animation-direction:alternate-reverse}
+.galaxy-stars{position:absolute;inset:0;opacity:.7;background-image:radial-gradient(circle at 12% 22%,#d4fcff 0 1px,transparent 2px),radial-gradient(circle at 76% 18%,#ffd7fa 0 1px,transparent 2px),radial-gradient(circle at 26% 63%,#84eeff 0 1px,transparent 2px),radial-gradient(circle at 87% 58%,#b9dbff 0 1px,transparent 2px),radial-gradient(circle at 44% 14%,#cb9be9 0 1px,transparent 2px);background-size:180px 150px,250px 190px,220px 170px,310px 220px,270px 160px;animation:galaxy-breathe 9s ease-in-out infinite alternate}
+.galaxy-orbit{position:absolute;width:75%;height:68%;left:12%;top:20%;border:1px solid #88e8ef24;border-radius:50%;transform:rotate(-23deg);box-shadow:0 0 38px #7741b62a,inset 0 0 45px #d549ab15}
+.galaxy-pittz{position:absolute;z-index:2;left:50%;bottom:-18%;height:118%;max-width:85%;width:auto;object-fit:contain;transform:translateX(-50%);filter:drop-shadow(-10px 0 22px #c528d034) drop-shadow(12px 0 24px #00c8ef26)}
+.galaxy-mist{position:absolute;z-index:3;pointer-events:none;left:-30%;bottom:-40%;width:150%;height:84%;filter:blur(18px);animation:galaxy-mist 22s ease-in-out infinite alternate;background:radial-gradient(ellipse at 20% 60%,#b43bb550,transparent 44%),radial-gradient(ellipse at 65% 65%,#178fc06b,transparent 46%),radial-gradient(ellipse at 42% 82%,#522b8f99,transparent 56%)}
+.galaxy-mist-front{bottom:-48%;opacity:.85;animation-duration:28s;animation-delay:-12s;animation-direction:alternate-reverse;background:radial-gradient(ellipse at 35% 50%,#65479b9c,transparent 48%),radial-gradient(ellipse at 75% 45%,#2296b25e,transparent 45%)}
+.neon-welcome-caption{position:absolute;z-index:4;top:14px;left:16px;right:16px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font:700 9px/1.6 system-ui;letter-spacing:1.8px;color:#c3fff8;text-shadow:0 2px 7px #050918}
+.neon-welcome-caption span{padding:5px 8px;background:#0d10258c;border:1px solid #55dfdc28;border-radius:4px}
+.neon-motion-control{position:absolute;z-index:4;right:12px;bottom:10px;min-height:36px;padding:7px 10px;border:1px solid #ffffff30;border-radius:7px;background:#101527b8;color:#d4e5ed;font:10px system-ui;cursor:pointer}
+.neon-welcome.is-paused *{animation-play-state:paused!important}
+.hero-copy-panel.hero-neon-panel .title{font-size:clamp(30px,4vw,48px);line-height:1.1;margin:14px 0;color:#fff3de}
+.neon-motion-control:focus-visible,.pittz-intro-toggle:focus-visible{outline:3px solid #ffe08a;outline-offset:3px}
+.pittz-intro-toggle{display:none}
+@keyframes galaxy-drift{to{transform:translate(9%,6%) rotate(12deg)}}
+@keyframes galaxy-breathe{to{opacity:.35}}
+@keyframes galaxy-mist{to{transform:translate(13%,-7%)}}
+@media(max-width:700px){
+ .hero-copy-panel.hero-neon-panel .inner{padding:16px}
+ .neon-welcome{margin:-16px -16px 15px}.neon-galaxy{height:245px}
+ .neon-welcome-caption{top:9px;left:10px;right:10px;font-size:8px;letter-spacing:1px}.neon-welcome-caption span:last-child{display:none}
+ .hero-copy-panel.hero-neon-panel .badge{padding:6px 10px;font-size:10px}
+ .hero-copy-panel.hero-neon-panel .title{font-size:30px;margin:12px 0 8px}
+ .hero-copy-panel.hero-neon-panel .subtitle{font-size:13px;line-height:1.65;margin-bottom:5px}
+ .pittz-intro-more:not(.is-expanded){display:none}
+ .pittz-intro-toggle{display:inline-flex;align-items:center;min-height:44px;padding:8px 0;border:0;background:transparent;color:#89e9ef;font:700 12px system-ui;cursor:pointer}
+ .hero-copy-panel.hero-neon-panel .chip-row{display:none}
+}
+@media(prefers-reduced-motion:reduce){.neon-welcome *{animation:none!important}.neon-motion-control{display:none}}
+
+/* A small, living ecosystem around the portrait; motion stays in the scenery. */
+.galaxy-orbit{animation:galaxy-ring-turn 32s ease-in-out infinite alternate}
+.galaxy-stars{animation:galaxy-breathe 9s ease-in-out infinite alternate,galaxy-star-travel 70s linear infinite}
+.galaxy-satellite{position:absolute;z-index:1;width:22px;height:22px;color:#edd28f;offset-path:ellipse(43% 32% at 50% 58%);offset-rotate:0deg;animation:galaxy-satellite-orbit 32s linear infinite;filter:drop-shadow(0 0 5px #eac47755)}
+.galaxy-satellite svg{display:block;width:100%;height:100%}.galaxy-satellite-two{color:#6ae5ef;width:17px;height:17px;animation-delay:-16s;filter:drop-shadow(0 0 5px #6ae5ef55)}
+.galaxy-planet{position:absolute;z-index:1;border-radius:50%;box-shadow:inset -7px -5px 12px #040719bb,0 0 20px #ad5bdc35;animation:galaxy-planet-drift 16s ease-in-out infinite alternate}
+.galaxy-planet-violet{width:29px;height:29px;right:13%;top:29%;background:linear-gradient(135deg,#ed93d8,#7343aa 60%,#281847)}
+.galaxy-planet-violet:after{content:'';position:absolute;inset:9px -12px;border:2px solid #dd9ced60;border-radius:50%;transform:rotate(-28deg)}
+.galaxy-planet-cyan{width:16px;height:16px;left:13%;top:64%;background:linear-gradient(130deg,#a6eeea,#277eaf 70%,#0e274e);animation-delay:-8s}
+.galaxy-dust{position:absolute;inset:0;z-index:1;pointer-events:none}.galaxy-dust i{position:absolute;width:2px;height:2px;background:#c4f5ff;border-radius:50%;box-shadow:0 0 5px #8cecff66;animation:galaxy-dust-rise 15s ease-in-out infinite}
+.galaxy-dust i:nth-child(3n){background:#ffb1e9;width:3px;height:3px}
+.galaxy-shooting-star{position:absolute;z-index:1;width:66px;height:1px;opacity:0;transform:rotate(28deg);background:linear-gradient(90deg,transparent,#c5f5ff);animation:galaxy-shoot 19s linear infinite;pointer-events:none}
+.galaxy-shooting-star-one{left:6%;top:18%;animation-delay:-7s}.galaxy-shooting-star-two{left:66%;top:10%;width:45px;animation-duration:27s;animation-delay:-20s}
+.galaxy-constellation{position:absolute;left:8%;top:35%;width:40px;height:42px;transform:rotate(-15deg);border-left:1px solid #a392df38;border-bottom:1px solid #a392df38;animation:galaxy-breathe 12s ease-in-out infinite alternate}
+.galaxy-constellation i{position:absolute;width:3px;height:3px;background:#c1c4ef;border-radius:50%}.galaxy-constellation i:first-child{left:-2px;top:0}.galaxy-constellation i:nth-child(2){left:-2px;bottom:-2px}.galaxy-constellation i:last-child{right:0;bottom:-2px}
+@keyframes galaxy-satellite-orbit{from{offset-distance:0%}to{offset-distance:100%}}
+@keyframes galaxy-ring-turn{from{transform:rotate(-23deg) scale(.96)}to{transform:rotate(-8deg) scale(1.04)}}
+@keyframes galaxy-star-travel{to{transform:translateY(-12px)}}
+@keyframes galaxy-planet-drift{to{transform:translate(5px,-9px)}}
+@keyframes galaxy-dust-rise{0%,100%{opacity:.15;transform:translate(0,8px)}50%{opacity:.75;transform:translate(7px,-15px)}}
+@keyframes galaxy-shoot{0%,73%,100%{opacity:0;transform:translate(0,0) rotate(28deg)}75%{opacity:.65}81%{opacity:0;transform:translate(120px,64px) rotate(28deg)}}
+@media(max-width:700px){.galaxy-satellite{width:18px;height:18px}.galaxy-satellite-two{width:15px;height:15px}.galaxy-planet-violet{right:9%;width:23px;height:23px}.galaxy-planet-cyan{left:9%;width:13px;height:13px}}
+@media(prefers-reduced-motion:reduce){.neon-welcome *{animation:none!important}.galaxy-shooting-star{display:none}.galaxy-satellite-one{offset-distance:12%}.galaxy-satellite-two{offset-distance:62%}}

@@ -7,3 +7,11 @@ The homepage arcade is a compact entrance linking to `/playground/`. This separa
 The Playground is based on Pittz-Playground-Preview.html version 29 (2026-10-03). Its bundled JS/CSS are preserved here as a release artifact, with repeated embedded images extracted to local assets. The original source remains the basis for future game edits. It does not sign marketplace transactions. A public wallet address passed from the homepage loads owned Pittz for game decks; failed lookups fall back to random Pittz. Game Bonez have no cash/token value.
 
 Validation: 58 marketplace/dependency tests passed; targeted ESLint passed; production build and Playground JS syntax check passed. Deployed browser smoke checks confirmed the homepage entrance, My Listings tabs, nine-game lobby, Pinball opening/controls, and gremlin feedback. Security response headers are verified live. A leftover prototype Back to PittzStop link was corrected to the real homepage. Local browser installation was unavailable. Follow-up: actual device checks of homepage, marketplace signing cancellation/return, Playground navigation, controls and feedback links. Known dependency findings remain in OOX-SECURITY-REVIEW.md.
+
+
+## Bonez Flip playground preview (October 24, 2026)
+The build applies the guarded `scripts/build-playground-flip.mjs` substitution to the preserved Playground bundle in `dist`. The ninth lobby cabinet and route are now Bonez Flip; old Beat bookmarks redirect to Flip. The original rhythm-game artifact remains preserved but is no longer a playable cabinet. The polished standalone game and extracted media live under `public/playground/bonez-flip/`; prior standalone practice saves remain untouched.
+
+Flip uses the existing `cryptopittz-plinko-preview-bonez` shared pretend-credit balance and a separate Flip round journal. Reloaded unfinished rounds settle once; Single Flip and Best of Three debit one stake per round/match. Game Bonez have no cash or token value. No worker, wallet login or real-token transactions are used. The original audio attribution remains in the game.
+
+Use `npm run build` then `npm run preview` to inspect the integrated cabinet; Vite dev serves the preserved original bundle.
