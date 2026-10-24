@@ -52,3 +52,10 @@
 @keyframes galaxy-shoot{0%,73%,100%{opacity:0;transform:translate(0,0) rotate(28deg)}75%{opacity:.65}81%{opacity:0;transform:translate(120px,64px) rotate(28deg)}}
 @media(max-width:700px){.galaxy-planet-violet{right:9%;width:23px;height:23px}.galaxy-planet-cyan{left:9%;width:13px;height:13px}}
 @media(prefers-reduced-motion:reduce){.neon-welcome *{animation:none!important}.galaxy-shooting-star{display:none}}
+
+/* Match the random-Pitt showcase to the full mobile panel width. */
+@media(max-width:700px){
+ .hero>.panel.hero-art>.mock{width:100%;max-width:none;min-width:0;aspect-ratio:auto;box-sizing:border-box;display:grid;gap:14px;padding:14px;border-radius:24px}
+ .hero>.panel.hero-art>.mock>.label{position:relative;inset:auto;min-width:0;box-sizing:border-box;align-items:center}
+ .hero>.panel.hero-art>.mock>.random-pitt-hero{position:relative;inset:auto;min-width:0;margin:0;box-sizing:border-box}
+}
