@@ -664,7 +664,7 @@ function App() {
               </div>
 
               <div className="inner">
-                <NeonWelcome/><div className="badge">⚡ Welcome to the pack</div>
+                <NeonWelcome/><div className="badge">⚡ Welcome to the CryptoPittz universe</div>
 
                 <h2 className="title">CryptoPittz is a neon-charged collectible universe.</h2>
 

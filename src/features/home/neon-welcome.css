@@ -1,4 +1,5 @@
-.hero-copy-panel.hero-neon-panel .hero-pitbull-wrap{display:none}
+.neon-welcome{display:none}
+@media(max-width:700px){.hero-copy-panel.hero-neon-panel .hero-pitbull-wrap{display:none}.neon-welcome{display:block}}
 .neon-welcome{position:relative;isolation:isolate;margin:-22px -22px 20px;overflow:hidden;border-bottom:1px solid #55dfdc70;background:#080b1c}
 .neon-galaxy{position:relative;height:310px;overflow:hidden;background:radial-gradient(ellipse at 50% 70%,#282052 0%,#101127 52%,#070b18 90%)}
 .galaxy-aura{position:absolute;width:75%;height:105%;top:-12%;filter:blur(30px);opacity:.55;will-change:transform;animation:galaxy-drift 18s ease-in-out infinite alternate}
@@ -13,7 +14,6 @@
 .neon-welcome-caption span{padding:5px 8px;background:#0d10258c;border:1px solid #55dfdc28;border-radius:4px}
 .neon-motion-control{position:absolute;z-index:4;right:12px;bottom:10px;min-height:36px;padding:7px 10px;border:1px solid #ffffff30;border-radius:7px;background:#101527b8;color:#d4e5ed;font:10px system-ui;cursor:pointer}
 .neon-welcome.is-paused *{animation-play-state:paused!important}
-.hero-copy-panel.hero-neon-panel .title{font-size:clamp(30px,4vw,48px);line-height:1.1;margin:14px 0;color:#fff3de}
 .neon-motion-control:focus-visible,.pittz-intro-toggle:focus-visible{outline:3px solid #ffe08a;outline-offset:3px}
 .pittz-intro-toggle{display:none}
 @keyframes galaxy-drift{to{transform:translate(9%,6%) rotate(12deg)}}
