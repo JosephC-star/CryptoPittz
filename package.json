@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/build-share-pages.mjs",
+    "build": "vite build && node scripts/build-share-pages.mjs && node scripts/build-playground-flip.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },

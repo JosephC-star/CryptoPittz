@@ -1,3 +1,4 @@
+import {NeonWelcome,IntroDisclosure} from "./features/home/NeonWelcome";
 import {loginWithWallet,hasWalletBridge,usesDirectWalletConnection} from './utils/connectWallet';
 import WalletConnectModal from './components/WalletConnectModal';
 import { useRef, useState } from "react";
@@ -653,7 +654,7 @@ function App() {
       <main id="top">
         <div className="container">
           <div className="hero">
-            <div className="panel hero-copy-panel">
+            <div className="panel hero-copy-panel hero-neon-panel">
               <div className="hero-cosmic-bg" aria-hidden="true" />
 
               <div className="hero-cosmic-nebula" aria-hidden="true" />
@@ -663,13 +664,11 @@ function App() {
               </div>
 
               <div className="inner">
-                <div className="badge">⚡ Welcome to the CryptoPittz universe</div>
+                <NeonWelcome/><div className="badge">⚡ Welcome to the CryptoPittz universe</div>
 
                 <h2 className="title">CryptoPittz is a neon-charged collectible universe.</h2>
 
-                <p className="subtitle">
-                  CryptoPittz is an NFT collection on MultiversX, featuring raw, high-quality
-                  pitbull artwork. the collection has two drops: the original Pittz consisting of
+                <IntroDisclosure>the collection has two drops: the original Pittz consisting of
                   5310 art pieces released in to wild back in 2021 and the 2nd collection, Vice
                   Pittz, consisting of only 1395 retro themed nfts. Both collections feature
                   references from pop culture, and possess a free-spirited, gritty, degen vibe. Hold
@@ -678,8 +677,7 @@ function App() {
                   the Pittensor fund, on Bittensor, to buy back and burn the $BONEZ. the remaining
                   25% gets compounded back into the Pettensor fund, crushing supply and building
                   long-term value. You Earn, We Burn! We are a tight crew of degens who love art,
-                  the memes, and the culture. Merch and pet products on the horizon. Woof Woof!
-                </p>
+                  the memes, and the culture. Merch and pet products on the horizon. Woof Woof!</IntroDisclosure>
 
                 <div className="chip-row">
                   <div className="chip">🎨 Art-first vibe</div>

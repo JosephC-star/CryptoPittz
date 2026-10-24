@@ -1,3 +1,5 @@
+import {useId,useRef,useState} from "react";
+import "./bonez-market-details.css";
 import { formatBonezUsd, formatMarketNumber } from "../../utils/formatters";
 
 function BonezMarketSection({
@@ -13,6 +15,9 @@ function BonezMarketSection({
   chartChange,
   onChartRangeChange,
 }) {
+  const [statsExpanded,setStatsExpanded]=useState(false);
+  const statsId=useId(),statsToggle=useRef(null);
+  function retractStats(){setStatsExpanded(false);statsToggle.current?.scrollIntoView({block:"nearest",behavior:"smooth"});statsToggle.current?.focus({preventScroll:true});}
   const statusLabels = {
     checking: "Checking Network…",
     connected: "Connected",
@@ -162,6 +167,8 @@ function BonezMarketSection({
               </div>
             </div>
 
+            <button ref={statsToggle} type="button" className="bonez-stats-toggle" aria-expanded={statsExpanded} aria-controls={statsId} onClick={()=>setStatsExpanded(value=>!value)}>{statsExpanded?'Retract BONEZ stats ↑':'Expand BONEZ stats ↓'}</button>
+            <div id={statsId} className={'bonez-market-details'+(statsExpanded?' is-expanded':'')}>
             <div className="bonez-market-grid">
               <div className="bonez-market-stat">
                 <span>24H Change</span>
@@ -209,6 +216,8 @@ function BonezMarketSection({
                   View Live Market ↗
                 </a>
               )}
+            </div>
+            <button type="button" className="bonez-stats-toggle bonez-stats-retract" aria-expanded={statsExpanded} aria-controls={statsId} onClick={retractStats}>Retract BONEZ stats ↑</button>
             </div>
           </>
         )}
