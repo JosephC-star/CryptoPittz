@@ -21,7 +21,7 @@ test('lobby swaps the rhythm cabinet and route while preserving other games',asy
  assert(output.includes('Qr={flip:`BONEZ FLIP`'));assert(output.includes('src:`/playground/bonez-flip/`'));assert(!output.includes('onClick:()=>w(`beat`)'));assert(output.includes('o===`plinko`'));assert.throws(()=>withBonezFlip('incompatible release'),/cabinet changed/);
 });
 test('practice game has local media and no transaction or wallet path',()=>{
- assert(!html.includes('data:audio'));assert(!html.includes('data:image'));assert(!/sendTransaction|signTransaction|walletConnect|\.supabase\.|render\.com/.test(code));assert(html.includes('No real BONEZ transactions.'));
+ assert(!html.includes('data:audio'));assert(!html.includes('data:image'));assert(!/sendTransaction|signTransaction|walletConnect|\.supabase\.|render\.com/.test(code));assert(html.includes('Game Bonez have no cash or token value.'));assert(!/HOLDER TEST|PRACTICE CABINET|PRETEND BONEZ|real-token play/i.test(html));
 });
 test('win and loss use the existing shared pretend vault',async()=>{
  const g=await game({[vault]:'800'},[0,1]);assert.equal(g.run('state.balance'),800);
@@ -40,4 +40,9 @@ test('unfinished rounds recover exactly once against the current shared balance'
 });
 test('invalid amounts cannot debit pretend credits',async()=>{
  const g=await game({[vault]:'10'});g.query('#wager').value='11';await g.run("$('#flip').onclick()");assert.equal(g.data.get(vault),'10');g.query('#wager').value='-5';await g.run("$('#flip').onclick()");assert.equal(g.data.get(vault),'10');
+});
+test('finished-game refill is available only for low balances and retains history',async()=>{
+ const rich=await game({[vault]:'100'});await rich.run("$('#refill').onclick()");assert.equal(rich.data.get(vault),'100');assert.equal(rich.query('#refill').hidden,true);
+ const history=[{id:'old-round',side:'original',picked:'vice',amount:25,win:false}];
+ const low=await game({[vault]:'5',[journal]:JSON.stringify({balance:5,history,pending:null})});assert.equal(low.query('#refill').hidden,false);await low.run("$('#refill').onclick()");assert.equal(low.data.get(vault),'1000');assert.equal(JSON.parse(low.data.get(journal)).history.length,1);assert.equal(low.query('#refill').hidden,true);
 });
