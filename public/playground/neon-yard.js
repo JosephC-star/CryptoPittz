@@ -2,7 +2,7 @@
 const games = [
   ['rush', 'Quick play'], ['palace', 'Table games'], ['match', 'Quick play'],
   ['twentyone', 'Table games'], ['roulette', 'Table games'], ['plinko', 'Quick play'],
-  ['pinball', 'Quick play'], ['crash', 'Quick play'], ['beat', 'Rhythm']
+  ['pinball', 'Quick play'], ['crash', 'Quick play'], ['flip', 'Table games']
 ];
 let category = 'All games';
 function route() {
@@ -17,7 +17,7 @@ function decorate() {
   cards.forEach((card, i) => {
     const [game, group] = games[i];
     card.dataset.yardGame = game;
-    card.style.setProperty('--cabinet-art', `url('/images/playground/neon-${game}.webp')`);
+    card.style.setProperty('--cabinet-art', `url('${game==='flip'?'/playground/bonez-flip/cabinet.svg':'/images/playground/neon-'+game+'.webp'}')`);
     card.hidden = category !== 'All games' && category !== group;
   });
   if (!document.querySelector('.ny-filters')) {
