@@ -1,9 +1,8 @@
 import {useId,useState} from 'react';
-import city from './pixel-city.svg?raw';
 import './neon-welcome.css';
 export function NeonWelcome(){
  const [paused,setPaused]=useState(false);
- return <div className={'pixel-welcome'+(paused?' is-paused':'')}><div className="pixel-city-art" aria-hidden="true" dangerouslySetInnerHTML={{__html:city}}/><div className="pixel-city-caption"><span>WELCOME TO THE PITTZSTOP</span><span>ART · GAMES · COMMUNITY</span></div><button type="button" className="pixel-motion-control" aria-pressed={paused} onClick={()=>setPaused(value=>!value)}>{paused?'Play scene ▷':'Pause scene Ⅱ'}</button></div>;
+ return <div className={'neon-welcome'+(paused?' is-paused':'')}><div className="neon-galaxy" aria-hidden="true"><div className="galaxy-aura galaxy-aura-pink"/><div className="galaxy-aura galaxy-aura-cyan"/><div className="galaxy-stars"/><div className="galaxy-orbit"/><img className="galaxy-pittz" src="/images/neon-pitbull-hero.png" alt="" fetchPriority="high" decoding="async"/><div className="galaxy-mist galaxy-mist-back"/><div className="galaxy-mist galaxy-mist-front"/></div><div className="neon-welcome-caption"><span>WELCOME TO THE PITTZSTOP</span><span>ART · GAMES · COMMUNITY</span></div><button type="button" className="neon-motion-control" aria-pressed={paused} onClick={()=>setPaused(value=>!value)}>{paused?'Play atmosphere ▷':'Pause atmosphere Ⅱ'}</button></div>;
 }
 export function IntroDisclosure({children}){
  const [expanded,setExpanded]=useState(false),id=useId();

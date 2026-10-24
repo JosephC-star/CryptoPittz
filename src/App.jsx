@@ -654,7 +654,7 @@ function App() {
       <main id="top">
         <div className="container">
           <div className="hero">
-            <div className="panel hero-copy-panel hero-pixel-panel">
+            <div className="panel hero-copy-panel hero-neon-panel">
               <div className="hero-cosmic-bg" aria-hidden="true" />
 
               <div className="hero-cosmic-nebula" aria-hidden="true" />
