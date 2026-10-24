@@ -666,7 +666,7 @@ function App() {
               <div className="inner">
                 <NeonWelcome/><div className="badge">⚡ Welcome to the pack</div>
 
-                <h2 className="title">Your pack.<br/>Your playground.</h2><p className="pixel-hero-tagline">Collect Pittz. Play games. Meet the makers.</p><nav className="pixel-hero-links" aria-label="Explore The PittzStop"><a href="#explorer"><span>🎨</span>Explore Pittz ↗</a><a href="/playground/"><span>🪙</span>Play games ↗</a><a href="/flea-market/"><span>🛍️</span>Flea market ↗</a></nav>
+                <h2 className="title">CryptoPittz is a neon-charged collectible universe.</h2>
 
                 <IntroDisclosure>the collection has two drops: the original Pittz consisting of
                   5310 art pieces released in to wild back in 2021 and the 2nd collection, Vice
