@@ -21,3 +21,18 @@
 .market-offer-header-xoxno:after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,#a226bf,#37bc83,#b2e12d,#fdcb27)}
 
 .offer-type-filters{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}.dawg-pound .offer-type-filters .btn{border:1px solid #ffffff25;background:#ffffff05;color:#b9c8d1;min-height:44px}.dawg-pound .offer-type-filters .btn.active{color:#0a1e16;background:var(--dp-mint);border-color:var(--dp-mint)}.pittz-offer-controls>[hidden]{display:none!important}@media(max-width:600px){.offer-type-filters .btn{flex:1;min-width:100px;font-size:11px}}
+
+/* Compare offer categories without full-width empty cards. */
+.dawg-pound .dawg-offer-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;align-items:start;margin-top:22px}
+.dawg-pound .dawg-offer-columns .dawg-offer-group{margin-top:0;min-width:0}
+.dawg-pound .dawg-offer-columns .dawg-offer-group h3{margin:0 0 14px}
+.dawg-pound .dawg-offer-columns .is-trait h3{color:#ff9bce;border-color:#ff5eb544}
+.dawg-pound .dawg-offer-cards{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start}
+.dawg-pound .dawg-offer-cards article{margin:0;padding:16px;min-width:0;overflow-wrap:anywhere}
+.dawg-pound .dawg-offer-cards article>strong{display:block;font-size:14px;line-height:1.5}
+.dawg-pound .dawg-offer-cards article>p{font-size:12px;margin:8px 0;line-height:1.5}
+.dawg-pound .dawg-offer-cards .offer-required-traits{margin:10px 0;padding:10px;font-size:12px}
+.dawg-pound .dawg-offer-cards .xoxno-accept-offer>.btn{margin-top:8px;min-height:44px}
+.dawg-pound .dawg-offer-columns.is-filtered{grid-template-columns:minmax(0,1fr)}
+.dawg-pound .dawg-offer-columns.is-filtered .dawg-offer-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:760px){.dawg-pound .dawg-offer-columns{grid-template-columns:minmax(0,1fr);gap:26px}.dawg-pound .dawg-offer-columns.is-filtered .dawg-offer-cards{grid-template-columns:minmax(0,1fr)}}
