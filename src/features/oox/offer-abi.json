@@ -117,6 +117,89 @@
           "multi_result": true
         }
       ]
+    },
+    {
+      "name": "sendGlobalOffer",
+      "rustMethodName": "send_global_offer",
+      "mutability": "mutable",
+      "payableInTokens": [
+        "*"
+      ],
+      "inputs": [
+        {
+          "name": "collection_id",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "deadline",
+          "type": "u64"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "withdrawGlobalOffer",
+      "rustMethodName": "withdraw_global_offer",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "offer_id",
+          "type": "u64"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "acceptGlobalOffer",
+      "rustMethodName": "accept_global_offer",
+      "mutability": "mutable",
+      "payableInTokens": [
+        "*"
+      ],
+      "inputs": [
+        {
+          "name": "offer_id",
+          "type": "u64"
+        },
+        {
+          "name": "opt_merkle_proof",
+          "type": "optional<variadic<bytes>>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "getFullGlobalOfferData",
+      "rustMethodName": "try_get_global_offer",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "offer_id",
+          "type": "u64"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "GlobalOffer"
+        }
+      ]
+    },
+    {
+      "name": "getAllGlobalOffers",
+      "rustMethodName": "get_all_global_offers",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "variadic<GlobalOffer>",
+          "multi_result": true
+        }
+      ]
     }
   ],
   "types": {
@@ -184,6 +267,56 @@
         {
           "name": "amount",
           "type": "BigUint"
+        }
+      ]
+    },
+    "GlobalOffer": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "offer_id",
+          "type": "u64"
+        },
+        {
+          "name": "offer_token",
+          "type": "EsdtTokenPayment"
+        },
+        {
+          "name": "payment",
+          "type": "EgldOrEsdtTokenPayment"
+        },
+        {
+          "name": "start_time",
+          "type": "u64"
+        },
+        {
+          "name": "deadline",
+          "type": "u64"
+        },
+        {
+          "name": "offer_owner",
+          "type": "Address"
+        },
+        {
+          "name": "offer_type",
+          "type": "OfferType"
+        }
+      ]
+    },
+    "OfferType": {
+      "type": "enum",
+      "variants": [
+        {
+          "name": "GlobalForNft",
+          "discriminant": 0
+        },
+        {
+          "name": "GlobalForCollection",
+          "discriminant": 1
+        },
+        {
+          "name": "GlobalForCollectionWithTraits",
+          "discriminant": 2
         }
       ]
     }

@@ -1,3 +1,4 @@
+import {collectionOfferSpec,assertCollectionOfferEvents} from './collectionOfferValidation.mjs';
 import {Buffer} from 'buffer';
 import {Address} from '@multiversx/sdk-core';
 export const OFFER_CONTRACT='erd1qqqqqqqqqqqqqpgqwp73w2a9eyzs64eltupuz3y3hv798vlv899qrjnflg';
@@ -9,6 +10,7 @@ const textHex=value=>Buffer.from(value).toString('hex');
 export function offerAmount(value){if(typeof value!=='string'||! /^(?:0|[1-9]\d{0,12})(?:\.\d{1,18})?$/.test(value.trim()))throw Error('Enter a positive EGLD amount with up to 18 decimals.');const [whole,part='']=value.trim().split('.');const n=BigInt(whole)*10n**18n+BigInt(part.padEnd(18,'0'));if(n<=0n)throw Error('Enter a positive EGLD amount.');return n.toString();}
 export function nftIdentity(nft){if(!collections.has(nft?.collection)||!new RegExp('^'+nft.collection+'-[0-9a-f]+$','i').test(nft.identifier||''))throw Error('Unsupported Pittz identifier.');const nonce=BigInt('0x'+nft.identifier.split('-').at(-1));if(nonce<=0n||nonce>0xffffffffffffffffn)throw Error('Invalid NFT nonce.');return {collection:nft.collection,nonce:nonce.toString()};}
 export function offerSpec(review,now=Math.floor(Date.now()/1000)){
+ if(review.scope==='collection')return collectionOfferSpec(review,now);
  const {action,address,nft,owner,amount,deadline,offer}=review;const {collection,nonce}=nftIdentity(nft);addressHex(address);addressHex(owner);
  if(address===OFFER_CONTRACT||(action!=='withdraw'&&(owner===OFFER_CONTRACT||addressHex(owner).startsWith('0000000000000000'))))throw Error('This Pittz is held by a contract. Direct wallet offers are unavailable.');
  let data,value='0',receiver=OFFER_CONTRACT;
@@ -33,6 +35,7 @@ export function offerSpec(review,now=Math.floor(Date.now()/1000)){
 const b64hex=h=>Buffer.from(h,'hex').toString('base64');
 const b64num=n=>BigInt(n)===0n?'':b64hex(hex(n));
 export function assertOfferEvents(events,review){
+ if(review.scope==='collection')return assertCollectionOfferEvents(events,review);
  const {collection,nonce}=nftIdentity(review.nft);const action=review.action;
  const name={offer:'offer_token_event',withdraw:'withdraw_offer_token_event',accept:'accept_offer_token_event'}[action];
  const endpoint={offer:'sendOffer',withdraw:'withdrawOffer',accept:'acceptOffer'}[action];
