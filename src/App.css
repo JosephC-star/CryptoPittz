@@ -6848,3 +6848,7 @@ footer .container > div:hover {
 .collection-offer-panel .pittz-offer-controls label{margin:8px 0;gap:5px}
 
 .dawg-pound main{padding-top:32px;padding-bottom:60px}.dawg-pound h1{font-size:clamp(32px,6vw,60px);color:#f3d478}.dawg-search{display:block;width:100%;box-sizing:border-box;padding:12px;background:#101827;color:white;border:1px solid #d4af3760;border-radius:10px}.dawg-pound .explorer-tabs{margin:20px 0}.dawg-pound .district-header{display:flex;flex-wrap:wrap;justify-content:space-between;padding:20px;gap:16px}.dawg-pound nav{display:flex;gap:16px;flex-wrap:wrap}
+
+.dawg-filter-row{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin:16px 0}.dawg-filter-row label{display:grid;gap:6px;flex:1;min-width:150px}.dawg-filter-row select{padding:12px;border-radius:8px;color:#fff;background:#101827;border:1px solid #d4af3760}
+
+.offer-required-traits{margin:12px 0;padding:12px;border:1px solid #d4af3740;border-radius:10px;background:#d4af370a}.offer-required-traits ul{padding-left:20px;margin:8px 0;line-height:1.6}.offer-required-traits li{margin:4px 0}
