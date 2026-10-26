@@ -3,6 +3,7 @@ import {loginWithWallet,hasWalletBridge,usesDirectWalletConnection} from './util
 import WalletConnectModal from './components/WalletConnectModal';
 import { useRef, useState } from "react";
 import "./App.css";
+import "./features/dawg-pound/entrance.css";
 
 import { UnlockPanelManager } from "@multiversx/sdk-dapp/out/managers/UnlockPanelManager";
 import { useGetAccount } from "@multiversx/sdk-dapp/out/react/account/useGetAccount";
@@ -845,7 +846,7 @@ function App() {
           <section id="explorer" ref={explorerHeadingRef}>
             <div className="section-title explorer-heading">
               <div>
-                <h2>CryptoPittz Explorer</h2><a className="btn" href="/dawg-pound/">Pittz Dawg Pound · Buy &amp; Offers →</a>
+                <h2>CryptoPittz Explorer</h2>
                 <span>{explorerExpanded ? "Browse the collection. No wallet required." : "The pack is tucked away. Expand to keep exploring."}</span>
               </div>
               <button ref={explorerToggleRef} type="button" className="explorer-fold-toggle" aria-expanded={explorerExpanded} aria-controls="explorer-content" onClick={() => setExplorerExpanded((expanded) => !expanded)}>
@@ -853,6 +854,8 @@ function App() {
                 <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={{ transform: explorerExpanded ? "rotate(180deg)" : undefined }}><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
             </div>
+
+            <a className="dawg-home-entrance" href="/dawg-pound/" aria-label="Enter Pound Town — Pittz for sale and collection offers"><div className="dawg-entrance-copy"><span className="dawg-entrance-eyebrow">THE PITTZSTOP · COLLECTOR DISTRICT</span><h3>PITTZ <em>DAWG POUND</em></h3><p>Pittz for sale. Offers for the pack.</p></div><div className="dawg-entrance-gate" aria-hidden="true"><span>WELCOME TO<br/><b>POUND TOWN!</b></span><i/><i/></div><span className="dawg-entrance-cta">Enter Pound Town <b>→</b></span></a>
 
             <div id="explorer-content" hidden={!explorerExpanded}>
 
