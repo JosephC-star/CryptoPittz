@@ -1,0 +1,28 @@
+import {useEffect,useRef,useState} from 'react';
+import {useGetAccount} from '@multiversx/sdk-dapp/out/react/account/useGetAccount';
+import {getAccountProvider} from '@multiversx/sdk-dapp/out/providers/helpers/accountProvider';
+import {prepareXoxnoAcceptance,submitOffer,pendingOffer,checkPendingOffer} from '../oox/offerTransactions';
+import {human} from '../bonez-swap/validation';
+const enabled=import.meta.env.VITE_OOX_OFFERS==='true';
+async function request(body,token){const r=await fetch('/.netlify/functions/xoxno-offer-auth',{method:'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:JSON.stringify(body),signal:AbortSignal.timeout(25000)});const d=await r.json();if(!r.ok)throw Error(d.error||'XOXNO authorization failed.');return d;}
+async function authorize(nft,offer,address){
+ const {token}=await request({action:'token',origin:window.location.origin});if(typeof token!=='string'||token.length>8000)throw Error('Invalid XOXNO login challenge.');
+ const login=await getAccountProvider().login({token});if(login?.address!==address||!login.signature)throw Error('XOXNO authorization cancelled or wallet changed.');
+ const encode=s=>btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');const loginToken=encode(address)+'.'+encode(token)+'.'+login.signature;
+ const auth=await request({action:'login',loginToken});if(typeof auth.access_token!=='string')throw Error('XOXNO authorization unavailable.');
+ const signed=await request({action:'sign',collection:nft.collection,identifier:nft.identifier,offerId:Number(offer.id)},auth.access_token);
+ return {data:signed.data?.replace(/^0x/,''),signature:signed.signature?.replace(/^0x/,'')};
+}
+export default function XoxnoAcceptOffer({offer,nfts,onConfirmed}){
+ const {address}=useGetAccount(),[open,setOpen]=useState(false),[selected,setSelected]=useState(''),[review,setReview]=useState(null),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[pending,setPending]=useState(null);const lock=useRef(false),generation=useRef(0);
+ const nft=nfts?.find(n=>n.identifier===selected);
+ useEffect(()=>{generation.current++;setSelected('');setReview(null);setMessage('');try{const p=pendingOffer(address);setPending(p?.review?.scope==='xoxno'&&p.review.chainOffer.id===offer.id?p:null);}catch(e){setMessage(e.message);}return()=>{generation.current++;};},[address,offer.id]);
+ useEffect(()=>{if(!pending?.hash||pending.state&&pending.state!=='pending')return;let live=true,timer;async function poll(){try{const p=await checkPendingOffer(address);if(!live)return;if(p){setPending(p);if(p.state!=='pending'){setMessage(p.state==='confirmed'?'Sale confirmed.':'Transaction failed. Check Explorer.');onConfirmed?.();return;}}}catch{/* Keep saved receipt; never resubmit. */}if(live)timer=setTimeout(poll,6000);}poll();return()=>{live=false;clearTimeout(timer);};},[pending?.hash,pending?.state,address]);
+ async function work(fn){if(lock.current)return;lock.current=true;setBusy(true);const current=generation.current;try{const result=await fn();if(current===generation.current)return result;}catch(e){if(current===generation.current){setMessage(e.message);try{const p=pendingOffer(address);setPending(p?.review?.scope==='xoxno'&&p.review.chainOffer.id===offer.id?p:null);}catch{}}}finally{lock.current=false;setBusy(false);}}
+ async function prepare(){setReview(null);setMessage(offer.traitOffer?'Authorize XOXNO eligibility, then review the sale.':'Checking this offer, your Pittz and sale simulation…');const result=await work(async()=>{const authorization=offer.traitOffer?await authorize(nft,offer,address):undefined;return prepareXoxnoAcceptance({nft,offer,authorization});});if(result){setReview(result);setMessage('Review ready. Nothing sent.');}}
+ async function approve(){const result=await work(()=>submitOffer(review));if(result){setPending(result);setReview(null);setMessage('Submitted. Waiting for confirmation…');}}
+ const waiting=pending&&(!pending.state||pending.state==='pending');
+ return <div className="xoxno-accept-offer"><button className="btn" disabled={busy} aria-expanded={open} onClick={()=>setOpen(v=>!v)}>{open?'Hide acceptance':'Accept on-site'}</button>{open&&<>{!address?<p>Connect your wallet to accept here.</p>:!nfts?.length?<p>No wallet-held Pittz available for this collection.</p>:<><label>Pittz to sell<select value={selected} disabled={busy||waiting} onChange={e=>{setSelected(e.target.value);setReview(null);}}><option value="">Choose your Pittz</option>{nfts.map(n=><option key={n.identifier} value={n.identifier}>{n.name||n.identifier}</option>)}</select></label><button className="btn" disabled={!nft||busy||waiting||!enabled} onClick={prepare}>{busy?'Checking…':offer.traitOffer?'Authorize & review XOXNO sale':'Review XOXNO sale'}</button></>}
+ {review&&<div className="pittz-offer-review"><h3>Accept XOXNO #{offer.id}</h3><p>{review.nft.identifier}</p><p>Gross: <strong>{human(review.chainOffer.amount,18)} EGLD</strong></p><p>This transfers your Pittz to the buyer. Royalties and fees reduce your payout.</p><p>Maximum network fee: {human(review.feeCap,18)} EGLD.</p><button className="btn primary" disabled={busy||waiting||!enabled} onClick={approve}>Approve XOXNO sale & transfer Pittz</button><button className="btn" disabled={busy} onClick={()=>setReview(null)}>Cancel</button></div>}
+ {message&&<p role="status">{message}</p>}{pending?.hash&&<p><a href={'https://explorer.multiversx.com/transactions/'+pending.hash} target="_blank" rel="noopener noreferrer">View transaction ↗</a>{waiting&&' · Pending; do not resubmit.'}</p>}</>}</div>;
+}

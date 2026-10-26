@@ -1,3 +1,4 @@
+import {readXoxnoOffer,verifyXoxnoAcceptance} from '../xoxno/offerAcceptance.mjs';
 import {TransactionComputer} from '@multiversx/sdk-core';
 import {getAccount} from '@multiversx/sdk-dapp/out/methods/account/getAccount';
 import {getNetworkConfig} from '@multiversx/sdk-dapp/out/methods/network/getNetworkConfig';
@@ -33,11 +34,13 @@ export async function checkPendingOffer(address){const pending=pendingOffer(addr
  const state=transactionState(tx);if(state==='confirmed'){assertOfferEvents([...(tx.logs?.events||[]),...(tx.smartContractResults||[]).flatMap(r=>r.logs?.events||[])],pending.review);localStorage.removeItem(key(address));globalThis.window?.dispatchEvent?.(new Event('pittz-offers-updated'));}else if(state==='failed')localStorage.removeItem(key(address));return {...pending,state};}
 async function previous(address){if(!pendingOffer(address))return;const p=await checkPendingOffer(address);if(p?.state==='pending')throw Error('Wait for your previous offer action to finish. Check its transaction status.');}
 async function fresh(review,guardian,verifyGuardian=false){
- const address=context(review.address);await verifiedContract();const copy={...review};
+ const address=context(review.address);const copy={...review};
+ if(review.scope==='xoxno'){await verifyXoxnoAcceptance(review);}else{await verifiedContract();
  if(review.action==='offer'&&review.scope!=='collection'){
   const item=await getJson('https://api.multiversx.com/nfts/'+review.nft.identifier+'?withOwner=true');if(item.identifier!==review.nft.identifier||item.collection!==review.nft.collection||item.type!=='NonFungibleESDT'||item.owner!==review.owner)throw Error('NFT ownership changed. Refresh and review the offer again.');
  }else if(review.action!=='offer'){const offer=await readOffer(review.offer.id,review.scope==='collection');if(JSON.stringify(offer)!==JSON.stringify(review.offer))throw Error('Offer changed. Refresh offers.');copy.offer=offer;
   if(review.action==='accept'){const owned=await getJson('https://api.multiversx.com/accounts/'+address+'/nfts/'+review.nft.identifier);if(owned.identifier!==review.nft.identifier||owned.collection!==review.nft.collection||owned.type!=='NonFungibleESDT'||(owned.balance&&owned.balance!=='1'))throw Error('This wallet no longer holds the Pittz.');}
+ }
  }
  const account=await getJson('https://api.multiversx.com/accounts/'+address+'?withGuardianInfo=true');if(!Number.isSafeInteger(account.nonce)||account.nonce<0)throw Error('Wallet nonce could not be verified.');if(verifyGuardian)assertGuardianUnchanged(account,guardian,addressHex);
  const protection=guardianForAccount(account,addressHex),spec=withGuardian(offerSpec(copy),protection);if(BigInt(account.balance)<BigInt(spec.value)+BigInt(spec.gasLimit)*BigInt(spec.gasPrice))throw Error('Insufficient EGLD for this offer action and its maximum network fee.');return {account,guardian:protection,spec};
@@ -61,4 +64,11 @@ async function submitOfferLocked(review){
   const pending={hash,address:review.address,spec:f.spec,review,created:Date.now()};localStorage.setItem(key(review.address),JSON.stringify(pending));broadcast=true;
   const manager=TransactionManager.getInstance(),sent=await manager.send(signed);if(sent?.[0]?.hash!==hash)throw Error('Unexpected broadcast response.');try{await manager.track(sent);}catch{/* Already broadcast; never resend because tracking failed. */}return {...pending,state:'pending'};
  }catch(error){if(broadcast)throw Error('Submission status is uncertain. Use the saved transaction link to check status; do not resend.');throw error;}finally{inFlight=false;}
+}
+
+export async function prepareXoxnoAcceptance({nft,offer,authorization}){
+ const address=context();await previous(address);const chain=await readXoxnoOffer(offer.id);
+ if(chain.offer.collection!==nft.collection||chain.offer.amount!==offer.amount)throw Error('XOXNO offer changed. Refresh offers.');
+ const review={scope:'xoxno',action:'accept',address,nft:{identifier:nft.identifier,collection:nft.collection},chainOffer:chain.offer,chainEncoded:chain.encoded,authorization,created:Date.now()};
+ const f=await fresh(review);const tx=buildTransaction(f.spec,f.account.nonce);checkTransaction(tx,f.spec);await simulate(tx,review);context(address);return {...review,spec:f.spec,guardian:f.guardian,feeCap:(BigInt(f.spec.gasLimit)*BigInt(f.spec.gasPrice)).toString()};
 }
