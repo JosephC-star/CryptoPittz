@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 
 import NftCard from "../../components/nft/NftCard";
 import { getBonezGeneration, getBonezWalletTotals } from "../../utils/bonezUtils";
@@ -14,6 +14,8 @@ const MyReceivedOffers=lazy(loadReceivedOffersView);
 
 function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNft, onRetry, onConnect }) {
   const [expanded, setExpanded] = useState(true);
+  const [earningsExpanded,setEarningsExpanded]=useState(()=>!window.matchMedia('(max-width: 640px)').matches);
+  useEffect(()=>{setEarningsExpanded(!window.matchMedia('(max-width: 640px)').matches);},[address]);
   const headingRef = useRef(null);
   const toggleRef = useRef(null);
   function retractMyPittz() {
@@ -233,7 +235,8 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                   </div>
                 </div>
 
-                <div className="bonez-wallet-total-grid">
+                <button type="button" className="explorer-fold-toggle bonez-earnings-toggle" aria-expanded={earningsExpanded} aria-controls="bonez-wallet-generation" onClick={()=>setEarningsExpanded(value=>!value)}>{earningsExpanded?'Hide earnings':'Show earnings'}<span aria-hidden="true">{earningsExpanded?' ↑':' ↓'}</span></button>
+                <div id="bonez-wallet-generation" className="bonez-wallet-total-grid" hidden={!earningsExpanded}>
                   {[
                     ["Daily", "daily"],
                     ["Weekly", "weekly"],
