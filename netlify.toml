@@ -26,6 +26,18 @@
     Content-Security-Policy = "frame-ancestors 'self'"
 
 [[redirects]]
+  from = "/dawg-pound"
+  to = "/dawg-pound.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/dawg-pound/"
+  to = "/dawg-pound.html"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/bonez-swap"
   to = "/bonez-swap.html"
   status = 200

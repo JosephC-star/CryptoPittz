@@ -168,7 +168,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
           {address && loading && <p className="subtitle" role="status">Searching your wallet...</p>}
           {address&&error&&<div role="status"><p>{error}</p><button className="btn" onClick={onRetry} disabled={loading}>Retry wallet lookup</button></div>}
           {address && !loading && !error && nfts.length === 0 && (
-            <div role="status"><p>No Original or Vice Pittz were found in this wallet. Other NFTs are not shown here.</p><a className="btn" href="/?sale=listed&collection=original#explorer">Browse Pittz for sale</a><button className="btn" onClick={onRetry}>Refresh wallet</button></div>
+            <div role="status"><p>No Original or Vice Pittz were found in this wallet. Other NFTs are not shown here.</p><a className="btn" href="/dawg-pound/?collection=original">Browse Pittz for sale</a><button className="btn" onClick={onRetry}>Refresh wallet</button></div>
           )}
 
           {address && !loading && !error && nfts.length > 0 && (

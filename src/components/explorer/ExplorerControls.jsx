@@ -1,5 +1,3 @@
-import {lazy,Suspense,useState} from 'react';
-const OfferPanel=lazy(()=>import('../../features/oox/OfferPanel'));
 export default function ExplorerControls({
   activeCollection,
   collectionTotal,
@@ -25,7 +23,6 @@ export default function ExplorerControls({
   filteredCount,
   onReset,
 }) {
-  const [collectionOffersOpen,setCollectionOffersOpen]=useState(false);
   const filtersActive =
     search || bloodline !== "all" || type !== "all" || sale !== "all" || sort !== "rank";
   const progressPercent =
@@ -102,8 +99,6 @@ export default function ExplorerControls({
           <option value="rank">Best Rank</option>
           <option value="score">Highest Score</option>
           <option value="name">Name</option>
-          <option value="price-asc">Price: Low to High</option>
-          <option value="price-desc">Price: High to Low</option>
         </select>
 
         <select value={bloodline} onChange={(event) => onBloodlineChange(event.target.value)}>
@@ -123,28 +118,7 @@ export default function ExplorerControls({
           <option value="Legendary">Legendary</option>
         </select>
 
-        <div className={`explorer-sale-filter ${sale === "listed" ? "active" : ""}`}>
-          <div>
-            <span>OOX + XOXNO</span>
-            <strong>
-              {listingsLoading
-                ? "Checking listings..."
-                : listingsError || `${listedCount.toLocaleString()} currently listed`}
-            </strong>
-          </div>
-          <button
-            type="button"
-            onClick={() => onSaleChange(sale === "listed" ? "all" : "listed")}
-            disabled={listingsLoading || Boolean(listingsError)}
-            aria-pressed={sale === "listed"}
-          >
-            {sale === "listed" ? "✓ FOR SALE ONLY" : "SHOW FOR SALE"}
-          </button>
-          <button type="button" aria-expanded={collectionOffersOpen} aria-controls="collection-offers-explorer" onClick={()=>setCollectionOffersOpen(value=>!value)}>{collectionOffersOpen?'HIDE COLLECTION OFFERS':'🤝 COLLECTION OFFERS'}</button>
-        </div>
       </div>
-
-      {collectionOffersOpen&&<div id="collection-offers-explorer"><Suspense fallback={<p>Loading collection offers…</p>}><OfferPanel collectionMode initialOpen hideToggle /></Suspense></div>}
 
       <div className="pittz-results-bar">
         <span>

@@ -44,7 +44,7 @@ function App() {
   const [explorerBloodline, setExplorerBloodline] = useState("all");
   const [explorerType, setExplorerType] = useState("all");
   const [explorerTraits, setExplorerTraits] = useState({});
-  const [explorerSale, setExplorerSale] = useState(() => new URLSearchParams(window.location.search).get("sale") === "listed" ? "listed" : "all");
+  const [explorerSale, setExplorerSale] = useState("all");
   const [randomPittLoading, setRandomPittLoading] = useState(false);
   const [randomPittError, setRandomPittError] = useState("");
   const [randomPittMode, setRandomPittMode] = useState("surprise");
@@ -425,7 +425,7 @@ function App() {
                   </a>
 
                   <a
-                    href="/?sale=listed&collection=original#explorer"
+                    href="/dawg-pound/?collection=original"
                   >
                     Marketplace →
                   </a>
@@ -559,7 +559,7 @@ function App() {
                 </a>
 
                 <a
-                  href="/?sale=listed&collection=original#explorer"
+                  href="/dawg-pound/?collection=original"
                   onClick={closeMobileMenu}
                 >
                   Marketplace →
@@ -845,7 +845,7 @@ function App() {
           <section id="explorer" ref={explorerHeadingRef}>
             <div className="section-title explorer-heading">
               <div>
-                <h2>CryptoPittz Explorer</h2>
+                <h2>CryptoPittz Explorer</h2><a className="btn" href="/dawg-pound/">Pittz Dawg Pound · Buy &amp; Offers →</a>
                 <span>{explorerExpanded ? "Browse the collection. No wallet required." : "The pack is tucked away. Expand to keep exploring."}</span>
               </div>
               <button ref={explorerToggleRef} type="button" className="explorer-fold-toggle" aria-expanded={explorerExpanded} aria-controls="explorer-content" onClick={() => setExplorerExpanded((expanded) => !expanded)}>
@@ -1097,7 +1097,7 @@ function App() {
                     <div className="ecosystem-actions">
                       <a
                         className="btn primary"
-                        href="/?sale=listed&collection=original#explorer"
+                        href="/dawg-pound/?collection=original"
                       >
                         Original Pittz for sale →
                       </a>

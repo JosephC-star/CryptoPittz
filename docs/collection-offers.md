@@ -15,3 +15,9 @@ Shares existing guardian validation, payload validation, fresh contract/state an
 Preview configuration explicitly enables user-approved real mainnet offers for this preview branch; purchase/listing signing remains disabled there. Every real action still requires the user's wallet approval. Production configuration is unchanged.
 
 Remaining hands-on checks before release: small real creation/withdrawal; cooperative owner acceptance; xPortal device flow; desktop/mobile visual review. Creation has a real unsigned simulation fixture; acceptance and withdrawal are payload/event tested and must pass fresh live exact simulations before users can sign. Neither has been claimed as an executed acceptance or withdrawal test.
+
+## Dawg Pound and XOXNO update
+
+Trading controls now live at `/dawg-pound/`, with For Sale and Collection Offers tabs. Homepage Explorer remains full-collection, retractable, and keeps its search, trait filters and pagination; its sale and collection offer buttons are removed. Legacy homepage `sale=listed` links redirect to the Dawg Pound, preserving Original/Vice. Wallet direct offers remain on the homepage with a link to collection offers.
+
+XOXNO collection/trait offers are fetched independently via the public global-offer API and a validated read-only proxy. Cards show exact EGLD price per NFT, quantity and trait restrictions. All XOXNO action links explicitly open the collection on XOXNO; there is no on-site XOXNO collection-offer signing or promise of selected-NFT eligibility. OOX create, accept, and withdraw remain explicitly labeled on-site actions. Empty/error states identify their marketplace. Live proxy checks returned 14 Original and 5 Vice active EGLD offers on October 26; these are API reports, not guarantees of current executable liquidity.

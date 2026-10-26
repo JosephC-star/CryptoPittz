@@ -6846,3 +6846,5 @@ footer .container > div:hover {
 .pittz-offer-help{margin:10px 0;font-size:13px;line-height:1.5}
 .pittz-offer-help summary{cursor:pointer;color:#f3d478}
 .collection-offer-panel .pittz-offer-controls label{margin:8px 0;gap:5px}
+
+.dawg-pound main{padding-top:32px;padding-bottom:60px}.dawg-pound h1{font-size:clamp(32px,6vw,60px);color:#f3d478}.dawg-search{display:block;width:100%;box-sizing:border-box;padding:12px;background:#101827;color:white;border:1px solid #d4af3760;border-radius:10px}.dawg-pound .explorer-tabs{margin:20px 0}.dawg-pound .district-header{display:flex;flex-wrap:wrap;justify-content:space-between;padding:20px;gap:16px}.dawg-pound nav{display:flex;gap:16px;flex-wrap:wrap}
