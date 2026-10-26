@@ -135,13 +135,16 @@ export default function NftDetailModal({
 
           <OwnerBadge key={'owner-'+nft.identifier} identifier={nft.identifier}/>
 
-          <PurchasePreviewBoundary key={'offers-'+nft.identifier}><Suspense fallback={<p>Loading offer controls…</p>}><OfferPanel key={nft.identifier} initialOpen={offersOpen} nft={nft} isOwned={isOwned} listed={listed||Boolean(purchaseAvailability?.identifier===nft.identifier&&purchaseAvailability.available)}/></Suspense></PurchasePreviewBoundary>
+
 
           {import.meta.env.VITE_OOX_PREVIEW === "true" && (
             <PurchasePreviewBoundary key={nft.identifier}><Suspense fallback={<p>Loading marketplace…</p>}>
               <OoxPurchasePreview key={nft.identifier} nft={nft} isOwned={isOwned} onPurchaseAvailable={onPurchaseAvailable} />
             </Suspense></PurchasePreviewBoundary>
           )}
+
+          {listed&&import.meta.env.VITE_OOX_TRANSACTIONS!=='true'&&<p className="pittz-offer-note" role="status">For sale · Purchases are disabled in this preview. NFT offers are separate from buying at the listed price.</p>}
+          <PurchasePreviewBoundary key={'offers-'+nft.identifier}><Suspense fallback={<p>Loading offer controls…</p>}><OfferPanel key={nft.identifier} initialOpen={offersOpen} nft={nft} isOwned={isOwned} listed={listed||Boolean(purchaseAvailability?.identifier===nft.identifier&&purchaseAvailability.available)}/></Suspense></PurchasePreviewBoundary>
 
           <div className="nft-detail-stats">
             {stats.rank && (
