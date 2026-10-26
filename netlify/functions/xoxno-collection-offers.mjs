@@ -2,9 +2,9 @@ import {normalizeXoxnoOffers,supportedCollections} from '../../src/features/xoxn
 export async function handler(event){
  const reply=(statusCode,body)=>({statusCode,headers:{'Content-Type':'application/json','Cache-Control':'no-store'},body:JSON.stringify(body)});
  if(event.httpMethod!=='GET')return reply(405,{error:'GET only.'});
- const {collection,continuationToken}=event.queryStringParameters||{};
- if(!supportedCollections.includes(collection)||continuationToken&& (typeof continuationToken!=='string'||continuationToken.length>8000))return reply(400,{error:'Invalid collection or page.'});
- const filter={top:100,filters:{collection:[collection],marketplace:['xoxno'],isActive:true}};
+ const {collection,continuationToken,type='all'}=event.queryStringParameters||{};
+ if(!['all','global','traits'].includes(type)||!supportedCollections.includes(collection)||continuationToken&& (typeof continuationToken!=='string'||continuationToken.length>8000))return reply(400,{error:'Invalid collection or page.'});
+ const filter={top:100,filters:{collection:[collection],marketplace:['xoxno'],isActive:true,...(type==='all'?{}:{withAttributes:type==='traits'})}};
  const params=new URLSearchParams({filter:JSON.stringify(filter),...(continuationToken?{continuationToken}:{})});
  try{
   const r=await fetch('https://api.xoxno.com/collection/global-offer/query?'+params,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('Unavailable');const data=await r.json();

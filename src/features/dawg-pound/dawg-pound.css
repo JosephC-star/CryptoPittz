@@ -19,3 +19,5 @@
 @media(max-width:600px){.market-offer-header{padding:18px;gap:16px}.market-offer-header img{width:100px;max-height:45px}.market-offer-header-xoxno img{width:115px}.market-offer-header div>strong{font-size:15px}.market-offer-header>small{margin-left:0;font-size:7px}}
 
 .market-offer-header-xoxno:after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,#a226bf,#37bc83,#b2e12d,#fdcb27)}
+
+.offer-type-filters{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}.dawg-pound .offer-type-filters .btn{border:1px solid #ffffff25;background:#ffffff05;color:#b9c8d1;min-height:44px}.dawg-pound .offer-type-filters .btn.active{color:#0a1e16;background:var(--dp-mint);border-color:var(--dp-mint)}.pittz-offer-controls>[hidden]{display:none!important}@media(max-width:600px){.offer-type-filters .btn{flex:1;min-width:100px;font-size:11px}}
