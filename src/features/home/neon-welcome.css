@@ -78,3 +78,9 @@
 @keyframes galaxy-depth-drift{to{transform:translate(-9px,-16px)}}
 @media(max-width:380px){.galaxy-planet.galaxy-planet-violet{width:88px;height:68px;right:1%;top:24%}.galaxy-planet.galaxy-planet-cyan{width:43px;height:43px;left:3%}}
 @media(prefers-reduced-motion:reduce){.neon-welcome *{animation:none!important}}
+
+/* Carry the existing illustrated nebula up into the mobile galaxy itself. */
+.galaxy-nebula-texture{position:absolute;inset:-5%;background-image:linear-gradient(0deg,#080b1c4d,transparent 55%),url('/images/neon_cosmic_nebula_glow.png');background-size:cover;background-position:70% 50%;opacity:.8;pointer-events:none;animation:galaxy-nebula-billow 45s ease-in-out infinite alternate}
+.galaxy-nebula-texture:after{content:'';position:absolute;inset:0;background:url('/images/neon_cosmic_nebula_glow.png') center/cover no-repeat;transform:scaleX(-1);opacity:.4;mask-image:linear-gradient(90deg,#000,transparent 48%);-webkit-mask-image:linear-gradient(90deg,#000,transparent 48%)}
+.galaxy-nebula-art{opacity:.35}
+@media(prefers-reduced-motion:reduce){.neon-welcome *{animation:none!important}}
