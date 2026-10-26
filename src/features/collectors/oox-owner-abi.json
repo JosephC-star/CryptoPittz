@@ -1,0 +1,109 @@
+{
+  "name": "EsdtNftMarketplace",
+  "endpoints": [],
+  "types": {
+    "Auction": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "auctioned_tokens",
+          "type": "EsdtTokenPayment"
+        },
+        {
+          "name": "auction_type",
+          "type": "AuctionType"
+        },
+        {
+          "name": "auction_id",
+          "type": "u64"
+        },
+        {
+          "name": "payment_token",
+          "type": "EgldOrEsdtTokenIdentifier"
+        },
+        {
+          "name": "payment_nonce",
+          "type": "u64"
+        },
+        {
+          "name": "min_bid",
+          "type": "BigUint"
+        },
+        {
+          "name": "max_bid",
+          "type": "Option<BigUint>"
+        },
+        {
+          "name": "min_bid_diff",
+          "type": "BigUint"
+        },
+        {
+          "name": "start_time",
+          "type": "u64"
+        },
+        {
+          "name": "deadline",
+          "type": "u64"
+        },
+        {
+          "name": "original_owner",
+          "type": "Address"
+        },
+        {
+          "name": "current_bid",
+          "type": "BigUint"
+        },
+        {
+          "name": "current_winner",
+          "type": "Address"
+        },
+        {
+          "name": "marketplace_cut_percentage",
+          "type": "BigUint"
+        },
+        {
+          "name": "creator_royalties_percentage",
+          "type": "BigUint"
+        }
+      ]
+    },
+    "AuctionType": {
+      "type": "enum",
+      "variants": [
+        {
+          "name": "None",
+          "discriminant": 0
+        },
+        {
+          "name": "Nft",
+          "discriminant": 1
+        },
+        {
+          "name": "SftAll",
+          "discriminant": 2
+        },
+        {
+          "name": "SftOnePerPayment",
+          "discriminant": 3
+        }
+      ]
+    },
+    "EsdtTokenPayment": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "token_identifier",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "token_nonce",
+          "type": "u64"
+        },
+        {
+          "name": "amount",
+          "type": "BigUint"
+        }
+      ]
+    }
+  }
+}

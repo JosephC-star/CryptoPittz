@@ -400,6 +400,7 @@ function App() {
                 <div className="dropdown" role="menu">
                   <a href="#arcade" onClick={() => setDesktopGroup(null)}>Pittz Playground</a>
                   <a href="#my-pittz" onClick={() => setDesktopGroup(null)}>My Pittz</a>
+                  <a href="/dawg-pound/" onClick={() => setDesktopGroup(null)}>Pittz Dawg Pound</a>
                   <a href="#explorer" onClick={() => navigateExplorer("explorer")}>CryptoPittz Explorer</a>
                   <a href="#traits" onClick={() => navigateExplorer("traits")}>Traits</a>
                   <a href="#merch" onClick={() => setDesktopGroup(null)}>Pittz Flea Market</a>
@@ -523,6 +524,8 @@ function App() {
                 <a href="#my-pittz" onClick={closeMobileMenu}>
                   My Pittz
                 </a>
+
+                <a href="/dawg-pound/" onClick={closeMobileMenu}>Pittz Dawg Pound</a>
 
                 <a href="#explorer" onClick={() => navigateExplorer("explorer")}>
                   CryptoPittz Explorer
@@ -846,7 +849,7 @@ function App() {
             onOpenNft={openNftDetails}
           />
           <section id="dawg-pound-entrance" aria-label="Pittz Dawg Pound">
-            <a className="dawg-home-entrance" href="/dawg-pound/" aria-label="Enter Pound Town — Pittz for sale and collection offers"><div className="dawg-entrance-copy"><span className="dawg-entrance-eyebrow">THE PITTZSTOP · COLLECTOR DISTRICT</span><h3>PITTZ <em>DAWG POUND</em></h3><p>Pittz for sale. Offers for the pack.</p></div><div className="dawg-entrance-gate" aria-hidden="true"><span>WELCOME TO<br/><b>POUND TOWN!</b></span><i/><i/></div><span className="dawg-entrance-cta">Enter Pound Town <b>→</b></span></a>
+            <a className="dawg-home-entrance" href="/dawg-pound/" aria-label="Enter Pound Town — Pittz for sale and collection offers"><div className="dawg-entrance-copy"><span className="dawg-entrance-eyebrow">THE PITTZSTOP · COLLECTOR DISTRICT</span><h3>PITTZ <em>DAWG POUND</em></h3><p>Pittz for sale. Offers for the pack.</p></div><div className="dawg-entrance-gate" aria-hidden="true"><span>ENTER<br/><b>POUND TOWN →</b></span><i/><i/></div></a>
           </section>
 
           <section id="explorer" ref={explorerHeadingRef}>

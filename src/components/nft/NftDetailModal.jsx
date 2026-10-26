@@ -1,3 +1,4 @@
+import OwnerBadge from '../../features/collectors/OwnerBadge';
 import {nftArrowDirection} from '../../utils/modalKeyboard.mjs';
 import { Component, lazy, Suspense, useEffect, useState, useCallback, useRef } from "react";
 import { loadPreview, loadOffersPanel } from "../../features/oox/loadPreview";
@@ -131,6 +132,8 @@ export default function NftDetailModal({
               <small>{nft.identifier}</small>
             </div>
           </div>
+
+          <OwnerBadge key={'owner-'+nft.identifier} identifier={nft.identifier}/>
 
           <PurchasePreviewBoundary key={'offers-'+nft.identifier}><Suspense fallback={<p>Loading offer controls…</p>}><OfferPanel key={nft.identifier} initialOpen={offersOpen} nft={nft} isOwned={isOwned} listed={listed||Boolean(purchaseAvailability?.identifier===nft.identifier&&purchaseAvailability.available)}/></Suspense></PurchasePreviewBoundary>
 
