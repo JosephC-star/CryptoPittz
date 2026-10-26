@@ -59,3 +59,22 @@
  .hero>.panel.hero-art>.mock>.label{position:relative;inset:auto;min-width:0;box-sizing:border-box;align-items:center}
  .hero>.panel.hero-art>.mock>.random-pitt-hero{position:relative;inset:auto;min-width:0;margin:0;box-sizing:border-box}
 }
+
+/* October galaxy polish: detailed, shaded planets and layered deep-space dust. */
+.galaxy-nebula-art{position:absolute;inset:-8%;width:116%;height:116%;opacity:.85;pointer-events:none;animation:galaxy-nebula-billow 38s ease-in-out infinite alternate}
+.galaxy-star-depth{position:absolute;inset:-10%;opacity:.65;background-image:radial-gradient(circle at 14% 18%,#f7e2ff 0 .55px,transparent 1.1px),radial-gradient(circle at 73% 62%,#bbe8ff 0 .6px,transparent 1.3px),radial-gradient(circle at 29% 81%,#fff2d5 0 .5px,transparent 1px);background-size:43px 67px,79px 53px,113px 97px;animation:galaxy-depth-drift 65s linear infinite}
+.galaxy-planet.galaxy-planet-violet,.galaxy-planet.galaxy-planet-cyan{background:none;box-shadow:none;border-radius:0;overflow:visible}
+.galaxy-planet.galaxy-planet-violet{width:108px;height:83px;right:2%;top:22%;filter:drop-shadow(0 0 10px #ba83df28)}
+.galaxy-planet.galaxy-planet-violet:after{display:none}
+.galaxy-planet.galaxy-planet-cyan{width:51px;height:51px;left:4%;top:63%;filter:drop-shadow(0 0 10px #59c8f23b)}
+.galaxy-planet-art{display:block;width:100%;height:100%;overflow:visible}
+.galaxy-dust i{width:1px;height:1px;background:#e8efff;box-shadow:0 0 4px #bce7ff80}
+.galaxy-dust i:nth-child(5n){width:2px;height:2px;box-shadow:0 0 7px #deb7ef99}
+.galaxy-dust i:nth-child(7n){width:5px;height:5px;background:transparent;box-shadow:none}
+.galaxy-dust i:nth-child(7n):before,.galaxy-dust i:nth-child(7n):after{content:'';position:absolute;left:2px;top:0;width:1px;height:5px;background:linear-gradient(transparent,#f7e8ff,transparent)}
+.galaxy-dust i:nth-child(7n):after{transform:rotate(90deg)}
+.galaxy-shooting-star{height:1px;background:linear-gradient(90deg,transparent,#a3cbec 80%,#eefbff);box-shadow:0 0 5px #adceff33}
+@keyframes galaxy-nebula-billow{from{transform:translate(-1%,1%) scale(1)}to{transform:translate(2%,-1%) scale(1.06)}}
+@keyframes galaxy-depth-drift{to{transform:translate(-9px,-16px)}}
+@media(max-width:380px){.galaxy-planet.galaxy-planet-violet{width:88px;height:68px;right:1%;top:24%}.galaxy-planet.galaxy-planet-cyan{width:43px;height:43px;left:3%}}
+@media(prefers-reduced-motion:reduce){.neon-welcome *{animation:none!important}}
