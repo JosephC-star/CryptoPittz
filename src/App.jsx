@@ -32,11 +32,12 @@ function App() {
   const [selectedNft, setSelectedNft] = useState(null);
   const [initialOffersOpen,setInitialOffersOpen]=useState(false);
   const [modalNfts, setModalNfts] = useState([]);
-  const [explorerExpanded, setExplorerExpanded] = useState(true);
+  const [explorerExpanded, setExplorerExpanded] = useState(false);
   const explorerHeadingRef = useRef(null);
   const explorerToggleRef = useRef(null);
   function retractExplorer() {
     setExplorerExpanded(false);
+    setExplorerPage(0);
     explorerToggleRef.current?.focus({ preventScroll: true });
     explorerHeadingRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
   }
@@ -57,7 +58,7 @@ function App() {
   const [supportEmailCopied, setSupportEmailCopied] = useState(false);
   const [supportCopyError,setSupportCopyError]=useState(false);
 
-  const EXPLORER_PAGE_SIZE = 100;
+  const explorerVisiblePageSize = explorerExpanded ? 100 : 40;
 
   const {
     retry:retryExplorer,
@@ -82,7 +83,7 @@ function App() {
     setCollection: setExplorerCollection,
     setPage: setExplorerPage,
     viceTotal,
-  } = useExplorerData(EXPLORER_PAGE_SIZE);
+  } = useExplorerData(explorerVisiblePageSize);
   const {
     listingMap: explorerListingMap,
     loading: explorerListingsLoading,
@@ -116,6 +117,7 @@ function App() {
 
   function navigateExplorer(target) {
     setExplorerExpanded(true);
+    setExplorerPage(0);
     setMobileOpen(false);
     setDesktopGroup(null);
     requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -354,8 +356,8 @@ function App() {
   const explorerFilteredTotal = filteredExplorerNfts.length;
 
   const explorerPageNfts = filteredExplorerNfts.slice(
-    explorerPage * EXPLORER_PAGE_SIZE,
-    explorerPage * EXPLORER_PAGE_SIZE + EXPLORER_PAGE_SIZE,
+    explorerPage * explorerVisiblePageSize,
+    explorerPage * explorerVisiblePageSize + explorerVisiblePageSize,
   );
 
   return (
@@ -843,21 +845,25 @@ function App() {
             bonezUsdPrice={Number(bonezMarket?.priceUsd)}
             onOpenNft={openNftDetails}
           />
+          <section id="dawg-pound-entrance" aria-label="Pittz Dawg Pound">
+            <a className="dawg-home-entrance" href="/dawg-pound/" aria-label="Enter Pound Town — Pittz for sale and collection offers"><div className="dawg-entrance-copy"><span className="dawg-entrance-eyebrow">THE PITTZSTOP · COLLECTOR DISTRICT</span><h3>PITTZ <em>DAWG POUND</em></h3><p>Pittz for sale. Offers for the pack.</p></div><div className="dawg-entrance-gate" aria-hidden="true"><span>WELCOME TO<br/><b>POUND TOWN!</b></span><i/><i/></div><span className="dawg-entrance-cta">Enter Pound Town <b>→</b></span></a>
+          </section>
+
           <section id="explorer" ref={explorerHeadingRef}>
             <div className="section-title explorer-heading">
               <div>
                 <h2>CryptoPittz Explorer</h2>
-                <span>{explorerExpanded ? "Browse the collection. No wallet required." : "The pack is tucked away. Expand to keep exploring."}</span>
+                <span>{explorerExpanded ? "Browse the collection. No wallet required." : "Compact view · 40 Pittz per page. Expand to see 100 at once."}</span>
               </div>
-              <button ref={explorerToggleRef} type="button" className="explorer-fold-toggle" aria-expanded={explorerExpanded} aria-controls="explorer-content" onClick={() => setExplorerExpanded((expanded) => !expanded)}>
+              <button ref={explorerToggleRef} type="button" className="explorer-fold-toggle" aria-expanded={explorerExpanded} aria-controls="explorer-content" onClick={() => {setExplorerExpanded((expanded) => !expanded);setExplorerPage(0);}}>
                 {explorerExpanded ? "Retract Explorer" : "Expand Explorer"}
                 <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={{ transform: explorerExpanded ? "rotate(180deg)" : undefined }}><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
             </div>
 
-            <a className="dawg-home-entrance" href="/dawg-pound/" aria-label="Enter Pound Town — Pittz for sale and collection offers"><div className="dawg-entrance-copy"><span className="dawg-entrance-eyebrow">THE PITTZSTOP · COLLECTOR DISTRICT</span><h3>PITTZ <em>DAWG POUND</em></h3><p>Pittz for sale. Offers for the pack.</p></div><div className="dawg-entrance-gate" aria-hidden="true"><span>WELCOME TO<br/><b>POUND TOWN!</b></span><i/><i/></div><span className="dawg-entrance-cta">Enter Pound Town <b>→</b></span></a>
 
-            <div id="explorer-content" hidden={!explorerExpanded}>
+
+            <div id="explorer-content" className={explorerExpanded?"is-expanded":"is-compact"}>
 
             <div className="explorer-tabs">
               <button
@@ -946,7 +952,7 @@ function App() {
                     <ExplorerPagination
                       currentPage={explorerPage}
                       totalItems={explorerFilteredTotal}
-                      pageSize={EXPLORER_PAGE_SIZE}
+                      pageSize={explorerVisiblePageSize}
                       onPageChange={setExplorerPage}
                     />
 
@@ -1011,7 +1017,7 @@ function App() {
                     <ExplorerPagination
                       currentPage={explorerPage}
                       totalItems={explorerFilteredTotal}
-                      pageSize={EXPLORER_PAGE_SIZE}
+                      pageSize={explorerVisiblePageSize}
                       onPageChange={setExplorerPage}
                     />
                   </>
@@ -1019,7 +1025,7 @@ function App() {
               </div>
             </div>
               <div className="explorer-fold-footer">
-                <button type="button" className="explorer-fold-toggle" onClick={retractExplorer}>Retract Explorer ↑</button>
+                <button type="button" className="explorer-fold-toggle" aria-expanded={explorerExpanded} aria-controls="explorer-content" onClick={()=>{if(explorerExpanded)retractExplorer();else{setExplorerExpanded(true);setExplorerPage(0);}}}>{explorerExpanded?"Retract Explorer ↑":"Expand Explorer · Show 100 per page ↓"}</button>
                 <span>Keep cruising to the Flea Market.</span>
               </div>
             </div>
