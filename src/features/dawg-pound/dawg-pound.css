@@ -75,3 +75,18 @@
 .dawg-pound .dawg-trade-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:18px 0 22px}.dawg-pound .dawg-trade-toolbar .explorer-tabs{display:flex;flex-wrap:nowrap;gap:8px;margin:0}.dawg-pound .dawg-trade-toolbar>.btn{min-height:44px}.dawg-pound .dawg-trade-toolbar .explorer-tab{min-height:44px;white-space:nowrap}.dawg-pound .dawg-trade-toolbar .explorer-tabs:last-child:not(:first-child){margin-left:auto}@media(max-width:700px){.dawg-pound .dawg-trade-toolbar{gap:10px}.dawg-pound .dawg-trade-toolbar .explorer-tabs:last-child:not(:first-child){margin-left:0}.dawg-pound .dawg-trade-toolbar .explorer-tab{flex:0 1 auto;padding:10px 14px}}
 
 @media(max-width:600px){.dawg-floor-heading{height:110px}.dawg-floor-heading-copy h2{font-size:clamp(17px,4.5vw,23px)}}
+
+/* Compact mobile controls: paired tabs, secondary collection switch, wallet last. */
+@media(max-width:700px){
+ .dawg-pound .dawg-trade-toolbar{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin:16px 0 20px}
+ .dawg-pound .dawg-trade-toolbar .explorer-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;min-width:0;width:100%;box-sizing:border-box;padding:4px;border:1px solid #c936ff33;border-radius:13px;background:#0b0612}
+ .dawg-pound .dawg-trade-toolbar .explorer-tab{width:100%;min-width:0;min-height:44px;padding:10px 6px;border:0;border-radius:9px;font-size:12px;letter-spacing:0;white-space:normal;line-height:1.25;background:transparent}
+ .dawg-pound .dawg-trade-toolbar .explorer-tab.active{background:linear-gradient(135deg,#c628fb,#8619d6);box-shadow:0 2px 12px #b300ff33;color:#fff}
+ .dawg-pound .dawg-trade-toolbar .explorer-tabs:last-child:not(:first-child){grid-row:2;margin-left:0;border-color:#ffffff16;background:#ffffff04}
+ .dawg-pound .dawg-trade-toolbar .explorer-tabs:last-child:not(:first-child) .explorer-tab.active{background:#70349a55;border:1px solid #cf67ff66;box-shadow:none;color:#f3d9ff}
+ .dawg-pound .dawg-trade-toolbar>.btn{grid-row:3;justify-self:end;min-height:44px;padding:8px 14px;border:1px solid #ffad6844;border-radius:22px;background:#ff923e0a;color:#ffc18c;font-size:12px}
+ .dawg-pound .dawg-filter-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:12px;align-items:end}
+ .dawg-pound .dawg-filter-row label{min-width:0;width:100%;gap:6px}
+ .dawg-pound .dawg-filter-row select{min-width:0;width:100%;max-width:100%;box-sizing:border-box;padding:10px 8px;font-size:12px;min-height:44px}
+ .dawg-pound .dawg-filter-row>.btn{width:100%;min-width:0;min-height:44px;padding:10px 6px;font-size:12px}
+}
