@@ -66,7 +66,7 @@
 
 /* The resident crew frame the floor; the rotating spotlight stays above. */
 .dawg-floor-heading{position:relative;isolation:isolate;height:180px;min-height:0;display:grid;place-items:center;overflow:hidden;border:1px solid #c936ff55;border-radius:13px;margin-bottom:20px;background:#110719}
-.dawg-floor-heading>img{display:block;width:100%;height:180px;object-fit:cover;object-position:50% 40%;grid-area:1/1}
+.dawg-floor-crew{position:absolute;inset:0;display:flex;justify-content:space-between;pointer-events:none;background:radial-gradient(ellipse,#5b13732b,transparent 75%)}.dawg-floor-crew>span{width:31%;height:100%;background:url('/images/pound-town-trading-crew.webp') left center/auto 100% no-repeat;mask-image:linear-gradient(90deg,#000 75%,transparent)}.dawg-floor-crew>span:last-child{background-position:right center;mask-image:linear-gradient(270deg,#000 75%,transparent)}
 .dawg-floor-heading-copy{grid-area:1/1;z-index:1;text-align:center;padding:18px 12px;background:radial-gradient(ellipse,#10051be6,transparent 72%);text-shadow:0 2px 8px #000}
 .dawg-floor-heading-copy>span{color:#e27dff;font-size:10px;letter-spacing:3px;font-weight:900}
 .dawg-floor-heading-copy h2{font-size:clamp(20px,3.6vw,42px);margin:8px 0;color:#fff}
@@ -74,4 +74,4 @@
 
 .dawg-pound .dawg-trade-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:18px 0 22px}.dawg-pound .dawg-trade-toolbar .explorer-tabs{display:flex;flex-wrap:nowrap;gap:8px;margin:0}.dawg-pound .dawg-trade-toolbar>.btn{min-height:44px}.dawg-pound .dawg-trade-toolbar .explorer-tab{min-height:44px;white-space:nowrap}.dawg-pound .dawg-trade-toolbar .explorer-tabs:last-child:not(:first-child){margin-left:auto}@media(max-width:700px){.dawg-pound .dawg-trade-toolbar{gap:10px}.dawg-pound .dawg-trade-toolbar .explorer-tabs:last-child:not(:first-child){margin-left:0}.dawg-pound .dawg-trade-toolbar .explorer-tab{flex:0 1 auto;padding:10px 14px}}
 
-@media(max-width:600px){.dawg-floor-heading,.dawg-floor-heading>img{height:110px}.dawg-floor-heading-copy h2{font-size:clamp(17px,4.5vw,23px)}}
+@media(max-width:600px){.dawg-floor-heading{height:110px}.dawg-floor-heading-copy h2{font-size:clamp(17px,4.5vw,23px)}}
