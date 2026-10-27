@@ -851,7 +851,7 @@ function App() {
             onOpenNft={openNftDetails}
           />
           <section id="dawg-pound-entrance" aria-label="Pittz Dawg Pound">
-            <a className="dawg-home-entrance" href="/dawg-pound/" aria-label="Welcome to Pound Town — enter the Dawg Pound"><img className="dawg-welcome-banner" src="/images/pound-town-welcome.webp" alt="Welcome to Pound Town"/><span className="dawg-entrance-cta">Enter the Dawg Pound <b>→</b></span></a>
+            <a className="dawg-home-entrance" href="/dawg-pound/"><div className="dawg-entrance-copy"><small>THE PACK’S COLLECTOR DISTRICT</small><h2>Pittz Dawg Pound</h2><p>Find your next pack member. Browse Pittz for sale and collection offers.</p><strong>Enter Pound Town →</strong></div><div className="dawg-entrance-art" aria-hidden="true"/></a>
           </section>
 
           <section id="explorer" ref={explorerHeadingRef}>
