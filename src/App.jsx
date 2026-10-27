@@ -33,10 +33,11 @@ function App() {
   const [initialOffersOpen,setInitialOffersOpen]=useState(false);
   const [modalNfts, setModalNfts] = useState([]);
   const [explorerExpanded, setExplorerExpanded] = useState(false);
+  const [explorerHidden, setExplorerHidden] = useState(false);
   const explorerHeadingRef = useRef(null);
   const explorerToggleRef = useRef(null);
   function retractExplorer() {
-    setExplorerExpanded(false);
+    setExplorerHidden(true);
     setExplorerPage(0);
     explorerToggleRef.current?.focus({ preventScroll: true });
     explorerHeadingRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
@@ -116,6 +117,7 @@ function App() {
   }
 
   function navigateExplorer(target) {
+    setExplorerHidden(false);
     setExplorerExpanded(true);
     setExplorerPage(0);
     setMobileOpen(false);
@@ -849,7 +851,7 @@ function App() {
             onOpenNft={openNftDetails}
           />
           <section id="dawg-pound-entrance" aria-label="Pittz Dawg Pound">
-            <a className="dawg-home-entrance" href="/dawg-pound/" aria-label="Enter Pound Town — Pittz for sale and collection offers"><div className="dawg-entrance-copy"><span className="dawg-entrance-eyebrow">THE PITTZSTOP · COLLECTOR DISTRICT</span><h3>PITTZ <em>DAWG POUND</em></h3><p>Pittz for sale. Offers for the pack.</p></div><div className="dawg-entrance-gate" aria-hidden="true"><span>ENTER<br/><b>POUND TOWN →</b></span><i/><i/></div></a>
+            <a className="dawg-home-entrance" href="/dawg-pound/" aria-label="Welcome to Pound Town — enter the Dawg Pound"><img className="dawg-welcome-banner" src="/images/pound-town-welcome.webp" alt="Welcome to Pound Town"/><span className="dawg-entrance-cta">Enter the Dawg Pound <b>→</b></span></a>
           </section>
 
           <section id="explorer" ref={explorerHeadingRef}>
@@ -858,15 +860,15 @@ function App() {
                 <h2>CryptoPittz Explorer</h2>
                 <span>{explorerExpanded ? "Browse the collection. No wallet required." : "Compact view · 40 Pittz per page. Expand to see 100 at once."}</span>
               </div>
-              <button ref={explorerToggleRef} type="button" className="explorer-fold-toggle" aria-expanded={explorerExpanded} aria-controls="explorer-content" onClick={() => {setExplorerExpanded((expanded) => !expanded);setExplorerPage(0);}}>
-                {explorerExpanded ? "Retract Explorer" : "Expand Explorer"}
-                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={{ transform: explorerExpanded ? "rotate(180deg)" : undefined }}><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              <button ref={explorerToggleRef} type="button" className="explorer-fold-toggle" aria-expanded={!explorerHidden} aria-controls="explorer-content" onClick={() => {if(explorerHidden)setExplorerHidden(false);else retractExplorer();}}>
+                {explorerHidden ? "Open Explorer" : "Retract Explorer"}
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={{ transform: !explorerHidden ? "rotate(180deg)" : undefined }}><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
             </div>
 
 
 
-            <div id="explorer-content" className={explorerExpanded?"is-expanded":"is-compact"}>
+            <div id="explorer-content" hidden={explorerHidden} className={explorerExpanded?"is-expanded":"is-compact"}>
 
             <div className="explorer-tabs">
               <button
@@ -1028,7 +1030,7 @@ function App() {
               </div>
             </div>
               <div className="explorer-fold-footer">
-                <button type="button" className="explorer-fold-toggle" aria-expanded={explorerExpanded} aria-controls="explorer-content" onClick={()=>{if(explorerExpanded)retractExplorer();else{setExplorerExpanded(true);setExplorerPage(0);}}}>{explorerExpanded?"Retract Explorer ↑":"Expand Explorer · Show 100 per page ↓"}</button>
+                <button type="button" className="explorer-fold-toggle" onClick={()=>{setExplorerExpanded(v=>!v);setExplorerPage(0);}}>{explorerExpanded?"Compact view · Show 40 per page":"Show 100 per page"}</button><button type="button" className="explorer-fold-toggle" aria-expanded={!explorerHidden} aria-controls="explorer-content" onClick={retractExplorer}>Retract Explorer ↑</button>
                 <span>Keep cruising to the Flea Market.</span>
               </div>
             </div>
