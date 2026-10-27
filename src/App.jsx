@@ -3,6 +3,7 @@ import {loginWithWallet,hasWalletBridge,usesDirectWalletConnection} from './util
 import WalletConnectModal from './components/WalletConnectModal';
 import { useRef, useState } from "react";
 import "./App.css";
+import "./features/dawg-pound/entrance.css";
 
 import { UnlockPanelManager } from "@multiversx/sdk-dapp/out/managers/UnlockPanelManager";
 import { useGetAccount } from "@multiversx/sdk-dapp/out/react/account/useGetAccount";
@@ -31,11 +32,13 @@ function App() {
   const [selectedNft, setSelectedNft] = useState(null);
   const [initialOffersOpen,setInitialOffersOpen]=useState(false);
   const [modalNfts, setModalNfts] = useState([]);
-  const [explorerExpanded, setExplorerExpanded] = useState(true);
+  const [explorerExpanded, setExplorerExpanded] = useState(false);
+  const [explorerHidden, setExplorerHidden] = useState(false);
   const explorerHeadingRef = useRef(null);
   const explorerToggleRef = useRef(null);
   function retractExplorer() {
-    setExplorerExpanded(false);
+    setExplorerHidden(true);
+    setExplorerPage(0);
     explorerToggleRef.current?.focus({ preventScroll: true });
     explorerHeadingRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
   }
@@ -44,7 +47,7 @@ function App() {
   const [explorerBloodline, setExplorerBloodline] = useState("all");
   const [explorerType, setExplorerType] = useState("all");
   const [explorerTraits, setExplorerTraits] = useState({});
-  const [explorerSale, setExplorerSale] = useState(() => new URLSearchParams(window.location.search).get("sale") === "listed" ? "listed" : "all");
+  const [explorerSale, setExplorerSale] = useState("all");
   const [randomPittLoading, setRandomPittLoading] = useState(false);
   const [randomPittError, setRandomPittError] = useState("");
   const [randomPittMode, setRandomPittMode] = useState("surprise");
@@ -56,7 +59,7 @@ function App() {
   const [supportEmailCopied, setSupportEmailCopied] = useState(false);
   const [supportCopyError,setSupportCopyError]=useState(false);
 
-  const EXPLORER_PAGE_SIZE = 100;
+  const explorerVisiblePageSize = explorerExpanded ? 100 : 40;
 
   const {
     retry:retryExplorer,
@@ -81,7 +84,7 @@ function App() {
     setCollection: setExplorerCollection,
     setPage: setExplorerPage,
     viceTotal,
-  } = useExplorerData(EXPLORER_PAGE_SIZE);
+  } = useExplorerData(explorerVisiblePageSize);
   const {
     listingMap: explorerListingMap,
     loading: explorerListingsLoading,
@@ -114,7 +117,9 @@ function App() {
   }
 
   function navigateExplorer(target) {
+    setExplorerHidden(false);
     setExplorerExpanded(true);
+    setExplorerPage(0);
     setMobileOpen(false);
     setDesktopGroup(null);
     requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -353,8 +358,8 @@ function App() {
   const explorerFilteredTotal = filteredExplorerNfts.length;
 
   const explorerPageNfts = filteredExplorerNfts.slice(
-    explorerPage * EXPLORER_PAGE_SIZE,
-    explorerPage * EXPLORER_PAGE_SIZE + EXPLORER_PAGE_SIZE,
+    explorerPage * explorerVisiblePageSize,
+    explorerPage * explorerVisiblePageSize + explorerVisiblePageSize,
   );
 
   return (
@@ -397,6 +402,7 @@ function App() {
                 <div className="dropdown" role="menu">
                   <a href="#arcade" onClick={() => setDesktopGroup(null)}>Pittz Playground</a>
                   <a href="#my-pittz" onClick={() => setDesktopGroup(null)}>My Pittz</a>
+                  <a href="/dawg-pound/" onClick={() => setDesktopGroup(null)}>Pittz Dawg Pound</a>
                   <a href="#explorer" onClick={() => navigateExplorer("explorer")}>CryptoPittz Explorer</a>
                   <a href="#traits" onClick={() => navigateExplorer("traits")}>Traits</a>
                   <a href="#merch" onClick={() => setDesktopGroup(null)}>Pittz Flea Market</a>
@@ -425,7 +431,7 @@ function App() {
                   </a>
 
                   <a
-                    href="/?sale=listed&collection=original#explorer"
+                    href="/dawg-pound/?collection=original"
                   >
                     Marketplace →
                   </a>
@@ -521,6 +527,8 @@ function App() {
                   My Pittz
                 </a>
 
+                <a href="/dawg-pound/" onClick={closeMobileMenu}>Pittz Dawg Pound</a>
+
                 <a href="#explorer" onClick={() => navigateExplorer("explorer")}>
                   CryptoPittz Explorer
                 </a>
@@ -559,7 +567,7 @@ function App() {
                 </a>
 
                 <a
-                  href="/?sale=listed&collection=original#explorer"
+                  href="/dawg-pound/?collection=original"
                   onClick={closeMobileMenu}
                 >
                   Marketplace →
@@ -842,19 +850,25 @@ function App() {
             bonezUsdPrice={Number(bonezMarket?.priceUsd)}
             onOpenNft={openNftDetails}
           />
+          <section id="dawg-pound-entrance" aria-label="Pittz Dawg Pound">
+            <a className="dawg-home-entrance" href="/dawg-pound/"><div className="dawg-entrance-copy"><small>THE PACK’S COLLECTOR DISTRICT</small><h2>Pittz Dawg Pound</h2><p>Find your next pack member. Browse Pittz for sale and collection offers.</p><strong>Enter Pound Town →</strong></div><div className="dawg-entrance-art" aria-hidden="true"/></a>
+          </section>
+
           <section id="explorer" ref={explorerHeadingRef}>
             <div className="section-title explorer-heading">
               <div>
                 <h2>CryptoPittz Explorer</h2>
-                <span>{explorerExpanded ? "Browse the collection. No wallet required." : "The pack is tucked away. Expand to keep exploring."}</span>
+                <span>{explorerExpanded ? "Browse the collection. No wallet required." : "Compact view · 40 Pittz per page. Expand to see 100 at once."}</span>
               </div>
-              <button ref={explorerToggleRef} type="button" className="explorer-fold-toggle" aria-expanded={explorerExpanded} aria-controls="explorer-content" onClick={() => setExplorerExpanded((expanded) => !expanded)}>
-                {explorerExpanded ? "Retract Explorer" : "Expand Explorer"}
-                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={{ transform: explorerExpanded ? "rotate(180deg)" : undefined }}><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              <button ref={explorerToggleRef} type="button" className="explorer-fold-toggle" aria-expanded={!explorerHidden} aria-controls="explorer-content" onClick={() => {if(explorerHidden)setExplorerHidden(false);else retractExplorer();}}>
+                {explorerHidden ? "Open Explorer" : "Retract Explorer"}
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={{ transform: !explorerHidden ? "rotate(180deg)" : undefined }}><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
             </div>
 
-            <div id="explorer-content" hidden={!explorerExpanded}>
+
+
+            <div id="explorer-content" hidden={explorerHidden} className={explorerExpanded?"is-expanded":"is-compact"}>
 
             <div className="explorer-tabs">
               <button
@@ -943,7 +957,7 @@ function App() {
                     <ExplorerPagination
                       currentPage={explorerPage}
                       totalItems={explorerFilteredTotal}
-                      pageSize={EXPLORER_PAGE_SIZE}
+                      pageSize={explorerVisiblePageSize}
                       onPageChange={setExplorerPage}
                     />
 
@@ -1008,7 +1022,7 @@ function App() {
                     <ExplorerPagination
                       currentPage={explorerPage}
                       totalItems={explorerFilteredTotal}
-                      pageSize={EXPLORER_PAGE_SIZE}
+                      pageSize={explorerVisiblePageSize}
                       onPageChange={setExplorerPage}
                     />
                   </>
@@ -1016,7 +1030,7 @@ function App() {
               </div>
             </div>
               <div className="explorer-fold-footer">
-                <button type="button" className="explorer-fold-toggle" onClick={retractExplorer}>Retract Explorer ↑</button>
+                <button type="button" className="explorer-fold-toggle" onClick={()=>{setExplorerExpanded(v=>!v);setExplorerPage(0);}}>{explorerExpanded?"Compact view · Show 40 per page":"Show 100 per page"}</button><button type="button" className="explorer-fold-toggle" aria-expanded={!explorerHidden} aria-controls="explorer-content" onClick={retractExplorer}>Retract Explorer ↑</button>
                 <span>Keep cruising to the Flea Market.</span>
               </div>
             </div>
@@ -1097,7 +1111,7 @@ function App() {
                     <div className="ecosystem-actions">
                       <a
                         className="btn primary"
-                        href="/?sale=listed&collection=original#explorer"
+                        href="/dawg-pound/?collection=original"
                       >
                         Original Pittz for sale →
                       </a>

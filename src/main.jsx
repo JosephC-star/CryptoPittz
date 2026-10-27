@@ -5,6 +5,8 @@ import { initApp } from "@multiversx/sdk-dapp/out/methods/initApp/initApp";
 import { EnvironmentsEnum } from "@multiversx/sdk-dapp/out/types/enums.types";
 
 import "./index.css";
+const CollectorProfile=lazy(()=>import("./features/collectors/CollectorProfile.jsx"));
+const DawgPound=lazy(()=>import("./features/dawg-pound/DawgPound.jsx"));
 const App = lazy(() => import("./App.jsx"));
 const RentalCenter = lazy(() => import("./features/merchant/RentalCenter.jsx"));
 const MarketShop = lazy(() => import("./features/merchant/MarketShop.jsx"));
@@ -14,9 +16,12 @@ const BonezSwap = lazy(() => import("./features/bonez-swap/BonezSwap.jsx"));
 
 const Pittensor = lazy(() => import("./features/bonez-burn/Pittensor.jsx"));
 const FinancialDistrict = lazy(() => import("./features/financial-district/FinancialDistrict.jsx"));
+if(window.location.pathname==='/'&&new URLSearchParams(window.location.search).get('sale')==='listed')window.location.replace('/dawg-pound/?collection='+(new URLSearchParams(window.location.search).get('collection')==='vice'?'vice':'original'));
 const pagePath = window.location.pathname.replace(/\/$/, "");
 
 const pageTitles = {
+  "/collector": "Collector’s Pack · The PittzStop",
+  "/dawg-pound": "Pittz Dawg Pound · The PittzStop",
   "/financial-district": "Financial District · The PittzStop",
   "/pittensor": "Pittensor · The PittzStop",
   "/bonez-swap": "Token Swap · The PittzStop",
@@ -33,7 +38,7 @@ const config = {
   },
 
   dAppConfig: {
-    environment: (["/bonez-swap", "/financial-district", "/pittensor", "/merchant-access", "/market-admin", "/market-rent", "/market-shop"].includes(pagePath) || (import.meta.env.VITE_OOX_OFFERS === "true" || (import.meta.env.VITE_OOX_TRANSACTIONS === "true" && import.meta.env.VITE_OOX_PREVIEW === "true"))) ? EnvironmentsEnum.mainnet : EnvironmentsEnum.devnet,
+    environment: (["/collector", "/dawg-pound", "/bonez-swap", "/financial-district", "/pittensor", "/merchant-access", "/market-admin", "/market-rent", "/market-shop"].includes(pagePath) || (import.meta.env.VITE_OOX_OFFERS === "true" || (import.meta.env.VITE_OOX_TRANSACTIONS === "true" && import.meta.env.VITE_OOX_PREVIEW === "true"))) ? EnvironmentsEnum.mainnet : EnvironmentsEnum.devnet,
 
     providers: {
       walletConnect: {
@@ -57,7 +62,7 @@ initApp(config)
     createRoot(document.getElementById("root")).render(
       <StrictMode>
         <Suspense fallback={<p style={{padding:"24px",color:"#e9c77a"}}>Loading PittzStop…</p>}>
-          {pagePath === "/market-rent" ? <RentalCenter /> : pagePath === "/market-shop" ? <MarketShop /> : pagePath === "/market-admin" ? <MarketAdmin /> : pagePath === "/merchant-access" ? <MerchantStudio /> : pagePath === "/pittensor" ? <Pittensor /> : pagePath === "/financial-district" ? <FinancialDistrict /> : pagePath === "/bonez-swap" ? <BonezSwap /> : <App />}
+          {pagePath === "/collector" ? <CollectorProfile /> : pagePath === "/dawg-pound" ? <DawgPound /> : pagePath === "/market-rent" ? <RentalCenter /> : pagePath === "/market-shop" ? <MarketShop /> : pagePath === "/market-admin" ? <MarketAdmin /> : pagePath === "/merchant-access" ? <MerchantStudio /> : pagePath === "/pittensor" ? <Pittensor /> : pagePath === "/financial-district" ? <FinancialDistrict /> : pagePath === "/bonez-swap" ? <BonezSwap /> : <App />}
         </Suspense>
       </StrictMode>,
     );

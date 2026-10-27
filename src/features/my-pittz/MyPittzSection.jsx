@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 
 import NftCard from "../../components/nft/NftCard";
 import { getBonezGeneration, getBonezWalletTotals } from "../../utils/bonezUtils";
@@ -14,6 +14,8 @@ const MyReceivedOffers=lazy(loadReceivedOffersView);
 
 function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNft, onRetry, onConnect }) {
   const [expanded, setExpanded] = useState(true);
+  const [earningsExpanded,setEarningsExpanded]=useState(()=>!window.matchMedia('(max-width: 640px)').matches);
+  useEffect(()=>{setEarningsExpanded(!window.matchMedia('(max-width: 640px)').matches);},[address]);
   const headingRef = useRef(null);
   const toggleRef = useRef(null);
   function retractMyPittz() {
@@ -168,7 +170,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
           {address && loading && <p className="subtitle" role="status">Searching your wallet...</p>}
           {address&&error&&<div role="status"><p>{error}</p><button className="btn" onClick={onRetry} disabled={loading}>Retry wallet lookup</button></div>}
           {address && !loading && !error && nfts.length === 0 && (
-            <div role="status"><p>No Original or Vice Pittz were found in this wallet. Other NFTs are not shown here.</p><a className="btn" href="/?sale=listed&collection=original#explorer">Browse Pittz for sale</a><button className="btn" onClick={onRetry}>Refresh wallet</button></div>
+            <div role="status"><p>No Original or Vice Pittz were found in this wallet. Other NFTs are not shown here.</p><a className="btn" href="/dawg-pound/?collection=original">Browse Pittz for sale</a><button className="btn" onClick={onRetry}>Refresh wallet</button></div>
           )}
 
           {address && !loading && !error && nfts.length > 0 && (
@@ -233,7 +235,8 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                   </div>
                 </div>
 
-                <div className="bonez-wallet-total-grid">
+                <button type="button" className="explorer-fold-toggle bonez-earnings-toggle" aria-expanded={earningsExpanded} aria-controls="bonez-wallet-generation" onClick={()=>setEarningsExpanded(value=>!value)}>{earningsExpanded?'Hide earnings':'Show earnings'}<span aria-hidden="true">{earningsExpanded?' ↑':' ↓'}</span></button>
+                <div id="bonez-wallet-generation" className="bonez-wallet-total-grid" hidden={!earningsExpanded}>
                   {[
                     ["Daily", "daily"],
                     ["Weekly", "weekly"],

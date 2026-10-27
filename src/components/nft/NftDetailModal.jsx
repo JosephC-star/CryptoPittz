@@ -1,3 +1,4 @@
+import OwnerBadge from '../../features/collectors/OwnerBadge';
 import {nftArrowDirection} from '../../utils/modalKeyboard.mjs';
 import { Component, lazy, Suspense, useEffect, useState, useCallback, useRef } from "react";
 import { loadPreview, loadOffersPanel } from "../../features/oox/loadPreview";
@@ -38,6 +39,8 @@ export default function NftDetailModal({
     return()=>{document.body.style.overflow=previousOverflow;if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});};
   },[open]);
   const [purchaseAvailability,setPurchaseAvailability]=useState(null);
+  const [verifiedOwner,setVerifiedOwner]=useState(null);
+  const onOwnerLoaded=useCallback(data=>setVerifiedOwner({identifier:nft?.identifier,role:data.role}),[nft?.identifier]);
   const onPurchaseAvailable=useCallback((identifier,available)=>setPurchaseAvailability({identifier,available}),[]);
   useEffect(() => {
     if (!nft) return undefined;
@@ -132,13 +135,19 @@ export default function NftDetailModal({
             </div>
           </div>
 
-          <PurchasePreviewBoundary key={'offers-'+nft.identifier}><Suspense fallback={<p>Loading offer controls…</p>}><OfferPanel key={nft.identifier} initialOpen={offersOpen} nft={nft} isOwned={isOwned} listed={listed||Boolean(purchaseAvailability?.identifier===nft.identifier&&purchaseAvailability.available)}/></Suspense></PurchasePreviewBoundary>
+          <OwnerBadge key={'owner-'+nft.identifier} identifier={nft.identifier} onLoaded={onOwnerLoaded}/>
+
+
 
           {import.meta.env.VITE_OOX_PREVIEW === "true" && (
             <PurchasePreviewBoundary key={nft.identifier}><Suspense fallback={<p>Loading marketplace…</p>}>
               <OoxPurchasePreview key={nft.identifier} nft={nft} isOwned={isOwned} onPurchaseAvailable={onPurchaseAvailable} />
             </Suspense></PurchasePreviewBoundary>
           )}
+
+          {listed&&!isOwned&&!(purchaseAvailability?.identifier===nft.identifier&&purchaseAvailability.available)&&<div><button className="btn primary" disabled>Buy</button><p className="pittz-offer-note">Buying is unavailable until the current listing can be verified.</p></div>}
+          {listed&&import.meta.env.VITE_OOX_TRANSACTIONS!=='true'&&<p className="pittz-offer-note" role="status">For sale · Purchases are disabled in this preview.</p>}
+          {(offersOpen||(!isOwned&&!listed&&!(purchaseAvailability?.identifier===nft.identifier&&purchaseAvailability.available)&&verifiedOwner?.identifier===nft.identifier&&verifiedOwner.role==='owner'))&&<PurchasePreviewBoundary key={'offers-'+nft.identifier}><Suspense fallback={<p>Loading offer controls…</p>}><OfferPanel key={nft.identifier} initialOpen={offersOpen} nft={nft} isOwned={isOwned} listed={listed||Boolean(purchaseAvailability?.identifier===nft.identifier&&purchaseAvailability.available)}/></Suspense></PurchasePreviewBoundary>}
 
           <div className="nft-detail-stats">
             {stats.rank && (

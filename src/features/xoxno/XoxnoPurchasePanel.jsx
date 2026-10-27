@@ -64,7 +64,8 @@ export default function XoxnoPurchasePanel({nft,onAvailabilityChanged}){
   {listing&&<p className="oox-price"><strong title={`${amount(listing.price)} EGLD`}>{compactNftPrice(listing.price,true)} EGLD</strong></p>}
   {!account.address&&<p>Connect your wallet using the site’s Connect Wallet button.</p>}
   {listing?.seller===account.address&&<p>This is your XOXNO listing.</p>}
-  {canBuy&&!submitted&&<button className="btn primary" disabled={!account.address||busy} onClick={reviewPurchase}>🐾 Review XOXNO purchase →</button>}
+  {canBuy&&!submitted&&import.meta.env.VITE_OOX_TRANSACTIONS!=='true'&&<p>Purchases are disabled in this preview.</p>}
+  {canBuy&&!submitted&&<button className="btn primary" disabled={!account.address||busy||import.meta.env.VITE_OOX_TRANSACTIONS!=='true'} onClick={reviewPurchase}>🐾 Buy →</button>}
   {review&&review.address===account.address&&<div className="swap-review"><h3>Confirm purchase</h3><p>{nft.name} · {nft.identifier}</p><p>Price: <strong>{amount(review.spec.value)} EGLD</strong></p><p>Maximum network fee allowance: <strong>{amount(review.feeCap)} EGLD</strong>. Your wallet shows the exact transaction.</p><p>Marketplace: XOXNO · MultiversX mainnet</p><button className="btn primary" disabled={busy} onClick={confirm}>Sign &amp; send purchase</button><button className="btn" disabled={busy} onClick={()=>setReview(null)}>Cancel review</button></div>}
   <p role="status" aria-live="polite">{message}</p>
   {!submitted&&<button className="btn" disabled={busy} onClick={()=>setRefresh(x=>x+1)}>Refresh XOXNO listing</button>}

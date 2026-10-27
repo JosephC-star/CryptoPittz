@@ -101,9 +101,9 @@ export default function useExplorerData(pageSize) {
 
         const indexedNfts = [];
 
-        for (let from = 0; from < totalCount; from += pageSize) {
+        for (let from = 0; from < totalCount; from += 100) {
           const response = await readJson(
-            `https://api.multiversx.com/collections/${activeCollection.collection}/nfts?from=${from}&size=${pageSize}`,
+            `https://api.multiversx.com/collections/${activeCollection.collection}/nfts?from=${from}&size=100`,
             { signal: controller.signal },
           );
 
@@ -138,7 +138,7 @@ export default function useExplorerData(pageSize) {
       controller.abort();
       clearTimeout(readyTimeout);
     };
-  }, [activeCollection.collection, collection, pageSize,retryTick]);
+  }, [activeCollection.collection, collection,retryTick]);
 
   useEffect(() => {
     const controller = new AbortController();

@@ -144,10 +144,6 @@ export default function BonezBurner({ address, onConnect, onFireChange, dedicate
     void load(); return () => controller.abort();
   }, [address, refresh]);
   useEffect(() => { onFireChange?.(firing); }, [firing, onFireChange]);
-  function preview() {
-    clearTimeout(timer.current); setCelebration(false); setFiring(true);
-    timer.current = setTimeout(() => setFiring(false), 6500);
-  }
   function changeAmount(value) {
     setAmount(value); setReview(null); setInputError('');
     if (value) {
@@ -158,7 +154,7 @@ export default function BonezBurner({ address, onConnect, onFireChange, dedicate
   return <section id="bonez-burner" className={`burner ${expanded ? 'burner-open' : ''}`}>
     <div className="burner-header"><div><span className="burn-eyebrow">THE PACK’S INDUSTRIAL QUARTER</span><h2>{dedicated ? "The Furnace Room" : "Pittensor"}</h2><p>Feed the furnace. Fuel the legend.</p></div><span className="burner-status"><i /> FURNACE ONLINE <small>Team burn · 1st of each month</small></span></div>
     <div className="burner-layout">
-      <div className="burner-showcase"><FurnaceScene firing={firing} expanded={expanded} celebration={celebration} /><div className="burn-scene-actions"><button type="button" onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>{expanded ? 'Close furnace room ↑' : 'Expand the furnace room →'}</button><button type="button" onClick={preview} disabled={firing}>{firing ? 'Furnace firing…' : 'Preview the fire 🔥'}</button></div></div>
+      <div className="burner-showcase"><FurnaceScene firing={firing} expanded={expanded} celebration={celebration} /><div className="burn-scene-actions"><button type="button" onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>{expanded ? 'Close furnace room ↑' : 'Expand the furnace room →'}</button></div></div>
       <div className="burn-control"><span className="burn-eyebrow">FURNACE CONTROL</span><h3>You earn, we burn!</h3><p>Add BONEZ to the pack’s burn pile. Your contribution goes to the team wallet; the team performs its scheduled burn on the 1st of each month.</p>
         <div className="burn-pile-summary"><span>BONEZ currently in the team burn wallet</span><strong>{pileBalance === null ? '—' : exactBalance(pileBalance)}</strong><small>Team-managed wallet · contributions are not burned immediately</small><a href={`https://explorer.multiversx.com/accounts/${BURN_PILE_ADDRESS}`} target="_blank" rel="noreferrer">View team burn wallet ↗</a></div>
         <div className="burn-wallet"><span>Your wallet BONEZ</span><strong>{address ? balance === null ? 'Loading…' : display(bonezHuman(balance)) : 'Connect to view'}</strong><small>Only liquid tokens in your wallet</small></div>
@@ -167,7 +163,7 @@ export default function BonezBurner({ address, onConnect, onFireChange, dedicate
         <div className="burn-percent">{[10,25,50].map(n => <button key={n} type="button" disabled={busy || blocked || balance === null || BigInt(balance || '0') === 0n} onClick={() => changeAmount(bonezHuman(BigInt(balance) * BigInt(n) / 100n))}>{n}%</button>)}</div>
         <div id="burn-input-error" role="status" className="burn-error">{inputError}</div>
         {!address ? <button className="burn-main" type="button" onClick={onConnect}>Connect wallet</button> : <button className="burn-main" type="button" disabled={busy || blocked || !amount || Boolean(inputError)} onClick={reviewContribution}>{busy ? "Verifying…" : blocked ? "Waiting for transaction receipt" : "Review contribution"}</button>}
-        <p id="burn-route-note" className="burn-route-note">This transfers BONEZ to the team-controlled wallet for its monthly burn. It does not burn tokens immediately or automate the team’s burn. Previewing the fire is free.</p>
+        <p id="burn-route-note" className="burn-route-note">This transfers BONEZ to the team-controlled wallet for its monthly burn. It does not burn tokens immediately or automate the team’s burn.</p>
         {review && review.address === address && <div className="burn-review"><strong>Add {review.amount} BONEZ to the monthly burn pile?</strong><p>From {review.address.slice(0,9)}…{review.address.slice(-6)} · Mainnet</p><p>Recipient: <code className="burn-recipient">{BURN_PILE_ADDRESS}</code></p><p>Maximum network fee: {Number(review.feeCap)/1e18} EGLD</p><p>You are transferring these tokens to the team. No rewards or tokens are returned; the team handles the later burn.</p><button className="burn-main" type="button" disabled={busy || blocked} onClick={confirmContribution}>Send BONEZ to burn pile</button><button type="button" disabled={busy} onClick={() => setReview(null)}>Cancel</button></div>}
         {waitingForXPortal && <aside className="burn-wallet-help" role="status"><strong>Waiting for xPortal approval</strong><p>App stuck loading? Close and reopen xPortal manually. Your approval may already be waiting. Return here after approving.</p><small>Keep this page open. You don’t need to start another contribution.</small></aside>}
         {burnStatus && <p className="burn-route-note" role="status">{burnStatus}</p>}
