@@ -90,3 +90,11 @@
  .dawg-pound .dawg-filter-row select{min-width:0;width:100%;max-width:100%;box-sizing:border-box;padding:10px 8px;font-size:12px;min-height:44px}
  .dawg-pound .dawg-filter-row>.btn{width:100%;min-width:0;min-height:44px;padding:10px 6px;font-size:12px}
 }
+
+/* Keep mobile sale listings compact, with two Pittz per row. */
+@media(max-width:700px){
+ .dawg-pound .explorer-nft-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .dawg-pound .explorer-nft-grid .wallet-nft-info>small{overflow-wrap:anywhere}
+ .dawg-pound .explorer-nft-grid .oox-listing>div strong{overflow-wrap:anywhere}
+ .dawg-pound .explorer-nft-grid .explorer-buy-button{display:block;width:100%;min-height:44px;margin-top:6px}
+}
