@@ -63,3 +63,11 @@
 .dawg-pound .explorer-tab.active,.dawg-pound .offer-type-filters .btn.active{background:#bb24f5;border-color:#e376ff;color:white;box-shadow:0 0 18px #c000ff55}
 .dawg-pound .dawg-offer-columns .is-global h3{color:#df78ff;border-color:#c936ff88}
 .dawg-pound .dawg-trading-floor{background:linear-gradient(140deg,#1a1022fa,#100a16fa)}
+
+/* The resident crew frame the floor; the rotating spotlight stays above. */
+.dawg-floor-heading{position:relative;isolation:isolate;min-height:200px;display:grid;place-items:center;overflow:hidden;border:1px solid #c936ff55;border-radius:13px;margin-bottom:20px;background:#110719}
+.dawg-floor-heading>img{display:block;width:100%;height:auto;aspect-ratio:3/1;object-fit:cover;grid-area:1/1}
+.dawg-floor-heading-copy{grid-area:1/1;z-index:1;text-align:center;padding:18px 12px;background:radial-gradient(ellipse,#10051be6,transparent 72%);text-shadow:0 2px 8px #000}
+.dawg-floor-heading-copy>span{color:#e27dff;font-size:10px;letter-spacing:3px;font-weight:900}
+.dawg-floor-heading-copy h2{font-size:clamp(20px,3.6vw,42px);margin:8px 0;color:#fff}
+@media(max-width:600px){.dawg-floor-heading{min-height:0}.dawg-floor-heading-copy{padding:8px 2px}.dawg-floor-heading-copy>span{font-size:8px;letter-spacing:1px}.dawg-floor-heading-copy h2{font-size:clamp(15px,4.5vw,23px);margin:4px 0}}
