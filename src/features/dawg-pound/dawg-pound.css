@@ -66,7 +66,7 @@
 
 /* The resident crew frame the floor; the rotating spotlight stays above. */
 .dawg-floor-heading{position:relative;isolation:isolate;height:180px;min-height:0;display:grid;place-items:center;overflow:hidden;border:1px solid #c936ff55;border-radius:13px;margin-bottom:20px;background:#110719}
-.dawg-floor-crew{position:absolute;inset:0;display:flex;justify-content:space-between;pointer-events:none;background:url('/images/pound-town-trading-crew.webp') center/100% 100% no-repeat}.dawg-floor-crew>span{width:31%;height:100%;background:url('/images/pound-town-trading-crew.webp') left center/auto 100% no-repeat;mask-image:linear-gradient(90deg,#000 75%,transparent)}.dawg-floor-crew>span:last-child{background-position:right center;mask-image:linear-gradient(270deg,#000 75%,transparent)}
+.dawg-floor-crew{position:absolute;inset:0;display:flex;justify-content:space-between;pointer-events:none;background:url('/images/pound-town-trading-crew.webp') center/100% 100% no-repeat}.dawg-floor-crew>span{display:none}
 .dawg-floor-heading-copy{grid-area:1/1;z-index:1;text-align:center;padding:18px 12px;background:radial-gradient(ellipse,#10051b99,transparent 72%);text-shadow:0 2px 8px #000}
 .dawg-floor-heading-copy>span{color:#e27dff;font-size:10px;letter-spacing:3px;font-weight:900}
 .dawg-floor-heading-copy h2{font-size:clamp(20px,3.6vw,42px);margin:8px 0;color:#fff}
