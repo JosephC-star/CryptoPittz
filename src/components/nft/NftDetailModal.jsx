@@ -1,3 +1,6 @@
+import rarity from '../../data/trait-rarity.json';
+import {rarestTraits} from '../../utils/traitRarity.mjs';
+import {getBonezGeneration} from '../../utils/bonezUtils';
 import OwnerBadge from '../../features/collectors/OwnerBadge';
 import {nftArrowDirection} from '../../utils/modalKeyboard.mjs';
 import { Component, lazy, Suspense, useEffect, useState, useCallback, useRef } from "react";
@@ -66,7 +69,10 @@ export default function NftDetailModal({
   if (!nft) return null;
 
   const stats = getPittzStats(nft.attributes);
-  const traits = decodePittzAttributes(nft.attributes);
+  const collection = nft.collection || nft.identifier?.split('-').slice(0,2).join('-');
+  const traitStats = rarestTraits(nft.attributes, rarity[collection], Infinity);
+  const traits = decodePittzAttributes(nft.attributes).map(item => ({...item,...traitStats.find(t => t.trait === item.trait && t.value === item.value)})).sort((a,b)=>(a.count??Infinity)-(b.count??Infinity));
+  const earnings = getBonezGeneration({...nft,collection});
   const badge = getCollectionBadge(nft);
   const image = getNftImage(nft);
 
@@ -171,19 +177,19 @@ export default function NftDetailModal({
               </div>
             )}
 
-            {stats.type && (
-              <div className="nft-detail-stat">
-                <span>Type</span>
-                <strong>{stats.type}</strong>
-              </div>
-            )}
+            {earnings && <div className="nft-detail-stat earnings-stat"><span>🦴 Potential BONEZ / day</span><strong>{earnings.daily.toLocaleString(undefined,{maximumFractionDigits:2})}</strong></div>}
+
           </div>
 
+          {stats.type && <p className="nft-type-label">Type · {stats.type}</p>}
+          {earnings && <p className="nft-earnings-summary">Potential BONEZ · {earnings.weekly.toLocaleString()} weekly · {earnings.monthly.toLocaleString()} per 30 days</p>}
+          <h3 className="nft-traits-heading">Trait rarity <small>Rarest first · {collection === 'PITTZVICE-c3ec94' ? 'Vice' : 'Original'}</small></h3>
           <div className="nft-detail-traits">
             {traits.map((item) => (
               <div className="nft-detail-trait" key={`${nft.identifier}-${item.trait}`}>
                 <span>{item.trait}</span>
                 <strong>{item.value}</strong>
+                {item.count != null && <small className="trait-frequency">{item.percentage.toFixed(2)}% <span>· {item.count.toLocaleString()} of {rarity[collection].total.toLocaleString()}</span></small>}
               </div>
             ))}
           </div>
