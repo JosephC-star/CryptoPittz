@@ -1,3 +1,5 @@
+import rarity from '../../data/trait-rarity.json';
+import { rarestTraits } from '../../utils/traitRarity.mjs';
 import {
   decodePittzAttributes,
   getNftImage,
@@ -18,6 +20,8 @@ export default function NftCard({
 }) {
   const stats = getPittzStats(nft.attributes);
   const traits = showTraits ? decodePittzAttributes(nft.attributes) : [];
+  const collection = nft.collection || nft.identifier?.split('-').slice(0,2).join('-');
+  const rareTraits = rarestTraits(nft.attributes, rarity[collection]);
   const image = getNftImage(nft);
   const isExplorer = variant === "explorer";
 
@@ -91,26 +95,14 @@ export default function NftCard({
             </div>
           )}
 
-          {stats.score && (
-            <div className="pittz-stat">
-              <span>⚡ Score</span>
-              <strong>{stats.score}</strong>
+          {rareTraits.map(item => (
+            <div className="pittz-stat rarity-stat" key={item.trait} title={`${item.trait}: ${item.value} — ${item.count} of ${rarity[collection].total} in this collection`}>
+              <span>{item.trait}</span>
+              <strong>{item.value}</strong>
+              <small>{item.percentage.toFixed(2)}% · {item.count.toLocaleString()} Pittz</small>
             </div>
-          )}
+          ))}
 
-          {stats.bloodline && (
-            <div className="pittz-stat">
-              <span>Bloodline</span>
-              <strong>{stats.bloodline}</strong>
-            </div>
-          )}
-
-          {stats.type && (
-            <div className="pittz-stat">
-              <span>Type</span>
-              <strong>{stats.type}</strong>
-            </div>
-          )}
         </div>
 
         {bonez && (
