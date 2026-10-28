@@ -1,3 +1,4 @@
+import {getBonezGeneration} from '../../utils/bonezUtils';
 import rarity from '../../data/trait-rarity.json';
 import { rarestTraits } from '../../utils/traitRarity.mjs';
 import {
@@ -21,7 +22,8 @@ export default function NftCard({
   const stats = getPittzStats(nft.attributes);
   const traits = showTraits ? decodePittzAttributes(nft.attributes) : [];
   const collection = nft.collection || nft.identifier?.split('-').slice(0,2).join('-');
-  const rareTraits = rarestTraits(nft.attributes, rarity[collection]);
+  const rareTraits = rarestTraits(nft.attributes, rarity[collection], 2);
+  const earnings = bonez || getBonezGeneration({...nft,collection});
   const image = getNftImage(nft);
   const isExplorer = variant === "explorer";
 
@@ -95,6 +97,7 @@ export default function NftCard({
             </div>
           )}
 
+          {earnings && <div className="pittz-stat earnings-stat"><span>🦴 BONEZ / day</span><strong>{earnings.daily.toLocaleString(undefined,{maximumFractionDigits:2})}</strong><small>Potential</small></div>}
           {rareTraits.map(item => (
             <div className="pittz-stat rarity-stat" key={item.trait} title={`${item.trait}: ${item.value} — ${item.count} of ${rarity[collection].total} in this collection`}>
               <span>{item.trait}</span>
@@ -104,6 +107,8 @@ export default function NftCard({
           ))}
 
         </div>
+
+        {stats.type && <small className="nft-type-label">Type · {stats.type}</small>}
 
         {bonez && (
           <div className="bonez-generation">
@@ -135,6 +140,7 @@ export default function NftCard({
               <div className="pittz-trait" key={`${nft.identifier}-${item.trait}`}>
                 <span>{item.trait}</span>
                 <strong>{item.value}</strong>
+                {rarity[collection]?.traits[item.trait]?.[item.value] && <small className="trait-frequency">{(rarity[collection].traits[item.trait][item.value] / rarity[collection].total * 100).toFixed(2)}% · {rarity[collection].traits[item.trait][item.value]} Pittz</small>}
               </div>
             ))}
           </div>
