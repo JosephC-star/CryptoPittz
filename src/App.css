@@ -6860,3 +6860,15 @@ footer .container > div:hover {
 .pittz-stat.rarity-stat strong{display:block;white-space:normal;overflow-wrap:anywhere;line-height:1.3}
 .pittz-stat.rarity-stat small{display:block;margin-top:5px;font-size:10px;color:#e2b5ff;line-height:1.35}
 @media(max-width:700px){.explorer-nft-grid .pittz-stat.rarity-stat strong{white-space:normal;font-size:10px}.explorer-nft-grid .pittz-stat.rarity-stat small{font-size:8px}}
+
+/* Collector details: readable values and a separate rarity line. */
+.nft-detail-trait{display:flex;flex-direction:column;gap:6px;min-width:0;padding:16px;border-radius:14px}
+.nft-detail-trait>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.35}
+.trait-frequency{display:block;color:#e5adff;font-size:12px;line-height:1.5}
+.trait-frequency span{color:#bbc0d0}
+.nft-traits-heading{font-size:16px;margin:20px 0 12px}
+.nft-traits-heading small{display:block;font-size:11px;color:#b8aec9;font-weight:400;margin-top:5px}
+.nft-type-label,.nft-earnings-summary{font-size:11px;color:#b8aec9;line-height:1.6}
+.earnings-stat{border-color:#b46bff66;background:linear-gradient(135deg,#a44cff16,#ff943c12)}
+.earnings-stat small{display:block;font-size:9px;color:#c7b7d5;margin-top:4px}
+.nft-detail-stat.earnings-stat span{font-size:11px;line-height:1.4}
