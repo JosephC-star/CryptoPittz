@@ -6876,3 +6876,20 @@ footer .container > div:hover {
 .nft-detail-stat.rarest-detail-stat strong{font-size:16px;white-space:normal;overflow-wrap:anywhere;line-height:1.3}
 .nft-detail-stat.rarest-detail-stat .trait-frequency{margin-top:6px;font-size:11px}
 .nft-detail-stat.rarest-detail-stat>span{font-size:10px;line-height:1.4}
+
+/* Give long collector traits their own row instead of squeezing two boxes. */
+.wallet-nft-card .pittz-stat.rarity-stat{grid-column:1/-1;display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-radius:9px;text-align:left;height:auto;min-height:0}
+.wallet-nft-card .pittz-stat.rarity-stat>span{margin:0;font-size:9px;letter-spacing:.04em}
+.wallet-nft-card .pittz-stat.rarity-stat>strong{font-size:12px;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.4}
+.wallet-nft-card .pittz-stat.rarity-stat>small{margin:0;font-size:10px;white-space:normal;overflow-wrap:anywhere;line-height:1.4}
+.wallet-nft-card .pittz-traits{grid-template-columns:minmax(0,1fr)}
+.wallet-nft-card .pittz-trait{min-width:0;height:auto}
+.wallet-nft-card .pittz-trait strong,.wallet-nft-card .pittz-trait .trait-frequency{white-space:normal;overflow-wrap:anywhere;line-height:1.4}
+.nft-detail-stat.rarest-detail-stat{min-width:0;height:auto}
+@media(max-width:700px){
+ .wallet-nft-card .pittz-stat.rarity-stat{padding:8px;gap:3px}
+ .wallet-nft-card .pittz-stat.rarity-stat>strong{font-size:11px}
+ .wallet-nft-card .pittz-stat.rarity-stat>small{font-size:9px}
+ .nft-detail-panel .nft-detail-traits{grid-template-columns:minmax(0,1fr);gap:8px}
+ .nft-detail-panel .nft-detail-trait{padding:12px 14px;border-radius:10px}
+}
