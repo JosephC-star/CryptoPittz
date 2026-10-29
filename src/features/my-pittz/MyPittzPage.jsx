@@ -1,4 +1,4 @@
-import {useRef,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {useGetAccount} from '@multiversx/sdk-dapp/out/react/account/useGetAccount';
 import {UnlockPanelManager} from '@multiversx/sdk-dapp/out/managers/UnlockPanelManager';
 import {loginWithWallet,hasWalletBridge,usesDirectWalletConnection} from '../../utils/connectWallet';
@@ -11,6 +11,7 @@ import '../../App.css';
 import './my-pittz-page.css';
 export default function MyPittzPage(){
  const account=useGetAccount(),wallet=useWalletPittz(account.address),{market}=useBonezMarket(),anchor=useRef(null);
+ useEffect(()=>{const refresh=()=>wallet.retry();window.addEventListener('pittz-offers-updated',refresh);return()=>window.removeEventListener('pittz-offers-updated',refresh);},[wallet.retry]);
  const [walletOpen,setWalletOpen]=useState(false),[error,setError]=useState(''),[selected,setSelected]=useState(null),[rows,setRows]=useState([]);
  async function connect(){setError('');try{if(!usesDirectWalletConnection()){UnlockPanelManager.init({loginHandler:()=>{}});await UnlockPanelManager.getInstance().openUnlockPanel();return;}setWalletOpen(!hasWalletBridge());await loginWithWallet(anchor.current);setWalletOpen(false);}catch(e){setError(e.message);}finally{anchor.current?.replaceChildren();}}
  function move(step){const i=rows.findIndex(n=>n.identifier===selected.identifier);setSelected(rows[(i+step+rows.length)%rows.length]);}
