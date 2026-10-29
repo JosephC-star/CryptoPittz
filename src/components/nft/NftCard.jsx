@@ -22,8 +22,8 @@ export default function NftCard({
   const stats = getPittzStats(nft.attributes);
   const traits = showTraits ? decodePittzAttributes(nft.attributes) : [];
   const collection = nft.collection || nft.identifier?.split('-').slice(0,2).join('-');
-  const rareTraits = rarestTraits(nft.attributes, rarity[collection], 2);
-  const earnings = bonez || getBonezGeneration({...nft,collection});
+  const rareTraits = rarestTraits(nft.attributes, rarity[collection], isOwned ? 2 : 3);
+  const earnings = isOwned ? (bonez || getBonezGeneration({...nft,collection})) : null;
   const image = getNftImage(nft);
   const isExplorer = variant === "explorer";
 
@@ -110,7 +110,7 @@ export default function NftCard({
 
         {stats.type && <small className="nft-type-label">Type · {stats.type}</small>}
 
-        {bonez && (
+        {isOwned && bonez && (
           <div className="bonez-generation">
             <div className="bonez-generation-header">
               <span>🦴 Potential BONEZ</span>
