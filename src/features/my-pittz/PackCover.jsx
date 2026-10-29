@@ -9,5 +9,5 @@ export default function PackCover({address,nfts}){
   const score=n=>{let h=Math.floor(seed*0xffffffff);for(const c of address+n.identifier)h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0;};
   return unique.sort((a,b)=>score(a)-score(b)).slice(0,3);
  },[address,nfts,seed]);
- return <div className="pack-entrance-art" aria-hidden="true">{picks.length?picks.map(n=><img key={n.identifier} src={getNftImage(n)} alt=""/>):['green','captain','pink'].map(p=><img key={p} src={'/images/pittzboy/pittzboy-'+p+'.jpg'} alt=""/>)}</div>;
+ return picks.length?<div className="pack-entrance-art" aria-hidden="true">{picks.map(n=><img key={n.identifier} src={getNftImage(n)} alt=""/>)}</div>:<div className="pack-mystery-art"><div className="pack-mystery-cards" aria-hidden="true">{[0,1,2].map(i=><span key={i}>🐾<b>?</b></span>)}</div><strong>{address?'Your pack is getting ready…':'Connect to reveal your pack'}</strong><small>{address?'Your own Pittz belong here.':'Your Pittz. Your spotlight.'}</small></div>;
 }
