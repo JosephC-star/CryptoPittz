@@ -131,12 +131,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
       </div>
       <div id="my-pittz-content" hidden={Boolean(address) && !expanded}>
 
-      <div className="explorer-tabs my-pittz-tabs"><button className={`explorer-tab ${view==='wallet'?'active':''}`} onClick={()=>setView('wallet')}>My Pittz</button><button className={`explorer-tab ${view==='send'?'active':''}`} onClick={()=>setView('send')}>Send a Pittz →</button></div>
-      {import.meta.env.VITE_OOX_PREVIEW === 'true' && <div className="explorer-tabs my-pittz-tabs" aria-label="Wallet views">
-        <button className={`explorer-tab ${view==='wallet'?'active':''}`} onClick={()=>setView('wallet')}>In My Wallet</button>
-        <button className={`explorer-tab ${view==='listings'?'active':''}`} onClick={()=>setView('listings')}>My Listings</button>
-        <button className={`explorer-tab ${view==='offers'?'active':''}`} onClick={()=>setView('offers')}>Offers received</button>
-      </div>}
+      <div className="explorer-tabs my-pittz-tabs" aria-label="Wallet views">{[['wallet','My Pittz'],['listings','My Listings'],['offers','Offers received'],['send','Send a Pittz →']].map(([id,label])=><button key={id} className={`explorer-tab ${view===id?'active':''}`} aria-pressed={view===id} onClick={()=>setView(id)}>{label}</button>)}</div>
       {view==='send' ? <Suspense fallback={<p>Loading transfer controls…</p>}><SendPittz key={address||'disconnected'} address={address} nfts={nfts} onRefresh={onRetry} onConnect={onConnect}/></Suspense> : view==='offers' ? <Suspense fallback={<p>Loading offers…</p>}><MyReceivedOffers key={address||'disconnected'} address={address} nfts={nfts} loading={loading} error={error} onRetry={onRetry} onConnect={onConnect} onOpenNft={onOpenNft}/></Suspense> : view==='listings' ? <Suspense fallback={<p>Loading listings…</p>}><MyListings key={address||'disconnected'} address={address}/></Suspense> : <>
       <div className="explorer-tabs my-pittz-tabs" aria-label="My Pittz collections">
         <button type="button" className={`explorer-tab ${collection === "all" ? "active" : ""}`} aria-pressed={collection === "all"} onClick={() => { setCollection("all"); setWalletTraits({}); setPage(1); }}>
