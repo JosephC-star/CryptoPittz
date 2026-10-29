@@ -159,3 +159,15 @@
   VITE_OOX_PREVIEW = "true"
   VITE_OOX_OFFERS = "true"
   VITE_OOX_TRANSACTIONS = "false"
+
+[[redirects]]
+  from = "/my-pittz"
+  to = "/my-pittz.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/my-pittz/"
+  to = "/my-pittz.html"
+  status = 200
+  force = true

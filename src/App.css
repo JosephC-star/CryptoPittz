@@ -6901,5 +6901,5 @@ footer .container > div:hover {
 
 /* Match the daily figure while keeping long ranks inside narrow wallet cards. */
 .wallet-nft-card .pittz-stat.rank-stat{min-width:0;box-sizing:border-box}
-.wallet-nft-card .pittz-stat.rank-stat>strong{display:block;max-width:100%;font-size:20px;line-height:1.25;letter-spacing:-.4px;margin-top:5px;white-space:normal;overflow-wrap:anywhere;text-overflow:clip}
-@media(max-width:700px){.wallet-nft-card .pittz-stat.rank-stat>strong{font-size:18px}}
+.wallet-nft-card .pittz-stat.rank-stat>strong{display:block;max-width:100%;font-size:14px;line-height:1.25;letter-spacing:-.4px;margin-top:5px;white-space:normal;overflow-wrap:anywhere;text-overflow:clip}
+@media(max-width:700px){.wallet-nft-card .pittz-stat.rank-stat>strong{font-size:10px}}

@@ -1,3 +1,4 @@
+import PackCover from './features/my-pittz/PackCover';
 import {NeonWelcome,IntroDisclosure} from "./features/home/NeonWelcome";
 import {loginWithWallet,hasWalletBridge,usesDirectWalletConnection} from './utils/connectWallet';
 import WalletConnectModal from './components/WalletConnectModal';
@@ -19,7 +20,7 @@ import BonezMarketSection from "./features/bonez-market/BonezMarketSection";
 import useBonezMarket from "./features/bonez-market/useBonezMarket";
 import useExplorerData from "./features/explorer/useExplorerData";
 import useOoxListings from "./features/explorer/useOoxListings";
-import MyPittzSection from "./features/my-pittz/MyPittzSection";
+import "./features/my-pittz/my-pittz-page.css";
 import useWalletPittz from "./features/my-pittz/useWalletPittz";
 import TraitFinder from "./features/traits/TraitFinder";
 import { getPittzStats, getPittzTraits } from "./utils/nftUtils";
@@ -401,7 +402,7 @@ function App() {
                 </button>
                 <div className="dropdown" role="menu">
                   <a href="#arcade" onClick={() => setDesktopGroup(null)}>Pittz Playground</a>
-                  <a href="#my-pittz" onClick={() => setDesktopGroup(null)}>My Pittz</a>
+                  <a href="/my-pittz/" onClick={() => setDesktopGroup(null)}>My Pittz</a>
                   <a href="/dawg-pound/" onClick={() => setDesktopGroup(null)}>Pittz Dawg Pound</a>
                   <a href="#explorer" onClick={() => navigateExplorer("explorer")}>CryptoPittz Explorer</a>
                   <a href="#traits" onClick={() => navigateExplorer("traits")}>Traits</a>
@@ -523,7 +524,7 @@ function App() {
                   Pittz Playground
                 </a>
 
-                <a href="#my-pittz" onClick={closeMobileMenu}>
+                <a href="/my-pittz/" onClick={closeMobileMenu}>
                   My Pittz
                 </a>
 
@@ -840,16 +841,7 @@ function App() {
             chartChange={bonezChartChange}
             onChartRangeChange={setBonezChartRange}
           />
-          <MyPittzSection
-            address={account.address}
-            nfts={nfts}
-            loading={nftsLoading}
-            error={nftsError}
-            onRetry={retryWallet}
-            onConnect={connectWallet}
-            bonezUsdPrice={Number(bonezMarket?.priceUsd)}
-            onOpenNft={openNftDetails}
-          />
+          <section id="my-pittz" aria-label="My Pittz entrance"><a className="pack-home-entrance" href="/my-pittz/"><div className="pack-entrance-copy"><small>YOUR WALLET. YOUR PACK.</small><h2>My Pittz</h2><p>Browse your Original and Vice Pittz, check earnings, manage listings and offers, or send a Pittz to another wallet.</p><strong>Enter My Pittz →</strong></div><PackCover address={account.address} nfts={nfts}/></a></section>
           <section id="dawg-pound-entrance" aria-label="Pittz Dawg Pound">
             <a className="dawg-home-entrance" href="/dawg-pound/"><div className="dawg-entrance-copy"><small>THE PACK’S COLLECTOR DISTRICT</small><h2>Pittz Dawg Pound</h2><p>Find your next pack member. Browse Pittz for sale and collection offers.</p><strong>Enter Pound Town →</strong></div><div className="dawg-entrance-art" aria-hidden="true"/></a>
           </section>
