@@ -189,7 +189,7 @@ export default function NftDetailModal({
               <div className="nft-detail-trait" key={`${nft.identifier}-${item.trait}`}>
                 <span>{item.trait}</span>
                 <strong>{item.value}</strong>
-                {item.count != null && <small className="trait-frequency">{item.percentage.toFixed(2)}% <span>· {item.count.toLocaleString()} of {rarity[collection].total.toLocaleString()}</span></small>}
+                {item.count != null && <small className="trait-frequency">{item.percentage.toFixed(2)}% <span>· 1 of {item.count.toLocaleString()}</span></small>}
               </div>
             ))}
           </div>
