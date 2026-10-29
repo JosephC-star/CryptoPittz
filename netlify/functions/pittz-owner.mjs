@@ -8,6 +8,19 @@ const XOXNO='erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8';
 const valid=a=>{try{return Address.newFromBech32(a).toBech32()===a;}catch{return false;}};
 const contract=a=>Address.newFromBech32(a).isSmartContract();
 async function json(url,body){const r=await fetch(url,{signal:AbortSignal.timeout(12000),headers:{Accept:'application/json',...(body?{'Content-Type':'application/json'}:{})},...(body?{method:'POST',body:JSON.stringify(body)}:{})});if(!r.ok)throw Error('Owner lookup unavailable.');return r.json();}
+// Marketplace feeds locate the auction; the escrow contract remains authoritative.
+async function saleFor(identifier,collection,custodian){
+ if(custodian===XOXNO){const item=await json('https://api.xoxno.com/nft/'+identifier);return item.identifier===identifier?item.saleInfo:null;}
+ for(let page=0;page<20;page++){
+  const params=new URLSearchParams({source:'collection-all',collectionId:collection,status:'listed',sort:'priceAsc',page:String(page),limit:'100'});
+  const items=await json('https://www.oox.art/api/nfts?'+params);
+  if(!Array.isArray(items))throw Error('Invalid OOX listings.');
+  const item=items.find(n=>n.identifier===identifier);
+  if(item){const sale=item.auctionInfo;return sale?.marketplace==='oox'?{marketplace:'oox',auctionId:Number(sale.auctionId)}:null;}
+  if(items.length<100)break;
+ }
+ return null;
+}
 export async function handler(event){
  const reply=(statusCode,body)=>({statusCode,headers:{'Content-Type':'application/json','Cache-Control':'no-store'},body:JSON.stringify(body)});
  if(event.httpMethod!=='GET')return reply(405,{error:'GET only.'});
@@ -18,7 +31,7 @@ export async function handler(event){
  if(identifier){const nft=await json('https://api.multiversx.com/nfts/'+identifier+'?withOwner=true');if(nft.identifier!==identifier||!valid(nft.owner))throw Error('Ownership could not be verified.');address=nft.owner;
  if(contract(address)){custodian=address;role='custody';
  // Only resolve a seller when the live escrow contract and exact auction agree.
- if(address===XOXNO||address===OOX){try{const item=await json('https://api.xoxno.com/nft/'+identifier);const sale=item.saleInfo;if(item.identifier===identifier&&sale?.marketplace===(address===XOXNO?'xoxno':'oox')&&Number.isSafeInteger(sale.auctionId)&&sale.auctionId>0){let h=BigInt(sale.auctionId).toString(16);h=h.padStart(Math.ceil(h.length/2)*2,'0');const q=await json('https://gateway.multiversx.com/vm-values/query',{scAddress:address,funcName:'getFullAuctionData',args:[h]});if(q.code==='successful'&&q.data?.data?.returnCode==='ok'&&q.data.data.returnData?.length===1){const a=auction(q.data.data.returnData[0],address);if(a.collection===nft.collection&&a.nonce===BigInt('0x'+identifier.split('-').at(-1))&&a.quantity===1n){const seller=Address.newFromHex(a.sellerHex).toBech32();if(valid(seller)&&!contract(seller)){address=seller;role='seller';}}}}}catch{/* Keep custody label; never guess the owner. */}}
+ if(address===XOXNO||address===OOX){try{const sale=await saleFor(identifier,nft.collection,address);if(sale?.marketplace===(address===XOXNO?'xoxno':'oox')&&Number.isSafeInteger(sale.auctionId)&&sale.auctionId>0){let h=BigInt(sale.auctionId).toString(16);h=h.padStart(Math.ceil(h.length/2)*2,'0');const q=await json('https://gateway.multiversx.com/vm-values/query',{scAddress:address,funcName:'getFullAuctionData',args:[h]});if(q.code==='successful'&&q.data?.data?.returnCode==='ok'&&q.data.data.returnData?.length===1){const a=auction(q.data.data.returnData[0],address);if(a.collection===nft.collection&&a.nonce===BigInt('0x'+identifier.split('-').at(-1))&&a.quantity===1n){const seller=Address.newFromHex(a.sellerHex).toBech32();if(valid(seller)&&!contract(seller)){address=seller;role='seller';}}}}}catch{/* Keep custody label; never guess the owner. */}}
  }}
  if(role==='custody')return reply(200,{address,role,custodian,name:null,avatar:null});
  const account=await json('https://api.multiversx.com/accounts/'+address);if(account.address!==address)throw Error('Wallet response mismatch.');

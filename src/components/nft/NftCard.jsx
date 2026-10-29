@@ -1,3 +1,6 @@
+import {getBonezGeneration} from '../../utils/bonezUtils';
+import rarity from '../../data/trait-rarity.json';
+import { rarestTraits } from '../../utils/traitRarity.mjs';
 import {
   decodePittzAttributes,
   getNftImage,
@@ -18,6 +21,9 @@ export default function NftCard({
 }) {
   const stats = getPittzStats(nft.attributes);
   const traits = showTraits ? decodePittzAttributes(nft.attributes) : [];
+  const collection = nft.collection || nft.identifier?.split('-').slice(0,2).join('-');
+  const rareTraits = rarestTraits(nft.attributes, rarity[collection], isOwned ? 2 : 3);
+  const earnings = isOwned ? (bonez || getBonezGeneration({...nft,collection})) : null;
   const image = getNftImage(nft);
   const isExplorer = variant === "explorer";
 
@@ -91,29 +97,20 @@ export default function NftCard({
             </div>
           )}
 
-          {stats.score && (
-            <div className="pittz-stat">
-              <span>⚡ Score</span>
-              <strong>{stats.score}</strong>
+          {earnings && <div className="pittz-stat earnings-stat"><span>🦴 BONEZ / day</span><strong>{earnings.daily.toLocaleString(undefined,{maximumFractionDigits:2})}</strong><small>Potential</small></div>}
+          {rareTraits.map(item => (
+            <div className="pittz-stat rarity-stat" key={item.trait} title={`${item.trait}: ${item.value} — 1 of ${item.count} with this trait in this collection`}>
+              <span>{item.trait}</span>
+              <strong>{item.value}</strong>
+              <small>{item.percentage.toFixed(2)}% · 1 of {item.count.toLocaleString()}</small>
             </div>
-          )}
+          ))}
 
-          {stats.bloodline && (
-            <div className="pittz-stat">
-              <span>Bloodline</span>
-              <strong>{stats.bloodline}</strong>
-            </div>
-          )}
-
-          {stats.type && (
-            <div className="pittz-stat">
-              <span>Type</span>
-              <strong>{stats.type}</strong>
-            </div>
-          )}
         </div>
 
-        {bonez && (
+        {stats.type && <small className="nft-type-label">Type · {stats.type}</small>}
+
+        {isOwned && bonez && (
           <div className="bonez-generation">
             <div className="bonez-generation-header">
               <span>🦴 Potential BONEZ</span>
@@ -143,6 +140,7 @@ export default function NftCard({
               <div className="pittz-trait" key={`${nft.identifier}-${item.trait}`}>
                 <span>{item.trait}</span>
                 <strong>{item.value}</strong>
+                {rarity[collection]?.traits[item.trait]?.[item.value] && <small className="trait-frequency">{(rarity[collection].traits[item.trait][item.value] / rarity[collection].total * 100).toFixed(2)}% · 1 of {rarity[collection].traits[item.trait][item.value].toLocaleString()}</small>}
               </div>
             ))}
           </div>

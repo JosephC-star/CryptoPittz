@@ -6854,3 +6854,25 @@ footer .container > div:hover {
 .offer-required-traits{margin:12px 0;padding:12px;border:1px solid #d4af3740;border-radius:10px;background:#d4af370a}.offer-required-traits ul{padding-left:20px;margin:8px 0;line-height:1.6}.offer-required-traits li{margin:4px 0}
 
 .bonez-wallet-total-grid[hidden]{display:none}.bonez-earnings-toggle{margin:12px 0 0;min-height:44px}
+
+/* Rarest visual traits retain the existing four-box card grid. */
+.pittz-stat.rarity-stat{min-width:0}
+.pittz-stat.rarity-stat strong{display:block;white-space:normal;overflow-wrap:anywhere;line-height:1.3}
+.pittz-stat.rarity-stat small{display:block;margin-top:5px;font-size:10px;color:#e2b5ff;line-height:1.35}
+@media(max-width:700px){.explorer-nft-grid .pittz-stat.rarity-stat strong{white-space:normal;font-size:10px}.explorer-nft-grid .pittz-stat.rarity-stat small{font-size:8px}}
+
+/* Collector details: readable values and a separate rarity line. */
+.nft-detail-trait{display:flex;flex-direction:column;gap:6px;min-width:0;padding:16px;border-radius:14px}
+.nft-detail-trait>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.35}
+.trait-frequency{display:block;color:#e5adff;font-size:12px;line-height:1.5}
+.trait-frequency span{color:#bbc0d0}
+.nft-traits-heading{font-size:16px;margin:20px 0 12px}
+.nft-traits-heading small{display:block;font-size:11px;color:#b8aec9;font-weight:400;margin-top:5px}
+.nft-type-label,.nft-earnings-summary{font-size:11px;color:#b8aec9;line-height:1.6}
+.earnings-stat{border-color:#b46bff66;background:linear-gradient(135deg,#a44cff16,#ff943c12)}
+.earnings-stat small{display:block;font-size:9px;color:#c7b7d5;margin-top:4px}
+.nft-detail-stat.earnings-stat span{font-size:11px;line-height:1.4}
+
+.nft-detail-stat.rarest-detail-stat strong{font-size:16px;white-space:normal;overflow-wrap:anywhere;line-height:1.3}
+.nft-detail-stat.rarest-detail-stat .trait-frequency{margin-top:6px;font-size:11px}
+.nft-detail-stat.rarest-detail-stat>span{font-size:10px;line-height:1.4}
