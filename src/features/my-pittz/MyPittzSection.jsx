@@ -1,5 +1,5 @@
 const SendPittz=lazy(async()=>{const {Buffer}=await import('buffer');globalThis.Buffer??=Buffer;return import('../send-pittz/SendPittz');});
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 
 import NftCard from "../../components/nft/NftCard";
 import { getBonezGeneration, getBonezWalletTotals } from "../../utils/bonezUtils";
@@ -14,16 +14,8 @@ const MyListings=lazy(loadMyListings);
 const MyReceivedOffers=lazy(loadReceivedOffersView);
 
 function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNft, onRetry, onConnect }) {
-  const [expanded, setExpanded] = useState(true);
   const [earningsExpanded,setEarningsExpanded]=useState(false);
   useEffect(()=>{setEarningsExpanded(false);},[address]);
-  const headingRef = useRef(null);
-  const toggleRef = useRef(null);
-  function retractMyPittz() {
-    setExpanded(false);
-    toggleRef.current?.focus({ preventScroll: true });
-    headingRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
-  }
   const [view,setView]=useState("wallet");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("rank");
@@ -118,20 +110,9 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
   }
 
   return (
-    <section id="my-pittz" ref={headingRef}>
-      <div className="section-title explorer-heading">
-        <div>
-          <h2>My Pittz</h2>
-          <span>{!address || expanded ? "Your CryptoPittz collection." : loading ? "Searching your wallet..." : error ? "Expand to view your wallet status." : `${nfts.length} CryptoPittz tucked away. Expand to browse your pack.`}</span>
-        </div>
-        {address && <button ref={toggleRef} type="button" className="explorer-fold-toggle" aria-expanded={expanded} aria-controls="my-pittz-content" onClick={() => setExpanded((open) => !open)}>
-          {expanded ? "Retract My Pittz" : "Expand My Pittz"}
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={{ transform: expanded ? "rotate(180deg)" : undefined }}><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-        </button>}
-      </div>
-      <div id="my-pittz-content" hidden={Boolean(address) && !expanded}>
-
-      <div className="explorer-tabs my-pittz-tabs" aria-label="Wallet views">{[['wallet','My Pittz'],['listings','My Listings'],['offers','Offers received'],['send','Send a Pittz →']].map(([id,label])=><button key={id} className={`explorer-tab ${view===id?'active':''}`} aria-pressed={view===id} onClick={()=>setView(id)}>{label}</button>)}</div>
+    <section id="my-pittz" aria-label="Your Pittz collection">
+      <div id="my-pittz-content">
+      <div className="explorer-tabs my-pittz-tabs" aria-label="Wallet views">{[['wallet','Collection'],['listings','My Listings'],['offers','Offers received'],['send','Send a Pittz →']].map(([id,label])=><button key={id} className={`explorer-tab ${view===id?'active':''}`} aria-pressed={view===id} onClick={()=>setView(id)}>{label}</button>)}</div>
       {view==='send' ? <Suspense fallback={<p>Loading transfer controls…</p>}><SendPittz key={address||'disconnected'} address={address} nfts={nfts} onRefresh={onRetry} onConnect={onConnect}/></Suspense> : view==='offers' ? <Suspense fallback={<p>Loading offers…</p>}><MyReceivedOffers key={address||'disconnected'} address={address} nfts={nfts} loading={loading} error={error} onRetry={onRetry} onConnect={onConnect} onOpenNft={onOpenNft}/></Suspense> : view==='listings' ? <Suspense fallback={<p>Loading listings…</p>}><MyListings key={address||'disconnected'} address={address}/></Suspense> : <>
       <div className="explorer-tabs my-pittz-tabs" aria-label="My Pittz collections">
         <button type="button" className={`explorer-tab ${collection === "all" ? "active" : ""}`} aria-pressed={collection === "all"} onClick={() => { setCollection("all"); setWalletTraits({}); setPage(1); }}>
@@ -360,10 +341,6 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
         </div>
       </div>
       </>}
-      {address && !loading && !error && nfts.length > 0 && <div className="explorer-fold-footer">
-        <button type="button" className="explorer-fold-toggle" onClick={retractMyPittz}>Retract My Pittz ↑</button>
-        <span>Tuck the pack away and keep exploring.</span>
-      </div>}
       </div>
     </section>
   );
