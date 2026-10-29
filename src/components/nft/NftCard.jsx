@@ -97,7 +97,7 @@ export default function NftCard({
             </div>
           )}
 
-          {earnings && <div className="pittz-stat earnings-stat"><span>🦴 BONEZ / day</span><strong>{earnings.daily.toLocaleString(undefined,{maximumFractionDigits:2})}</strong><small>Potential</small></div>}
+          {earnings && <div className="pittz-stat earnings-stat"><span>🦴 BONEZ / day</span><strong>{earnings.daily.toLocaleString(undefined,{maximumFractionDigits:2})}</strong></div>}
           {rareTraits.map(item => (
             <div className="pittz-stat rarity-stat" key={item.trait} title={`${item.trait}: ${item.value} — 1 of ${item.count} with this trait in this collection`}>
               <span>{item.trait}</span>
@@ -109,30 +109,6 @@ export default function NftCard({
         </div>
 
         {stats.type && <small className="nft-type-label">Type · {stats.type}</small>}
-
-        {isOwned && bonez && (
-          <div className="bonez-generation">
-            <div className="bonez-generation-header">
-              <span>🦴 Potential BONEZ</span>
-              <strong>{bonez.tier} Tier</strong>
-            </div>
-
-            <div className="bonez-generation-grid">
-              <div>
-                <span>Daily</span>
-                <strong>{bonez.daily.toFixed(2)}</strong>
-              </div>
-              <div>
-                <span>Weekly</span>
-                <strong>{bonez.weekly.toFixed(2)}</strong>
-              </div>
-              <div>
-                <span>30 Days</span>
-                <strong>{bonez.monthly.toFixed(2)}</strong>
-              </div>
-            </div>
-          </div>
-        )}
 
         {traits.length > 0 && (
           <div className="pittz-traits">
