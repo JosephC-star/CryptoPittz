@@ -108,6 +108,7 @@ export default function NftCard({
 
         </div>
 
+        {isOwned && <button type="button" className="btn owned-pittz-action" onClick={event=>{event.stopPropagation();onClick?.();}}>Sell / Send this Pittz →</button>}
         {stats.type && <small className="nft-type-label">Type · {stats.type}</small>}
 
         {traits.length > 0 && (

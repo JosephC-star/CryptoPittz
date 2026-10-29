@@ -1,4 +1,3 @@
-const SendPittz=lazy(async()=>{const {Buffer}=await import('buffer');globalThis.Buffer??=Buffer;return import('../send-pittz/SendPittz');});
 import { lazy, Suspense, useEffect, useState } from "react";
 
 import NftCard from "../../components/nft/NftCard";
@@ -112,8 +111,8 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
   return (
     <section id="my-pittz" aria-label="Your Pittz collection">
       <div id="my-pittz-content">
-      <div className="explorer-tabs my-pittz-tabs" aria-label="Wallet views">{[['wallet','Collection'],['listings','My Listings'],['offers','Offers received'],['send','Send a Pittz →']].map(([id,label])=><button key={id} className={`explorer-tab ${view===id?'active':''}`} aria-pressed={view===id} onClick={()=>setView(id)}>{label}</button>)}</div>
-      {view==='send' ? <Suspense fallback={<p>Loading transfer controls…</p>}><SendPittz key={address||'disconnected'} address={address} nfts={nfts} onRefresh={onRetry} onConnect={onConnect}/></Suspense> : view==='offers' ? <Suspense fallback={<p>Loading offers…</p>}><MyReceivedOffers key={address||'disconnected'} address={address} nfts={nfts} loading={loading} error={error} onRetry={onRetry} onConnect={onConnect} onOpenNft={onOpenNft}/></Suspense> : view==='listings' ? <Suspense fallback={<p>Loading listings…</p>}><MyListings key={address||'disconnected'} address={address}/></Suspense> : <>
+      <div className="explorer-tabs my-pittz-tabs" aria-label="Wallet views">{[['wallet','Collection'],['listings','My Listings'],['offers','Offers received']].map(([id,label])=><button key={id} className={`explorer-tab ${view===id?'active':''}`} aria-pressed={view===id} onClick={()=>setView(id)}>{label}</button>)}</div>
+      {view==='offers' ? <Suspense fallback={<p>Loading offers…</p>}><MyReceivedOffers key={address||'disconnected'} address={address} nfts={nfts} loading={loading} error={error} onRetry={onRetry} onConnect={onConnect} onOpenNft={onOpenNft}/></Suspense> : view==='listings' ? <Suspense fallback={<p>Loading listings…</p>}><MyListings key={address||'disconnected'} address={address}/></Suspense> : <>
       <div className="explorer-tabs my-pittz-tabs" aria-label="My Pittz collections">
         <button type="button" className={`explorer-tab ${collection === "all" ? "active" : ""}`} aria-pressed={collection === "all"} onClick={() => { setCollection("all"); setWalletTraits({}); setPage(1); }}>
           All Pittz <span>{ownedOriginalPittz.length + ownedVicePittz.length}</span>
