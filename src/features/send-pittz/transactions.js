@@ -1,3 +1,4 @@
+import {resolveRecipient} from './recipient.mjs';
 import {TransactionComputer} from '@multiversx/sdk-core';
 import {getAccount} from '@multiversx/sdk-dapp/out/methods/account/getAccount';
 import {getNetworkConfig} from '@multiversx/sdk-dapp/out/methods/network/getNetworkConfig';
@@ -10,6 +11,7 @@ export const pendingKey=a=>'pittz-send-pending-'+a;
 function context(address){if(getAccount().address!==address||getNetworkConfig().network.chainId!=='1')throw Error('Wallet or network changed. Review again.');}
 async function fresh(review){
  context(review.address);
+ if(review.herotag){const recipient=await resolveRecipient(review.herotag,getJson);if(recipient.address!==review.recipient)throw Error('Herotag wallet changed. Review the recipient again.');}
  const [account,nft]=await Promise.all([getJson('https://api.multiversx.com/accounts/'+review.address+'?withGuardianInfo=true'),getJson('https://api.multiversx.com/accounts/'+review.address+'/nfts/'+review.identifier)]);
  if(nft.identifier!==review.identifier||nft.type!=='NonFungibleESDT'||(nft.balance&&nft.balance!=='1'))throw Error('This Pittz is no longer in your wallet. Unlist it before sending.');
  const guardian=guardianForAccount(account,addressHex);if(Object.hasOwn(review,'guardian'))assertGuardianUnchanged(account,review.guardian,addressHex);
@@ -17,7 +19,7 @@ async function fresh(review){
  if(!Number.isSafeInteger(account.nonce)||BigInt(account.balance)<BigInt(spec.gasLimit)*BigInt(spec.gasPrice))throw Error('Insufficient EGLD for the network fee, or wallet data unavailable.');
  return {account,guardian,spec};
 }
-export async function prepareTransfer(address,recipient,identifier){const review={address,recipient:recipient.trim(),identifier,created:Date.now()};const f=await fresh(review);return {...review,guardian:f.guardian,feeCap:(BigInt(f.spec.gasLimit)*BigInt(f.spec.gasPrice)).toString()};}
+export async function prepareTransfer(address,recipient,identifier){const resolved=await resolveRecipient(recipient,getJson);const review={address,recipient:resolved.address,herotag:resolved.herotag,identifier,created:Date.now()};const f=await fresh(review);return {...review,guardian:f.guardian,feeCap:(BigInt(f.spec.gasLimit)*BigInt(f.spec.gasPrice)).toString()};}
 let busy=false;
 export async function submitTransfer(review){
  if(import.meta.env.VITE_OOX_TRANSACTIONS!=='true')throw Error('Sending is disabled in this preview.');
