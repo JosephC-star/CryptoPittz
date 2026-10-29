@@ -99,10 +99,10 @@ export default function NftCard({
 
           {earnings && <div className="pittz-stat earnings-stat"><span>🦴 BONEZ / day</span><strong>{earnings.daily.toLocaleString(undefined,{maximumFractionDigits:2})}</strong><small>Potential</small></div>}
           {rareTraits.map(item => (
-            <div className="pittz-stat rarity-stat" key={item.trait} title={`${item.trait}: ${item.value} — ${item.count} of ${rarity[collection].total} in this collection`}>
+            <div className="pittz-stat rarity-stat" key={item.trait} title={`${item.trait}: ${item.value} — 1 of ${item.count} with this trait in this collection`}>
               <span>{item.trait}</span>
               <strong>{item.value}</strong>
-              <small>{item.percentage.toFixed(2)}% · {item.count.toLocaleString()} Pittz</small>
+              <small>{item.percentage.toFixed(2)}% · 1 of {item.count.toLocaleString()}</small>
             </div>
           ))}
 
@@ -140,7 +140,7 @@ export default function NftCard({
               <div className="pittz-trait" key={`${nft.identifier}-${item.trait}`}>
                 <span>{item.trait}</span>
                 <strong>{item.value}</strong>
-                {rarity[collection]?.traits[item.trait]?.[item.value] && <small className="trait-frequency">{(rarity[collection].traits[item.trait][item.value] / rarity[collection].total * 100).toFixed(2)}% · {rarity[collection].traits[item.trait][item.value]} Pittz</small>}
+                {rarity[collection]?.traits[item.trait]?.[item.value] && <small className="trait-frequency">{(rarity[collection].traits[item.trait][item.value] / rarity[collection].total * 100).toFixed(2)}% · 1 of {rarity[collection].traits[item.trait][item.value].toLocaleString()}</small>}
               </div>
             ))}
           </div>
