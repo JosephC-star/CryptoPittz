@@ -6893,3 +6893,13 @@ footer .container > div:hover {
  .nft-detail-panel .nft-detail-traits{grid-template-columns:minmax(0,1fr);gap:8px}
  .nft-detail-panel .nft-detail-trait{padding:12px 14px;border-radius:10px}
 }
+
+/* One daily earnings figure leaves the card focused on rare traits. */
+.wallet-nft-card .pittz-stat.earnings-stat>strong{display:block;font-size:20px;line-height:1.25;white-space:normal;overflow-wrap:anywhere;margin-top:5px}
+.wallet-nft-card .pittz-stat.earnings-stat>span{font-size:9px;line-height:1.35;letter-spacing:0}
+@media(max-width:700px){.wallet-nft-card .pittz-stat.earnings-stat>strong{font-size:18px}}
+
+/* Match the daily figure while keeping long ranks inside narrow wallet cards. */
+.wallet-nft-card .pittz-stat.rank-stat{min-width:0;box-sizing:border-box}
+.wallet-nft-card .pittz-stat.rank-stat>strong{display:block;max-width:100%;font-size:20px;line-height:1.25;letter-spacing:-.4px;margin-top:5px;white-space:normal;overflow-wrap:anywhere;text-overflow:clip}
+@media(max-width:700px){.wallet-nft-card .pittz-stat.rank-stat>strong{font-size:18px}}
