@@ -8,7 +8,7 @@ import './preview.css';
 import { compactNftPrice } from '../../utils/nftPrice';
 import PurchaseCelebration from './PurchaseCelebration';
 import { purchaseConfirmed } from './purchaseConfirmation';
-export default function OoxTradePanel({nft,isOwned,onAvailabilityChanged}) {
+export default function OoxTradePanel({nft,isOwned,onAvailabilityChanged,compact=false}) {
   const account=useGetAccount();
   const [listing,setListing]=useState(null),[message,setMessage]=useState('Checking OOX…');
   const [price,setPrice]=useState(''),[days,setDays]=useState(7),[review,setReview]=useState(null),[busy,setBusy]=useState(false),[sent,setSent]=useState(false);
@@ -40,7 +40,7 @@ export default function OoxTradePanel({nft,isOwned,onAvailabilityChanged}) {
       if(!active)return;
       const match=readListingItems(page).find(x=>x.identifier===nft.identifier&&x.isActive&&x.priceType==='fixed'&&x.saleType==='nft'&&x.paymentToken==='EGLD'&&x.startTime<=Date.now()/1000&&x.deadline>Date.now()/1000);
       if(match){validateListing(match,nft);setListing(match);setMessage('Fixed-price EGLD listing available.');}
-      else setMessage('No supported listing returned by OOX purchase API. Check the marketplace if the sale badge disagrees.');
+      else setMessage(isOwned?'':'No supported listing returned by OOX purchase API. Check the marketplace if the sale badge disagrees.');
     }).catch(e=>{if(active)setMessage(e.message)});
     return ()=>{active=false};
   },[nft]);
@@ -59,13 +59,14 @@ export default function OoxTradePanel({nft,isOwned,onAvailabilityChanged}) {
   useEffect(()=>{onAvailabilityChanged?.(canBuy);},[canBuy,onAvailabilityChanged]);
   const canList=Boolean(isOwned&&account.address);
   if(!canBuy&&!canList&&!purchase&&!sent)return null;
-  return <section className="oox-preview pitt-trade-panel" aria-label="OOX purchase">
+  return <section className={`oox-preview pitt-trade-panel ${compact?'owned-trade-compact':''}`} aria-label="OOX purchase">
     {confirmed&&purchase&&<PurchaseCelebration nft={purchase.nft} hash={purchase.hash}/>}
-    <div className="oox-purchase-heading"><div className="pitt-trade-badges"><span className="pitt-sale-tag">{canBuy?"FOR SALE":"YOUR PITT"}</span><span className="pitt-marketplace-tag" aria-label="Marketplace: OOX">OOX</span></div><span className="oox-market-label">🐾 PITTZSTOP</span><h3>{canBuy?"Bring this Pittz home":"Find this Pittz a new pack"}</h3></div>
+    {!compact&&<><div className="oox-purchase-heading"><div className="pitt-trade-badges"><span className="pitt-sale-tag">{canBuy?"FOR SALE":"YOUR PITT"}</span><span className="pitt-marketplace-tag" aria-label="Marketplace: OOX">OOX</span></div><span className="oox-market-label">🐾 PITTZSTOP</span><h3>{canBuy?"Bring this Pittz home":"Find this Pittz a new pack"}</h3></div>
     <p className="pitt-trade-note">{canBuy?"Review the price and network fee before approving in your wallet.":"Listing transfers this Pitt into the OOX marketplace contract. Network fees apply."}</p>
     {!account.address?<p>Connect your wallet using the site’s Connect Wallet button.</p>:<p>Wallet: {account.address.slice(0,10)}…{account.address.slice(-6)}</p>}
+    </>}
     {canBuy&&<>{import.meta.env.VITE_OOX_TRANSACTIONS!=='true'&&<p>Purchases are disabled in this preview.</p>}<p className="oox-price"><strong title={`${formatAmount(listing.price,18)} EGLD`}>{compactNftPrice(listing.price,true)} EGLD</strong></p><button className="btn primary" disabled={!account.address||busy||sent||import.meta.env.VITE_OOX_TRANSACTIONS!=='true'} onClick={()=>run('buy')}>🐾 Buy →</button></>}
-    {canList&&<><h3>Sell / List on OOX</h3><label>Fixed price in EGLD<input value={price} disabled={busy||sent} onChange={e=>{setPrice(e.target.value);setReview(null)}} inputMode="decimal" placeholder="0.1"/></label><label>Listing duration<select value={days} disabled={busy||sent} onChange={e=>{setDays(Number(e.target.value));setReview(null)}}><option value={1}>1 day</option><option value={7}>7 days</option><option value={30}>30 days</option></select></label><button className="btn primary" disabled={busy||sent||!price||import.meta.env.VITE_OOX_TRANSACTIONS!=='true'} onClick={()=>run('list')}>Review listing</button></>}
+    {canList&&<><h3>Set your sale price</h3><p className="pitt-trade-note">List on OOX in EGLD. Your Pittz stays in marketplace custody until sold or withdrawn. Network fees apply.</p><label>Fixed price in EGLD<input value={price} disabled={busy||sent} onChange={e=>{setPrice(e.target.value);setReview(null)}} inputMode="decimal" placeholder="0.1"/></label><label>Listing duration<select value={days} disabled={busy||sent} onChange={e=>{setDays(Number(e.target.value));setReview(null)}}><option value={1}>1 day</option><option value={7}>7 days</option><option value={30}>30 days</option></select></label><button className="btn primary" disabled={busy||sent||!price||import.meta.env.VITE_OOX_TRANSACTIONS!=='true'} onClick={()=>run('list')}>Review listing</button></>}
     {review&&review.address===account.address&&<div><h3>Confirm {review.action==='buy'?'purchase':'listing'}</h3><p>{nft.name} · {nft.identifier}</p><p>{review.price} EGLD{review.action==='list'?` · ${review.days} days`:''}</p><p>Maximum network fee allowance: {formatAmount(review.feeCap,18)} EGLD. Marketplace fees and royalties may reduce listing proceeds.</p><p>OOX contract: {CONTRACT}</p><button className="btn primary" disabled={busy} onClick={confirm}>Sign & send {review.action==='buy'?'purchase':'listing'}</button><button className="btn" disabled={busy} onClick={()=>setReview(null)}>Cancel review</button><details><summary>Exact transaction</summary><pre>{JSON.stringify(review.payload,null,2)}</pre></details></div>}
     <p role="status">{message}</p>
     {purchase&&!confirmed&&<><a href={`https://explorer.multiversx.com/transactions/${purchase.hash}`} target="_blank" rel="noopener noreferrer">View transaction ↗</a><button className="btn" onClick={()=>setCheckAttempt(x=>x+1)}>Check purchase status</button></>}
