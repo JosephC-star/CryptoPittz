@@ -72,7 +72,7 @@ export default function NftDetailModal({
   const collection = nft.collection || nft.identifier?.split('-').slice(0,2).join('-');
   const traitStats = rarestTraits(nft.attributes, rarity[collection], Infinity);
   const traits = decodePittzAttributes(nft.attributes).map(item => ({...item,...traitStats.find(t => t.trait === item.trait && t.value === item.value)})).sort((a,b)=>(a.count??Infinity)-(b.count??Infinity));
-  const earnings = getBonezGeneration({...nft,collection});
+  const earnings = isOwned ? getBonezGeneration({...nft,collection}) : null;
   const badge = getCollectionBadge(nft);
   const image = getNftImage(nft);
 
