@@ -9,7 +9,7 @@ function wallet(address){const a=Address.newFromBech32(address);if(a.toBech32()!
 export async function resolveRecipient(input,read){
  const value=input.trim();if(value.startsWith('erd1'))return {address:wallet(value),herotag:null};
  const tag=normalizeHerotag(value);
- let resolved;try{resolved=await read('https://api.multiversx.com/usernames/'+encodeURIComponent(tag));}catch{throw Error('Herotag could not be found. Check its spelling or use the full ERD address.');}
+ let resolved;try{resolved=await read('https://api.multiversx.com/usernames/'+encodeURIComponent(tag.slice(0,-7)));}catch{throw Error('Herotag could not be found. Check its spelling or use the full ERD address.');}
  const address=wallet(resolved?.address);
  const account=await read('https://api.multiversx.com/accounts/'+address);
  if(account.address!==address||typeof account.username!=='string'||account.username.toLowerCase()!==tag)throw Error('Herotag ownership could not be verified. Use the recipient’s full ERD address.');
