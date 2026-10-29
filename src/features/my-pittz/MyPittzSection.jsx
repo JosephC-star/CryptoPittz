@@ -15,8 +15,8 @@ const MyReceivedOffers=lazy(loadReceivedOffersView);
 
 function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNft, onRetry, onConnect }) {
   const [expanded, setExpanded] = useState(true);
-  const [earningsExpanded,setEarningsExpanded]=useState(()=>!window.matchMedia('(max-width: 640px)').matches);
-  useEffect(()=>{setEarningsExpanded(!window.matchMedia('(max-width: 640px)').matches);},[address]);
+  const [earningsExpanded,setEarningsExpanded]=useState(false);
+  useEffect(()=>{setEarningsExpanded(false);},[address]);
   const headingRef = useRef(null);
   const toggleRef = useRef(null);
   function retractMyPittz() {
@@ -175,10 +175,6 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
 
           {address && !loading && !error && nfts.length > 0 && (
             <>
-              <p className="subtitle">
-                You own {nfts.length} CryptoPittz NFT{nfts.length === 1 ? "" : "s"}.
-              </p>
-
               <div className="wallet-summary">
                 <div className="wallet-summary-main">
                   <div className="wallet-summary-card">
@@ -195,7 +191,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                   </div>
                 </div>
 
-                <div className="wallet-summary-breakdown">
+                <details className="pack-breakdown"><summary>Pack breakdown <span>Bloodlines &amp; types</span></summary><div className="wallet-summary-breakdown">
                   <div className="summary-group">
                     <span className="summary-title">Bloodlines</span>
                     <div className="summary-chips">
@@ -219,19 +215,14 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                       ))}
                     </div>
                   </div>
-                </div>
+                </div></details>
               </div>
 
               <div className="bonez-wallet-total">
                 <div className="bonez-wallet-total-heading">
                   <div>
-                    <span className="bonez-wallet-eyebrow">🦴 Wallet Utility</span>
-                    <h3>Potential BONEZ Generation</h3>
-                    <p>Estimated potential based on your owned Pittz and their tier rates.</p>
-                  </div>
-                  <div className="bonez-wallet-count">
-                    <strong>{bonezWalletTotals.pittz}</strong>
-                    <span>Pittz</span>
+                    <span className="bonez-wallet-eyebrow">🦴 PACK EARNINGS</span>
+                    <h3>{bonezWalletTotals.daily.toLocaleString(undefined,{maximumFractionDigits:2})} <small>BONEZ / day</small></h3>
                   </div>
                 </div>
 
