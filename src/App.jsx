@@ -1,3 +1,4 @@
+import PackCover from './features/my-pittz/PackCover';
 import {NeonWelcome,IntroDisclosure} from "./features/home/NeonWelcome";
 import {loginWithWallet,hasWalletBridge,usesDirectWalletConnection} from './utils/connectWallet';
 import WalletConnectModal from './components/WalletConnectModal';
@@ -840,7 +841,7 @@ function App() {
             chartChange={bonezChartChange}
             onChartRangeChange={setBonezChartRange}
           />
-          <section id="my-pittz" aria-label="My Pittz entrance"><a className="pack-home-entrance" href="/my-pittz/"><div className="pack-entrance-copy"><small>YOUR WALLET. YOUR PACK.</small><h2>My Pittz</h2><p>Browse your Original and Vice Pittz, check earnings, manage listings and offers, or send a Pittz to another wallet.</p><strong>Enter My Pittz →</strong></div><div className="pack-entrance-art" aria-hidden="true">{['green','captain','pink'].map(p=><img key={p} src={'/images/pittzboy/pittzboy-'+p+'.jpg'} alt=""/>)}</div></a></section>
+          <section id="my-pittz" aria-label="My Pittz entrance"><a className="pack-home-entrance" href="/my-pittz/"><div className="pack-entrance-copy"><small>YOUR WALLET. YOUR PACK.</small><h2>My Pittz</h2><p>Browse your Original and Vice Pittz, check earnings, manage listings and offers, or send a Pittz to another wallet.</p><strong>Enter My Pittz →</strong></div><PackCover address={account.address} nfts={nfts}/></a></section>
           <section id="dawg-pound-entrance" aria-label="Pittz Dawg Pound">
             <a className="dawg-home-entrance" href="/dawg-pound/"><div className="dawg-entrance-copy"><small>THE PACK’S COLLECTOR DISTRICT</small><h2>Pittz Dawg Pound</h2><p>Find your next pack member. Browse Pittz for sale and collection offers.</p><strong>Enter Pound Town →</strong></div><div className="dawg-entrance-art" aria-hidden="true"/></a>
           </section>
