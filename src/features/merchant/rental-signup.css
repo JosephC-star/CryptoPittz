@@ -1,0 +1,11 @@
+.rental-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:0;margin:24px 0;list-style:none}
+.rental-steps li{display:flex;align-items:center;gap:8px;padding:12px 8px;border:1px solid #baa26045;border-radius:10px;color:#c5c1b5;font-size:13px}
+.rental-steps li span{display:grid;place-items:center;flex:none;width:26px;height:26px;border-radius:50%;background:#ffffff12;font-weight:700}
+.rental-steps li.current{border-color:#e1bf66;background:#e1bf6614;color:#ffe3a0}
+.rental-steps li.complete{color:#a8e1b9;border-color:#a8e1b950}
+.rental-step-title{font-weight:700;color:#ffe3a0}
+.rental-key-status{padding:18px;margin:18px 0;border:1px solid #a8e1b95c;background:#a8e1b90b;border-radius:12px;overflow-wrap:anywhere}
+.merchant-live .rental-feedback:empty{display:none}
+.merchant-live .rental-feedback:not(:empty){position:sticky;bottom:12px;z-index:2;padding:16px;background:#242019;border:1px solid #e1bf6680;border-radius:12px;box-shadow:0 8px 30px #0008;white-space:pre-line}
+.merchant-live details{margin:18px 0}.merchant-live details summary{cursor:pointer;padding:10px 0}
+@media(max-width:600px){.rental-steps{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.rental-steps li{font-size:12px}.merchant-live .rental-feedback:not(:empty){bottom:8px;padding:12px;font-size:14px}}
