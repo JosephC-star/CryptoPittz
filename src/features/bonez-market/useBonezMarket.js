@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { BONEZ_DEXSCREENER_URL, BONEZ_TOKEN_ID } from "../../config/collections";
 import { buildBonezChart } from "../../utils/chartUtils";
 
-function useBonezMarket() {
+function useBonezMarket(enabled = true) {
   const [market, setMarket] = useState(null);
   const [marketLoading, setMarketLoading] = useState(true);
   const [marketError, setMarketError] = useState("");
@@ -16,6 +16,7 @@ function useBonezMarket() {
   const [chartRange, setChartRange] = useState("24h");
 
   useEffect(() => {
+    if (!enabled) return;
     let cancelled = false;
 
     async function fetchDailyHistory() {
@@ -38,9 +39,10 @@ function useBonezMarket() {
       cancelled = true;
       clearInterval(interval);
     };
-  }, []);
+  }, [enabled]);
 
   useEffect(() => {
+    if (!enabled) return;
     let cancelled = false;
     let retryTimer;
 
@@ -96,9 +98,10 @@ function useBonezMarket() {
       cancelled = true;
       window.clearTimeout(retryTimer);
     };
-  }, []);
+  }, [enabled]);
 
   useEffect(() => {
+    if (!enabled) return;
     let cancelled = false;
 
     async function fetchHourlyHistory() {
@@ -125,7 +128,7 @@ function useBonezMarket() {
       cancelled = true;
       clearInterval(interval);
     };
-  }, []);
+  }, [enabled]);
 
   const activeHistory =
     chartRange === "24h"
