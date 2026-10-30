@@ -1,5 +1,5 @@
 import {randomBytes,randomUUID} from 'node:crypto';
-import {db,requestOrigin,response,fail,hash,wallet,validSignature} from './market-api.mjs';
+import {db,requestOrigin,response,fail,hash,wallet,validSignature,active} from './market-api.mjs';
 import {readJsonRequest} from '../../server/json-request.mjs';
 import {RENTAL_TERMS_VERSION} from '../../shared/market-rental-terms.mjs';
 import {verifyKeyBenefit} from '../../server/rental-keys.mjs';
@@ -16,10 +16,35 @@ async function identity(event,origin){
  if(!rows.length)fail(401,'Rental session expired. Verify your wallet again.');return rows[0];
 }
 async function owner(address){const rows=await db('market_shops?owner_wallet=eq.'+address+'&select=*&limit=1');const shop=rows[0]||null;if(shop?.moderation_suspended||shop?.access_status==='suspended')fail(403,'This shop is suspended. Contact an administrator.');return shop;}
-function publicIntent(r){const quote=priceFor(r.months,r.tier);if(quote.amountAtomic!==String(r.amount_atomic)||r.policy_version!==RENTAL_POLICY_VERSION)fail(409,'Rental policy changed. Contact an administrator before paying.');return {id:r.id,address:r.wallet_address,shopName:r.shop_name,...quote,expectedNonce:String(r.expected_nonce),createdAt:Date.parse(r.created_at),expiresAt:Date.parse(r.expires_at),state:r.state,txHash:r.tx_hash,shopId:r.shop_id,keyIdentifier:r.key_identifier,termsAccepted:r.terms_version===RENTAL_TERMS_VERSION&&!!r.terms_accepted_at,canPay:r.terms_version===RENTAL_TERMS_VERSION&&!!r.terms_accepted_at&&enabled()&&(r.tier==='standard'||r.tier==='waived'||benefitsEnabled())};}
+function policyMatches(r){
+ try{return priceFor(r.months,r.tier).amountAtomic===String(r.amount_atomic)&&r.policy_version===RENTAL_POLICY_VERSION;}catch{return false;}
+}
+function publicIntent(r){
+ const quote=priceFor(r.months,r.tier),currentPolicy=policyMatches(r);
+ const atomic=BigInt(r.amount_atomic),whole=atomic/1000000n,fraction=(atomic%1000000n).toString().padStart(6,'0').replace(/0+$/,'');
+ return {id:r.id,address:r.wallet_address,shopName:r.shop_name,...quote,
+  amountAtomic:String(r.amount_atomic),amountBonez:whole.toString()+(fraction?'.'+fraction:''),policyVersion:r.policy_version,
+  expectedNonce:String(r.expected_nonce),createdAt:Date.parse(r.created_at),expiresAt:Date.parse(r.expires_at),state:r.state,txHash:r.tx_hash,shopId:r.shop_id,keyIdentifier:r.key_identifier,
+  currentPolicy,termsAccepted:r.terms_version===RENTAL_TERMS_VERSION&&!!r.terms_accepted_at,
+  canPay:currentPolicy&&r.terms_version===RENTAL_TERMS_VERSION&&!!r.terms_accepted_at&&enabled()&&(r.tier==='standard'||r.tier==='waived'||benefitsEnabled())};
+}
+async function clearOldReviews(address){
+ const rows=await db('market_rental_intents?wallet_address=eq.'+address+'&state=eq.review&tx_hash=is.null&select=*&limit=20');
+ let cleared=false;
+ for(const r of rows){
+  if(policyMatches(r)&&r.terms_version===RENTAL_TERMS_VERSION&&r.terms_accepted_at&&Date.parse(r.expires_at)>Date.now())continue;
+  // The conditional update cannot clear a review that another request has submitted.
+  const changed=await db('market_rental_intents?id=eq.'+r.id+'&wallet_address=eq.'+address+'&state=eq.review&tx_hash=is.null','PATCH',{state:'cancelled'},{Prefer:'return=representation'});
+  cleared=cleared||changed.length>0;
+ }
+ return cleared;
+}
+function requireCurrentPolicy(r){if(!policyMatches(r))fail(409,r.tx_hash?'This saved payment needs a receipt review. Do not pay again; contact a market administrator.':'This rental review is out of date. Go back to check your current rate.');}
+
 async function loadIntent(id,address){if(!UUID.test(id||''))fail(400,'Invalid rental review.');const rows=await db('market_rental_intents?id=eq.'+id+'&wallet_address=eq.'+address+'&select=*&limit=1');if(!rows.length)fail(404,'Rental review not found.');return rows[0];}
 async function currentBenefit(shop,address){return waived(shop)?{tier:'waived'}:verifyKeyBenefit(address);}
 async function recheck(r,shop){
+ requireCurrentPolicy(r);
  if(r.terms_version!==RENTAL_TERMS_VERSION||!r.terms_accepted_at)fail(409,'Accept the current rental terms in a new review before activating or paying. Cancel this review first.');
  if(r.state!=='review'||Date.parse(r.expires_at)<=Date.now())fail(409,'This rental review expired or was submitted. Check its receipt before starting another.');
  const benefit=waived(shop)?{tier:'waived'}:r.use_standard_rate?{tier:'standard'}:await currentBenefit(shop,r.wallet_address);
@@ -55,22 +80,28 @@ export async function handler(event){try{
  }
  if(route==='logout'){await db('market_rental_sessions?id=eq.'+auth.id,'PATCH',{revoked_at:new Date().toISOString()});return response(200,{signedOut:true},{'Set-Cookie':cookie('',0)});}
  if(route==='me'){
-  const rows=await db('market_rental_intents?wallet_address=eq.'+address+'&state=in.(review,submitted,activated)&order=created_at.desc&limit=1');return response(200,{address,shop:shop?{name:shop.name,booth_number:shop.booth_number,access_status:shop.access_status,rental_expires_at:shop.rental_expires_at}:null,intent:rows.length?publicIntent(rows[0]):null});
+  const resetReview=await clearOldReviews(address);
+  const rows=await db('market_rental_intents?wallet_address=eq.'+address+'&state=in.(review,submitted)&order=created_at.desc&limit=1');
+  // Completed rentals are history, not a pending signup or payment.
+  const history=!rows.length&&active(shop)?await db('market_rental_intents?wallet_address=eq.'+address+'&state=eq.activated&order=created_at.desc&limit=1'):[];
+  return response(200,{address,resetReview,shop:shop?{name:shop.name,booth_number:shop.booth_number,access_status:shop.access_status,rental_expires_at:shop.rental_expires_at}:null,intent:rows.length?publicIntent(rows[0]):history.length?publicIntent(history[0]):null});
  }
  if(route==='quote'){
   if(body.acceptTerms!==true||body.termsVersion!==RENTAL_TERMS_VERSION)fail(400,'Acknowledge the final-duration, no-refund and no-proration rental terms before continuing.');
   const months=Number(body.months);if(![1,6,12].includes(months))fail(400,'Choose one, six or twelve months.');
   const name=shop?.name||(typeof body.name==='string'?body.name.trim():'');if(!name||name.length>120)fail(400,'Enter a shop name up to 120 characters.');
+  await clearOldReviews(address);
   const benefit=waived(shop)?{tier:"waived"}:body.useStandardRate===true?{tier:"standard"}:await currentBenefit(shop,address),price=priceFor(months,benefit.tier),account=await chain('accounts/'+address);
   if(!Number.isSafeInteger(account.nonce)||account.nonce<0)fail(503,'Wallet nonce could not be verified.');
   const r=await db('rpc/market_create_rental','POST',{review_data:{id:randomUUID(),wallet_address:address,origin,months,tier:benefit.tier,amount_atomic:price.amountAtomic,expected_nonce:String(account.nonce),policy_version:RENTAL_POLICY_VERSION,terms_version:RENTAL_TERMS_VERSION,key_identifier:benefit.keyIdentifier||null,use_standard_rate:body.useStandardRate===true,shop_name:name,expires_at:new Date(Date.now()+600000).toISOString()}});
   return response(200,{intent:publicIntent(r)});
  }
- const r=await loadIntent(body.id,address),review=publicIntent(r);
+ const r=await loadIntent(body.id,address);
  if(route==='cancel'){
-  if(r.state!=='review')fail(409,'Submitted payments cannot be cancelled. Check the saved transaction receipt.');
-  const rows=await db('market_rental_intents?id=eq.'+r.id+'&state=eq.review','PATCH',{state:'cancelled'},{Prefer:'return=representation'});if(rows.length!==1)fail(409,'Rental review changed. Refresh.');return response(200,{cancelled:true});
+  if(r.state!=='review'||r.tx_hash)fail(409,'Submitted payments cannot be cancelled. Check the saved transaction receipt.');
+  const rows=await db('market_rental_intents?id=eq.'+r.id+'&state=eq.review&tx_hash=is.null','PATCH',{state:'cancelled'},{Prefer:'return=representation'});if(rows.length!==1)fail(409,'Rental review changed. Refresh.');return response(200,{cancelled:true});
  }
+ const review=publicIntent(r);
  if(route==='activate'){
   if(BigInt(review.amountAtomic)!==0n)fail(400,'This rental requires a confirmed BONEZ payment.');
   await recheck(r,shop);const activated=await db('rpc/market_activate_rental','POST',{intent_key:r.id,wallet_key:address,receipt_hash:null});return response(200,{activated:true,booth:activated.booth_number});
@@ -85,6 +116,7 @@ export async function handler(event){try{
  }
  if(r.state==='activated')return response(200,{activated:true,booth:shop?.booth_number});
  if(r.state!=='submitted'||!r.tx_hash)fail(409,'No submitted payment is attached to this review.');
+ requireCurrentPolicy(r);
  const tx=await chain('transactions/'+r.tx_hash+'?withResults=true');
  if(['pending','received','executing','not-executed'].includes(tx.status)||tx.pendingResults)return response(202,{pending:true,txHash:r.tx_hash});
  try{verifyRentalReceipt(tx,review,r.tx_hash);}catch{fail(409,'This transaction has not produced a matching successful rental receipt. Do not pay again; check Explorer or contact an administrator.');}

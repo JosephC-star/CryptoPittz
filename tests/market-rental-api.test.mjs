@@ -68,3 +68,59 @@ test('previewed benefits do not bypass current ownership checks at activation',a
  keyType=null;assert.equal((await call('activate',{id:review.id})).statusCode,409);
  assert.equal(tables.market_shops.length,0);
 });
+
+async function seedReview(patch={}){
+ const result=await call('quote',{name:'Old shop',months:1});
+ assert.equal(result.statusCode,200,result.body);
+ const row=tables.market_rental_intents.find(r=>r.id===JSON.parse(result.body).intent.id);
+ Object.assign(row,patch);return row;
+}
+test('completed one-BONEZ pilot rental does not block a verified session or change its receipt',async()=>{
+ setup();await login();const row=await seedReview({state:'activated',amount_atomic:'1000000',policy_version:'pilot-test',tx_hash:'a'.repeat(64)});
+ tables.market_shops.push({id:randomUUID(),owner_wallet:address,name:'Pilot shop',booth_number:3,access_status:'active',rental_expires_at:'2099-01-01T00:00:00Z'});
+ const result=await call('me');assert.equal(result.statusCode,200,result.body);
+ const data=JSON.parse(result.body);assert.equal(data.address,address);assert.equal(data.shop.booth_number,3);
+ assert.equal(data.intent.state,'activated');assert.equal(data.intent.amountBonez,'1');assert.equal(data.intent.amountAtomic,'1000000');assert.equal(data.intent.currentPolicy,false);assert.equal(data.intent.canPay,false);
+ assert.equal(row.tx_hash,'a'.repeat(64));assert.equal(row.state,'activated');
+ assert.equal((await call('confirm',{id:row.id})).statusCode,200);
+});
+test('stale unpaid review is retired and a new review uses the current rate',async()=>{
+ setup();await login();const old=await seedReview({amount_atomic:'1000000',policy_version:'pilot-test'});
+ const result=await call('me');assert.equal(result.statusCode,200,result.body);
+ const data=JSON.parse(result.body);assert.equal(data.intent,null);assert.equal(data.resetReview,true);assert.equal(old.state,'cancelled');
+ const next=await call('quote',{name:'New shop',months:1});assert.equal(next.statusCode,200,next.body);
+ const intent=JSON.parse(next.body).intent;assert.notEqual(intent.id,old.id);assert.equal(intent.amountBonez,'60000');assert.equal(intent.currentPolicy,true);
+});
+test('quote can replace an old unsigned review even without first loading the session',async()=>{
+ setup();await login();const old=await seedReview({terms_version:'old-terms'});
+ const next=await call('quote',{name:'Fresh shop',months:6});assert.equal(next.statusCode,200,next.body);
+ assert.equal(old.state,'cancelled');assert.equal(JSON.parse(next.body).intent.months,6);
+});
+test('expired reviews clear automatically while a current unpaid review stays usable',async()=>{
+ setup();await login();const row=await seedReview();
+ assert.equal(JSON.parse((await call('me')).body).intent.id,row.id);assert.equal(row.state,'review');
+ row.expires_at=new Date(Date.now()-1000).toISOString();
+ const data=JSON.parse((await call('me')).body);assert.equal(data.intent,null);assert.equal(data.resetReview,true);assert.equal(row.state,'cancelled');
+});
+test('outdated unpaid review can still be cancelled explicitly',async()=>{
+ setup();await login();const row=await seedReview({amount_atomic:'1',policy_version:'old'});
+ assert.equal((await call('cancel',{id:row.id})).statusCode,200);assert.equal(row.state,'cancelled');
+});
+test('submitted legacy payment is kept visible and cannot become a second payment',async()=>{
+ setup();await login();const row=await seedReview({state:'submitted',amount_atomic:'1000000',policy_version:'pilot-test',tx_hash:'b'.repeat(64)});
+ const result=await call('me');assert.equal(result.statusCode,200,result.body);
+ const intent=JSON.parse(result.body).intent;assert.equal(intent.txHash,row.tx_hash);assert.equal(intent.amountBonez,'1');assert.equal(intent.canPay,false);
+ assert.equal((await call('cancel',{id:row.id})).statusCode,409);
+ assert.equal((await call('confirm',{id:row.id})).statusCode,409);
+ const next=JSON.parse((await call('quote',{name:'Other shop',months:6})).body).intent;
+ assert.equal(next.id,row.id);assert.equal(next.canPay,false);assert.equal(tables.market_rental_intents.length,1);assert.equal(row.state,'submitted');
+});
+test('a payment submitted concurrently with stale-review cleanup is never cancelled',async()=>{
+ setup();await login();const row=await seedReview({policy_version:'old'}),original=globalThis.fetch;
+ globalThis.fetch=async(url,options={})=>{
+  if(options.method==='PATCH'&&String(url).includes('market_rental_intents?id='))Object.assign(row,{state:'submitted',tx_hash:'c'.repeat(64)});
+  return original(url,options);
+ };
+ const result=await call('me');assert.equal(result.statusCode,200,result.body);
+ assert.equal(row.state,'submitted');assert.equal(row.tx_hash,'c'.repeat(64));assert.equal(JSON.parse(result.body).intent.id,row.id);
+});
