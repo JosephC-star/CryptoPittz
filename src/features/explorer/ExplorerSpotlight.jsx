@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { loadRandomSpotlight } from '../dawg-pound/randomSpotlight.mjs';
 import { getNftImage } from '../../utils/nftUtils';
 
-export default function ExplorerSpotlight() {
+export default function ExplorerSpotlight({ onSelect }) {
   const [pittz, setPittz] = useState([]);
 
   useEffect(() => {
@@ -28,8 +28,9 @@ export default function ExplorerSpotlight() {
     return () => controller.abort();
   }, []);
 
-  return <div className="explorer-entrance-pack" aria-hidden="true">
-    {pittz.length ? pittz.map((nft, index) => <img key={nft.identifier} src={getNftImage(nft)} alt="" onError={event => { const fallback = '/images/pittz-' + ['01', '04', '08'][index] + '.jpg'; if (!event.currentTarget.src.endsWith(fallback)) event.currentTarget.src = fallback; }} />)
-      : ['01', '04', '08'].map(id => <img key={id} src={'/images/pittz-' + id + '.jpg'} alt="" />)}
+  return <div className="explorer-entrance-pack explorer-spotlight">
+    {pittz.length ? pittz.map((nft, index) => <button type="button" key={nft.identifier} aria-label={'View ' + (nft.name || nft.identifier)} onClick={() => onSelect(nft, pittz)}>
+      <img src={getNftImage(nft)} alt="" onError={event => { const fallback = '/images/pittz-' + ['01', '04', '08'][index] + '.jpg'; if (!event.currentTarget.src.endsWith(fallback)) event.currentTarget.src = fallback; }} />
+    </button>) : ['01', '04', '08'].map(id => <span key={id} aria-hidden="true"><img src={'/images/pittz-' + id + '.jpg'} alt="" /></span>)}
   </div>;
 }

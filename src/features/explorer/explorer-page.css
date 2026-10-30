@@ -17,3 +17,13 @@
 .explorer-page-links a{color:#9ff5ff;text-decoration:none;font-weight:700;font-size:13px}
 @media(max-width:650px){.explorer-home-entrance,.explorer-page-intro{grid-template-columns:minmax(0,1fr);gap:12px;padding:24px}.explorer-entrance-pack{max-width:280px;width:100%;justify-self:center}.explorer-home-entrance .explorer-entrance-pack{display:none}.explorer-page-intro .explorer-entrance-pack img{max-width:100px}.explorer-page-intro{margin-top:12px}.explorer-page-links{gap:14px}}
 @media(prefers-reduced-motion:reduce){.explorer-home-entrance{transition:none}}
+
+.explorer-spotlight>button,.explorer-spotlight>span{display:block;width:38%;max-width:145px;flex-shrink:0;aspect-ratio:1;padding:0;border:0;background:none;border-radius:14px;transform:rotate(-12deg)}
+.explorer-spotlight>button{cursor:pointer;transition:filter .2s}
+.explorer-spotlight>button+button,.explorer-spotlight>span+span{margin-left:-12%;transform:translateY(-10px) rotate(3deg)}
+.explorer-spotlight>button:last-child,.explorer-spotlight>span:last-child{transform:rotate(14deg)}
+.explorer-spotlight>button img,.explorer-spotlight>span img{display:block;width:100%;max-width:none;transform:none!important;margin:0}
+.explorer-spotlight>button:hover{filter:brightness(1.15);z-index:1}
+.explorer-spotlight>button:focus-visible{outline:3px solid #9ff5ff;outline-offset:5px;z-index:2}
+@media(max-width:650px){.explorer-spotlight>button,.explorer-spotlight>span{max-width:100px}}
+@media(prefers-reduced-motion:reduce){.explorer-spotlight>button{transition:none}}

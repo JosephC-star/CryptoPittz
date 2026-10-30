@@ -42,7 +42,7 @@ export default function ExplorerControls({
 
         <div>
           <span>Collection ID</span>
-          <strong>{activeCollection.collection}</strong>
+          <strong>{activeCollection.collection === "both" ? "PITTZ-1a4c2d + PITTZVICE-c3ec94" : activeCollection.collection}</strong>
         </div>
 
         {indexLoading && (

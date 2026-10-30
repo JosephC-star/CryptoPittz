@@ -17,19 +17,18 @@ export default function useOoxListings(collection) {
         setError("");
         setListings([]);
 
-        const response = await fetch(
-          `/.netlify/functions/oox-listings?collection=${encodeURIComponent(collection)}`,
-          { signal: controller.signal },
-        );
-
-        if (!response.ok) throw new Error("Unable to load OOX listings");
-
-        const data = await response.json();
-        const rows = Array.isArray(data.listings) ? data.listings : [];
+        const ids = collection === 'both' ? ['PITTZ-1a4c2d', 'PITTZVICE-c3ec94'] : [collection];
+        const data = await Promise.all(ids.map(async id => {
+          const response = await fetch(`/.netlify/functions/oox-listings?collection=${encodeURIComponent(id)}`, { signal: controller.signal });
+          if (!response.ok) throw new Error("Unable to load OOX listings");
+          return response.json();
+        }));
+        if (controller.signal.aborted) return;
+        const rows = data.flatMap(result => Array.isArray(result.listings) ? result.listings : []);
         setListings(rows);
         const identified = await identifyListingMarkets(rows, controller.signal);
         if (!controller.signal.aborted) setListings(identified);
-        setUpdatedAt(data.updatedAt || "");
+        setUpdatedAt(data[0]?.updatedAt || "");
       } catch (loadError) {
         if (loadError.name === "AbortError") return;
         console.error("OOX listing lookup failed:", loadError);
