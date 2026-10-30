@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { BONEZ_DEXSCREENER_URL, BONEZ_TOKEN_ID } from "../../config/collections";
 import { buildBonezChart } from "../../utils/chartUtils";
 
-function useBonezMarket(enabled = true) {
+function useBonezMarket(enabled = true, { historyEnabled = true } = {}) {
   const [market, setMarket] = useState(null);
   const [marketLoading, setMarketLoading] = useState(true);
   const [marketError, setMarketError] = useState("");
@@ -16,7 +16,7 @@ function useBonezMarket(enabled = true) {
   const [chartRange, setChartRange] = useState("24h");
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !historyEnabled) return;
     let cancelled = false;
 
     async function fetchDailyHistory() {
@@ -39,7 +39,7 @@ function useBonezMarket(enabled = true) {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [enabled]);
+  }, [enabled, historyEnabled]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -101,7 +101,7 @@ function useBonezMarket(enabled = true) {
   }, [enabled]);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !historyEnabled) return;
     let cancelled = false;
 
     async function fetchHourlyHistory() {
@@ -128,7 +128,7 @@ function useBonezMarket(enabled = true) {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [enabled]);
+  }, [enabled, historyEnabled]);
 
   const activeHistory =
     chartRange === "24h"
