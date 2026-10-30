@@ -28,7 +28,7 @@ async function recheck(r,shop){
 }
 export async function handler(event){try{
  const origin=requestOrigin(event),route=event.queryStringParameters?.route||'me';
- const methods={config:'GET',me:'GET',challenge:'POST',verify:'POST',logout:'POST',quote:'POST',cancel:'POST',reserve:'POST',confirm:'POST',activate:'POST'};
+ const methods={config:'GET',me:'GET',benefit:'GET',challenge:'POST',verify:'POST',logout:'POST',quote:'POST',cancel:'POST',reserve:'POST',confirm:'POST',activate:'POST'};
  if(!methods[route])fail(404,'Unknown rental action.');if(event.httpMethod!==methods[route])fail(405,'Unsupported request method.');
  if(event.httpMethod==='POST'&&(event.headers?.origin!==origin||!event.headers?.['content-type']?.startsWith('application/json')))fail(403,'Open rental actions from the market.');
  if(route==='config')return response(200,{enabled:enabled(),benefitsEnabled:benefitsEnabled(),keyRequired:false});
@@ -49,6 +49,10 @@ export async function handler(event){try{
   const token=randomBytes(32).toString('hex');await db('market_rental_sessions','POST',{wallet_address:c.wallet_address,origin,token_hash:hash(origin+token),expires_at:new Date(Date.now()+3600000).toISOString()});return response(200,{address:c.wallet_address},{'Set-Cookie':cookie(token)});
  }
  const auth=await identity(event,origin),address=auth.wallet_address,shop=await owner(address);
+ if(route==='benefit'){
+  const benefit=await currentBenefit(shop,address);
+  return response(200,{benefit,plans:[1,6,12].map(months=>priceFor(months,benefit.tier)),benefitsEnabled:benefitsEnabled()});
+ }
  if(route==='logout'){await db('market_rental_sessions?id=eq.'+auth.id,'PATCH',{revoked_at:new Date().toISOString()});return response(200,{signedOut:true},{'Set-Cookie':cookie('',0)});}
  if(route==='me'){
   const rows=await db('market_rental_intents?wallet_address=eq.'+address+'&state=in.(review,submitted,activated)&order=created_at.desc&limit=1');return response(200,{address,shop:shop?{name:shop.name,booth_number:shop.booth_number,access_status:shop.access_status,rental_expires_at:shop.rental_expires_at}:null,intent:rows.length?publicIntent(rows[0]):null});

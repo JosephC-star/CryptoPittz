@@ -45,3 +45,26 @@ test('only a matching successful mainnet receipt reaches activation',async()=>{s
 test('rental terms require an explicit current acknowledgement',async()=>{setup();await login();for(const patch of [{acceptTerms:false},{termsVersion:'old'}]){const r=await call('quote',{name:'Shop',months:1,...patch});assert.equal(r.statusCode,400);assert.equal(tables.market_rental_intents.length,0);}});
 
 test('expired shop can sign into rental renewal for its existing booth',async()=>{setup();tables.market_shops.push({id:randomUUID(),owner_wallet:address,name:'Expired shop',booth_number:4,access_status:'active',rental_expires_at:'2026-01-01T00:00:00Z'});await login();assert.equal(JSON.parse((await call('me')).body).shop.booth_number,4);const review=await call('quote',{months:1});assert.equal(review.statusCode,200,review.body);assert.equal(JSON.parse(review.body).intent.shopName,'Expired shop');});
+
+test('key preview requires a verified wallet and never creates a rental review',async()=>{
+ setup();assert.equal((await call('benefit')).statusCode,401);
+ await login();const response=await call('benefit');assert.equal(response.statusCode,200,response.body);
+ const data=JSON.parse(response.body);assert.equal(data.benefit.tier,'standard');
+ assert.deepEqual(data.plans.map(p=>p.amountBonez),['60000','330000','600000']);
+ assert.equal(tables.market_rental_intents.length,0);assert.equal(tables.market_shops.length,0);
+});
+test('key preview shows free Diamond rent and half-price Meta rent before a review',async()=>{
+ setup();await login();keyType='Diamond';
+ let data=JSON.parse((await call('benefit')).body);assert.equal(data.benefit.tier,'diamond');
+ assert.deepEqual(data.plans.map(p=>p.amountBonez),['0','0','0']);
+ keyType='Hodler';data=JSON.parse((await call('benefit')).body);assert.equal(data.benefit.tier,'meta');
+ assert.deepEqual(data.plans.map(p=>p.amountBonez),['30000','165000','300000']);
+ assert.equal(tables.market_rental_intents.length,0);
+});
+test('previewed benefits do not bypass current ownership checks at activation',async()=>{
+ setup();process.env.MARKET_KEY_BENEFITS_ENABLED='true';await login();keyType='Diamond';
+ assert.equal(JSON.parse((await call('benefit')).body).benefit.tier,'diamond');
+ const review=JSON.parse((await call('quote',{name:'Free shop',months:1})).body).intent;
+ keyType=null;assert.equal((await call('activate',{id:review.id})).statusCode,409);
+ assert.equal(tables.market_shops.length,0);
+});

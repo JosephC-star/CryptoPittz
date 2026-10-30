@@ -5,8 +5,7 @@ import MarketFooter from './MarketFooter';
 import { useEffect, useRef, useState } from 'react';
 import { UnlockPanelManager } from '@multiversx/sdk-dapp/out/managers/UnlockPanelManager';
 import { useGetAccount } from '@multiversx/sdk-dapp/out/react/account/useGetAccount';
-import { getAccountProvider } from '@multiversx/sdk-dapp/out/providers/helpers/accountProvider';
-import { Message } from '@multiversx/sdk-dapp/out/lib/sdkCore';
+import {signMerchantMessage} from '../../utils/signMerchantMessage';
 import './merchant.css';
 import AlertSettings from './AlertSettings';
 import ProductPhoto from './ProductPhoto';
@@ -51,9 +50,7 @@ export default function MerchantStudio() {
     const address=account.address;if(!address)throw Error('Connect your wallet first.');
     const challenge=await api('challenge',{address});
     setMessage('Approve the merchant sign-in message in your wallet. If needed, open xPortal manually. No payment is requested.');
-    const signed=await getAccountProvider().signMessage(new Message({data:new TextEncoder().encode(challenge.message)}));
-    if(!signed?.signature)throw Error('No signature received. You can try signing in again.');
-    const signature=typeof signed.signature==='string'?signed.signature.replace(/^0x/,''):Array.from(signed.signature,b=>b.toString(16).padStart(2,'0')).join('');
+    const signature=await signMerchantMessage(address,challenge.message);
     const result=await api('verify',{id:challenge.id,nonce:challenge.nonce,signature});
     const inventory=await api('products');setShop(result.shop);setProducts(inventory.products);setMessage('Wallet verified. Welcome to your backroom.');
   }catch(error){setMessage(errorText(error));}finally{setBusy(false)}}
