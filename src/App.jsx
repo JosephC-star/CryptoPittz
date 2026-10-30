@@ -18,7 +18,7 @@ import ExplorerPagination from "./components/explorer/ExplorerPagination";
 import NftCard from "./components/nft/NftCard";
 import NftDetailModal from "./components/nft/NftDetailModal";
 import "./features/bonez-burn/pittensor.css";
-import BonezPriceCard from "./features/bonez-market/BonezPriceCard";
+import NetworkBonezMarket from "./features/bonez-market/NetworkBonezMarket";
 import useExplorerData from "./features/explorer/useExplorerData";
 import useOoxListings from "./features/explorer/useOoxListings";
 import "./features/my-pittz/my-pittz-page.css";
@@ -783,22 +783,7 @@ function App({ explorerPage: isExplorerPage = false }) {
                   </div>
                 </div>
 
-                <div className="pittz-network-status">
-                  <div>
-                    <span>Collection Explorer</span>
-                    <strong>OPEN →</strong>
-                  </div>
-
-                  <div>
-                    <span>BONEZ Utility</span>
-                    <strong>ACTIVE</strong>
-                  </div>
-
-                  <div>
-                    <span>Randomizer</span>
-                    <strong>ONLINE</strong>
-                  </div>
-                </div>
+                <NetworkBonezMarket />
 
                 <div className="pittz-network-scan" />
               </div>
@@ -827,7 +812,6 @@ function App({ explorerPage: isExplorerPage = false }) {
             <span className="pittensor-entrance-steam" aria-hidden="true">{[12, 48, 82].map((x, i) => <i key={x} style={{ '--steam-x': `${x}%`, '--steam-drift': `${i % 2 ? 30 : -24}px`, '--steam-delay': `${-i * 4}s` }} />)}</span>
           </a>
 
-          <BonezPriceCard />
           <section id="my-pittz" aria-label="My Pittz entrance"><a className="pack-home-entrance" href="/my-pittz/"><div className="pack-entrance-copy"><small>YOUR WALLET. YOUR PACK.</small><h2>My Pittz</h2><p>Browse your Original and Vice Pittz, check earnings, manage listings and offers, or send a Pittz to another wallet.</p><strong>Enter My Pittz →</strong></div><PackCover address={account.address} nfts={nfts}/></a></section>
           <section id="dawg-pound-entrance" aria-label="Pittz Dawg Pound">
             <a className="dawg-home-entrance" href="/dawg-pound/"><div className="dawg-entrance-copy"><small>THE PACK’S COLLECTOR DISTRICT</small><h2>Pittz Dawg Pound</h2><p>Find your next pack member. Browse Pittz for sale and collection offers.</p><strong>Enter Pound Town →</strong></div><div className="dawg-entrance-art" aria-hidden="true"/></a>
