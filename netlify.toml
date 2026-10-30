@@ -198,6 +198,18 @@
   force = true
 
 [[redirects]]
+  from = "/community-support"
+  to = "/community-support.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/community-support/"
+  to = "/community-support.html"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/explorer"
   to = "/explorer.html"
   status = 200

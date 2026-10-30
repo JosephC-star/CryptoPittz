@@ -2,6 +2,7 @@ import {readFile,writeFile} from 'node:fs/promises';
 import {pageShareHtml} from '../shared/page-share.mjs';
 const root=await readFile('dist/index.html','utf8'),origin='https://thepittzstop.com';
 for(const [path,title,description,image,imageAlt] of [
+ ['community-support','The Back Booths · Pittz Flea Market','Buy BONEZ and meet the pack supporting the community.','/images/cryptopittz-logo.jpg','CryptoPittz community logo'],
  ['explorer','CryptoPittz Explorer · The PittzStop','Explore Original and Vice Pittz, discover rare traits, browse listings and make offers.','/images/cryptopittz-logo.jpg','CryptoPittz community logo'],
  ['my-pittz','My Pittz · The PittzStop','Your Original and Vice collection, earnings, listings, offers and transfers.','/images/cryptopittz-logo.jpg','CryptoPittz community logo'],
  ['collector','Collector’s Pack · The PittzStop','Browse a collector’s wallet-held Original and Vice Pittz and make direct offers.','/images/cryptopittz-logo.jpg','CryptoPittz community logo'],

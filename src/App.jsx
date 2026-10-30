@@ -13,6 +13,7 @@ import { getAccountProvider } from "@multiversx/sdk-dapp/out/providers/helpers/a
 
 
 import ExplorerControls from "./components/explorer/ExplorerControls";
+import ExplorerSpotlight from "./features/explorer/ExplorerSpotlight";
 import ExplorerPagination from "./components/explorer/ExplorerPagination";
 import NftCard from "./components/nft/NftCard";
 import NftDetailModal from "./components/nft/NftDetailModal";
@@ -147,6 +148,9 @@ function App({ explorerPage: isExplorerPage = false }) {
 
   function changeExplorerCollection(collection) {
     setExplorerCollection(collection);
+    const url = new URL(window.location.href);
+    url.searchParams.set("collection", collection);
+    window.history.replaceState(null, "", url);
     resetExplorerFilters();
   }
 
@@ -285,7 +289,7 @@ function App({ explorerPage: isExplorerPage = false }) {
     const bloodlines = {};
     const types = {};
 
-    explorerNfts.forEach((nft) => {
+    explorerAllNfts.forEach((nft) => {
       const stats = getPittzStats(nft.attributes);
 
       if (stats.bloodline) {
@@ -866,7 +870,7 @@ function App({ explorerPage: isExplorerPage = false }) {
           {isExplorerPage && <>
           <section className="explorer-page-intro" aria-labelledby="explorer-page-title">
             <div><a href="/">← Back to The PittzStop</a><small>THE PACK’S COLLECTION ARCHIVE</small><h1 id="explorer-page-title">Find your kind of Pittz.</h1><p>Original or Vice. Rare traits or pure attitude. Explore the whole pack—no wallet required to browse.</p><div className="explorer-page-links"><a href="/my-pittz/">My Pittz →</a><a href="/dawg-pound/">Pittz for sale & collection offers →</a></div></div>
-            <div className="explorer-entrance-pack" aria-hidden="true">{['01','04','08'].map(id=><img key={id} src={'/images/pittz-'+id+'.jpg'} alt=""/>)}</div>
+            <ExplorerSpotlight onSelect={openNftDetails} />
           </section>
           <section id="explorer" ref={explorerHeadingRef}>
             <div className="section-title explorer-heading">
@@ -885,9 +889,14 @@ function App({ explorerPage: isExplorerPage = false }) {
             <div id="explorer-content" hidden={explorerHidden} className={explorerExpanded?"is-expanded":"is-compact"}>
 
             <div className="explorer-tabs">
+              <button type="button" className={`explorer-tab ${explorerCollection === "both" ? "active" : ""}`} aria-pressed={explorerCollection === "both"} onClick={() => changeExplorerCollection("both")}>
+                Original + Vice
+                <span>{originalTotal && viceTotal ? (originalTotal + viceTotal).toLocaleString() : "..."}</span>
+              </button>
               <button
                 type="button"
                 className={`explorer-tab ${explorerCollection === "original" ? "active" : ""}`}
+                aria-pressed={explorerCollection === "original"}
                 onClick={() => changeExplorerCollection("original")}
               >
                 Original Pittz
@@ -897,6 +906,7 @@ function App({ explorerPage: isExplorerPage = false }) {
               <button
                 type="button"
                 className={`explorer-tab ${explorerCollection === "vice" ? "active" : ""}`}
+                aria-pressed={explorerCollection === "vice"}
                 onClick={() => changeExplorerCollection("vice")}
               >
                 Vice Pittz
