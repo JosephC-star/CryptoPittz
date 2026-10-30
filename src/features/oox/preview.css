@@ -68,3 +68,10 @@
 .pitt-buy-details .btn{font-size:12px;padding:9px 12px;min-height:40px}
 .pitt-buy-compact .swap-review{font-size:12px;overflow-wrap:anywhere}
 .pitt-buy-compact .swap-review h3{font-size:18px}
+.pitt-trade-panel.pitt-buy-compact{padding:12px;border-color:#bb75ff55;background:linear-gradient(125deg,#21182e,#101823)}
+.pitt-buy-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(96px,.7fr);gap:10px;align-items:stretch}
+.pitt-trade-panel.pitt-buy-compact .pitt-buy-row .oox-price{display:flex;align-items:center;margin:0;padding:10px 12px;border:1px solid #b984e24d;border-radius:11px;background:#ffffff04;font-size:clamp(17px,4.6vw,24px);min-width:0}
+.pitt-buy-row>.btn.primary{min-width:0;min-height:46px;padding:10px 12px;border:1px solid #c47aff66;border-radius:11px;background:linear-gradient(110deg,#28dfd925,#ae52ee35);color:#f0d7ff;font-size:14px;font-weight:800;justify-content:center;white-space:normal}
+.pitt-buy-row>.btn.primary:focus-visible{outline:2px solid #6de2d8;outline-offset:3px}
+.pitt-buy-compact .pitt-buy-details{margin-top:8px;padding-top:6px}
+.pitt-trade-panel.pitt-buy-compact h3{font-size:18px}

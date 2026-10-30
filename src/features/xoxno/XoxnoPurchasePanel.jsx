@@ -59,15 +59,16 @@ export default function XoxnoPurchasePanel({nft,onAvailabilityChanged}){
  if(!known&&!purchase&&!submitted)return null;
  return <section className="oox-preview pitt-trade-panel pitt-buy-compact" aria-label="XOXNO purchase">
   {confirmed&&purchase&&<PurchaseCelebration nft={nft} hash={purchase.hash}/>}
-  <div className="pitt-trade-badges"><span className="pitt-sale-tag">{confirmed?'YOUR PITT':'FOR SALE'}</span><span className="pitt-marketplace-tag" aria-label="Marketplace: XOXNO">XOXNO</span></div>
-  {listing&&<p className="oox-price"><strong title={`${amount(listing.price)} EGLD`}>{compactNftPrice(listing.price,true)} EGLD</strong></p>}
+  <div className="pitt-buy-row">
+    {listing&&<p className="oox-price"><strong title={`${amount(listing.price)} EGLD`}>{compactNftPrice(listing.price,true)} EGLD</strong></p>}
+    {canBuy&&!submitted&&<button className="btn primary" disabled={!account.address||busy||import.meta.env.VITE_OOX_TRANSACTIONS!=='true'} onClick={reviewPurchase}>{busy?'Checking…':'🐾 Buy →'}</button>}
+  </div>
   {!account.address&&<p>Connect your wallet to buy this Pittz.</p>}
   {listing?.seller===account.address&&<p>This is your XOXNO listing.</p>}
   {canBuy&&!submitted&&import.meta.env.VITE_OOX_TRANSACTIONS!=='true'&&<p>Purchases are disabled in this preview.</p>}
-  {canBuy&&!submitted&&<button className="btn primary" disabled={!account.address||busy||import.meta.env.VITE_OOX_TRANSACTIONS!=='true'} onClick={reviewPurchase}>🐾 Buy →</button>}
   {review&&review.address===account.address&&<div className="swap-review"><h3>Confirm purchase</h3><p>{nft.name} · {nft.identifier}</p><p>Price: <strong>{amount(review.spec.value)} EGLD</strong></p><p>Maximum network fee allowance: <strong>{amount(review.feeCap)} EGLD</strong>. Your wallet shows the exact transaction.</p><p>Marketplace: XOXNO · MultiversX mainnet</p><button className="btn primary" disabled={busy} onClick={confirm}>Sign &amp; send purchase</button><button className="btn" disabled={busy} onClick={()=>setReview(null)}>Cancel review</button></div>}
   {message!=='Fixed-price EGLD listing available on XOXNO.'&&<p role="status" aria-live="polite">{message}</p>}
-  <details className="pitt-buy-details"><summary>Listing details</summary><p className="pitt-trade-note">Fixed-price EGLD listing on XOXNO. Review the price and network fee before approving in your wallet.</p>{!submitted&&<button className="btn" disabled={busy} onClick={()=>setRefresh(x=>x+1)}>Refresh XOXNO listing</button>}</details>
+  <details className="pitt-buy-details"><summary>XOXNO · Listing details</summary><p className="pitt-trade-note">Fixed-price EGLD listing on XOXNO. Review the price and network fee before approving in your wallet.</p>{!submitted&&<button className="btn" disabled={busy} onClick={()=>setRefresh(x=>x+1)}>Refresh XOXNO listing</button>}</details>
   {purchase&&!confirmed&&<><a href={`https://explorer.multiversx.com/transactions/${purchase.hash}`} target="_blank" rel="noreferrer">View transaction ↗</a><button className="btn" onClick={()=>setCheckAttempt(x=>x+1)}>Check purchase status</button></>}
  </section>;
 }
