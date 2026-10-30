@@ -791,15 +791,7 @@ function App({ explorerPage: isExplorerPage = false }) {
             </div>
           </div>
 
-          <a id="arcade" className="playground-release-entrance" href={`/playground/${account.address ? `?wallet=${encodeURIComponent(account.address)}` : ''}#/playground`}>
-            <div>
-              <span className="playground-release-status">THE PACK’S NEON YARD</span>
-              <h2>Pittz Playground</h2>
-              <p>Nine neon cabinets. One pack. Chase high scores, collect trophies, and stay for the vibe.</p>
-              <span className="btn primary">Enter the Playground →</span>
-            </div>
-            <div className="playground-release-art neon-yard-entrance-art" aria-hidden="true"><i className="neon-yard-entrance-glint" /></div>
-          </a>
+          <section id="my-pittz" aria-label="My Pittz entrance"><a className="pack-home-entrance" href="/my-pittz/"><div className="pack-entrance-copy"><small>YOUR WALLET. YOUR PACK.</small><h2>My Pittz</h2><p>Browse your Original and Vice Pittz, check earnings, manage listings and offers, or send a Pittz to another wallet.</p><strong>Enter My Pittz →</strong></div><PackCover address={account.address} nfts={nfts}/></a></section>
 
           <a className="financial-entrance" href="/financial-district/">
             <div className="financial-entrance-copy"><small>THE PACK’S GOLDEN QUARTER</small><h2>Pittz Financial District</h2><p>Swap 16 currencies, add BONEZ + WEGLD liquidity, and stake BONEZ—all through your connected wallet.</p><span>You earn, we burn!</span><strong>Enter the Financial District →</strong></div>
@@ -812,7 +804,15 @@ function App({ explorerPage: isExplorerPage = false }) {
             <span className="pittensor-entrance-steam" aria-hidden="true">{[12, 48, 82].map((x, i) => <i key={x} style={{ '--steam-x': `${x}%`, '--steam-drift': `${i % 2 ? 30 : -24}px`, '--steam-delay': `${-i * 4}s` }} />)}</span>
           </a>
 
-          <section id="my-pittz" aria-label="My Pittz entrance"><a className="pack-home-entrance" href="/my-pittz/"><div className="pack-entrance-copy"><small>YOUR WALLET. YOUR PACK.</small><h2>My Pittz</h2><p>Browse your Original and Vice Pittz, check earnings, manage listings and offers, or send a Pittz to another wallet.</p><strong>Enter My Pittz →</strong></div><PackCover address={account.address} nfts={nfts}/></a></section>
+          <a id="arcade" className="playground-release-entrance" href={`/playground/${account.address ? `?wallet=${encodeURIComponent(account.address)}` : ''}#/playground`}>
+            <div>
+              <span className="playground-release-status">THE PACK’S NEON YARD</span>
+              <h2>Pittz Playground</h2>
+              <p>Nine neon cabinets. One pack. Chase high scores, collect trophies, and stay for the vibe.</p>
+              <span className="btn primary">Enter the Playground →</span>
+            </div>
+            <div className="playground-release-art neon-yard-entrance-art" aria-hidden="true"><i className="neon-yard-entrance-glint" /></div>
+          </a>
           <section id="dawg-pound-entrance" aria-label="Pittz Dawg Pound">
             <a className="dawg-home-entrance" href="/dawg-pound/"><div className="dawg-entrance-copy"><small>THE PACK’S COLLECTOR DISTRICT</small><h2>Pittz Dawg Pound</h2><p>Find your next pack member. Browse Pittz for sale and collection offers.</p><strong>Enter Pound Town →</strong></div><div className="dawg-entrance-art" aria-hidden="true"/></a>
           </section>
