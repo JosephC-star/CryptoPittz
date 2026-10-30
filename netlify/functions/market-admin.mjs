@@ -75,3 +75,5 @@ export async function handler(event){try{
   }
   fail(404,'Unknown admin action.');
 }catch(error){return response(error.status||503,{error:error.status?error.message:'Market moderation is unavailable. Check the admin setup or refresh and try again.'});}}
+
+export {session as adminSession};
