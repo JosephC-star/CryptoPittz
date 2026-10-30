@@ -13,6 +13,7 @@ import { getAccountProvider } from "@multiversx/sdk-dapp/out/providers/helpers/a
 
 
 import ExplorerControls from "./components/explorer/ExplorerControls";
+import ExplorerSpotlight from "./features/explorer/ExplorerSpotlight";
 import ExplorerPagination from "./components/explorer/ExplorerPagination";
 import NftCard from "./components/nft/NftCard";
 import NftDetailModal from "./components/nft/NftDetailModal";
@@ -866,7 +867,7 @@ function App({ explorerPage: isExplorerPage = false }) {
           {isExplorerPage && <>
           <section className="explorer-page-intro" aria-labelledby="explorer-page-title">
             <div><a href="/">← Back to The PittzStop</a><small>THE PACK’S COLLECTION ARCHIVE</small><h1 id="explorer-page-title">Find your kind of Pittz.</h1><p>Original or Vice. Rare traits or pure attitude. Explore the whole pack—no wallet required to browse.</p><div className="explorer-page-links"><a href="/my-pittz/">My Pittz →</a><a href="/dawg-pound/">Pittz for sale & collection offers →</a></div></div>
-            <div className="explorer-entrance-pack" aria-hidden="true">{['01','04','08'].map(id=><img key={id} src={'/images/pittz-'+id+'.jpg'} alt=""/>)}</div>
+            <ExplorerSpotlight />
           </section>
           <section id="explorer" ref={explorerHeadingRef}>
             <div className="section-title explorer-heading">
