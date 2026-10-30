@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { EXPLORER_COLLECTIONS } from "../../config/collections";
 
-export default function useExplorerData(pageSize) {
+export default function useExplorerData(pageSize, { enabled = true } = {}) {
   const [retryTick,setRetryTick]=useState(0),[indexError,setIndexError]=useState('');
   const [collection, setCollection] = useState(() => new URLSearchParams(window.location.search).get("collection") === "vice" ? "vice" : "original");
   const [page, setPage] = useState(0);
@@ -26,6 +26,7 @@ export default function useExplorerData(pageSize) {
   const activeCollection = EXPLORER_COLLECTIONS[collection];
 
   useEffect(() => {
+    if (!enabled) return;
     const controller = new AbortController();
 
     async function fetchCollectionPage() {
@@ -66,9 +67,10 @@ export default function useExplorerData(pageSize) {
 
     fetchCollectionPage();
     return () => controller.abort();
-  }, [activeCollection.collection, page, pageSize,retryTick]);
+  }, [enabled, activeCollection.collection, page, pageSize,retryTick]);
 
   useEffect(() => {
+    if (!enabled) return;
     let cancelled = false;
     let readyTimeout;
     const controller = new AbortController();
@@ -138,7 +140,7 @@ export default function useExplorerData(pageSize) {
       controller.abort();
       clearTimeout(readyTimeout);
     };
-  }, [activeCollection.collection, collection,retryTick]);
+  }, [enabled, activeCollection.collection, collection,retryTick]);
 
   useEffect(() => {
     const controller = new AbortController();

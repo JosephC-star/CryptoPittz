@@ -171,3 +171,15 @@
   to = "/my-pittz.html"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/explorer"
+  to = "/explorer.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/explorer/"
+  to = "/explorer.html"
+  status = 200
+  force = true

@@ -2,8 +2,9 @@ import PackCover from './features/my-pittz/PackCover';
 import {NeonWelcome,IntroDisclosure} from "./features/home/NeonWelcome";
 import {loginWithWallet,hasWalletBridge,usesDirectWalletConnection} from './utils/connectWallet';
 import WalletConnectModal from './components/WalletConnectModal';
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
+import "./features/explorer/explorer-page.css";
 import "./features/dawg-pound/entrance.css";
 
 import { UnlockPanelManager } from "@multiversx/sdk-dapp/out/managers/UnlockPanelManager";
@@ -26,7 +27,7 @@ import TraitFinder from "./features/traits/TraitFinder";
 import { getPittzStats, getPittzTraits } from "./utils/nftUtils";
 
 
-function App() {
+function App({ explorerPage: isExplorerPage = false }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileGroup, setMobileGroup] = useState(null);
   const [desktopGroup, setDesktopGroup] = useState(null);
@@ -85,7 +86,7 @@ function App() {
     setCollection: setExplorerCollection,
     setPage: setExplorerPage,
     viceTotal,
-  } = useExplorerData(explorerVisiblePageSize);
+  } = useExplorerData(explorerVisiblePageSize, { enabled: isExplorerPage });
   const {
     listingMap: explorerListingMap,
     loading: explorerListingsLoading,
@@ -106,7 +107,7 @@ function App() {
     chartRange: bonezChartRange,
     chartChange: bonezChartChange,
     setChartRange: setBonezChartRange,
-  } = useBonezMarket();
+  } = useBonezMarket(!isExplorerPage);
 
   UnlockPanelManager.init({
     loginHandler: () => {
@@ -118,6 +119,7 @@ function App() {
   }
 
   function navigateExplorer(target) {
+    if (!isExplorerPage) { window.location.assign("/explorer/" + (target === "traits" ? "#traits" : "")); return; }
     setExplorerHidden(false);
     setExplorerExpanded(true);
     setExplorerPage(0);
@@ -358,6 +360,13 @@ function App() {
 
   const explorerFilteredTotal = filteredExplorerNfts.length;
 
+  const initialTraitScroll = useRef(false);
+  useEffect(() => {
+    if (!isExplorerPage || initialTraitScroll.current || window.location.hash !== '#traits' || !explorerNfts.length) return;
+    const frame=requestAnimationFrame(()=>{const target=document.getElementById('traits');if(target){target.scrollIntoView({block:'start'});initialTraitScroll.current=true;}});
+    return()=>cancelAnimationFrame(frame);
+  }, [isExplorerPage, explorerNfts.length]);
+
   const explorerPageNfts = filteredExplorerNfts.slice(
     explorerPage * explorerVisiblePageSize,
     explorerPage * explorerVisiblePageSize + explorerVisiblePageSize,
@@ -372,7 +381,7 @@ function App() {
       <header className="site-header">
         <div className="container">
           <div className="nav">
-            <a className="brand" href="#top" aria-label="CryptoPittz Home">
+            <a className="brand" href={isExplorerPage ? "/" : "#top"} aria-label="CryptoPittz Home">
               <div className="logo logo-image" aria-hidden="true">
                 <img src="/images/cryptopittz-bonez.jpg" alt="" />
               </div>
@@ -401,12 +410,12 @@ function App() {
                   Explore <span className="caret" aria-hidden="true"></span>
                 </button>
                 <div className="dropdown" role="menu">
-                  <a href="#arcade" onClick={() => setDesktopGroup(null)}>Pittz Playground</a>
+                  <a href={isExplorerPage ? "/#arcade" : "#arcade"} onClick={() => setDesktopGroup(null)}>Pittz Playground</a>
                   <a href="/my-pittz/" onClick={() => setDesktopGroup(null)}>My Pittz</a>
                   <a href="/dawg-pound/" onClick={() => setDesktopGroup(null)}>Pittz Dawg Pound</a>
-                  <a href="#explorer" onClick={() => navigateExplorer("explorer")}>CryptoPittz Explorer</a>
-                  <a href="#traits" onClick={() => navigateExplorer("traits")}>Traits</a>
-                  <a href="#merch" onClick={() => setDesktopGroup(null)}>Pittz Flea Market</a>
+                  <a href="/explorer/" onClick={event => { if(isExplorerPage){event.preventDefault();navigateExplorer("explorer");} }}>CryptoPittz Explorer</a>
+                  <a href="/explorer/#traits" onClick={event => { if(isExplorerPage){event.preventDefault();navigateExplorer("traits");} }}>Traits</a>
+                  <a href={isExplorerPage ? "/#merch" : "#merch"} onClick={() => setDesktopGroup(null)}>Pittz Flea Market</a>
                 </div>
               </div>
 
@@ -424,7 +433,7 @@ function App() {
                 </button>
 
                 <div className="dropdown" role="menu">
-                  <a href="#join">CryptoPittz Ecosystem</a>
+                  <a href={isExplorerPage ? "/#join" : "#join"}>CryptoPittz Ecosystem</a>
                   <a href="/pittensor/">Pittensor →</a>
 
                   <a href="https://discord.gg/PP8S8DX9t" target="_blank" rel="noreferrer">
@@ -520,7 +529,7 @@ function App() {
               </button>
 
               <div className="mobile-links">
-                <a href="#arcade" onClick={closeMobileMenu}>
+                <a href={isExplorerPage ? "/#arcade" : "#arcade"} onClick={closeMobileMenu}>
                   Pittz Playground
                 </a>
 
@@ -530,15 +539,15 @@ function App() {
 
                 <a href="/dawg-pound/" onClick={closeMobileMenu}>Pittz Dawg Pound</a>
 
-                <a href="#explorer" onClick={() => navigateExplorer("explorer")}>
+                <a href="/explorer/" onClick={event => { if(isExplorerPage){event.preventDefault();navigateExplorer("explorer");} }}>
                   CryptoPittz Explorer
                 </a>
 
-                <a href="#traits" onClick={() => navigateExplorer("traits")}>
+                <a href="/explorer/#traits" onClick={event => { if(isExplorerPage){event.preventDefault();navigateExplorer("traits");} }}>
                   Traits
                 </a>
 
-                <a href="#merch" onClick={closeMobileMenu}>
+                <a href={isExplorerPage ? "/#merch" : "#merch"} onClick={closeMobileMenu}>
                   Pittz Flea Market
                 </a>
               </div>
@@ -554,7 +563,7 @@ function App() {
               </button>
 
               <div className="mobile-links">
-                <a href="#join" onClick={closeMobileMenu}>
+                <a href={isExplorerPage ? "/#join" : "#join"} onClick={closeMobileMenu}>
                   CryptoPittz Ecosystem
                 </a>
 
@@ -649,7 +658,7 @@ function App() {
             <div style={{ marginTop: "12px" }}>
               <a
                 className="btn primary"
-                href="#join"
+                href={isExplorerPage ? "/#join" : "#join"}
                 style={{ width: "100%" }}
                 onClick={closeMobileMenu}
               >
@@ -662,6 +671,7 @@ function App() {
 
       <main id="top">
         <div className="container">
+          {!isExplorerPage && <>
           <div className="hero">
             <div className="panel hero-copy-panel hero-neon-panel">
               <div className="hero-cosmic-bg" aria-hidden="true" />
@@ -786,8 +796,8 @@ function App() {
 
                 <div className="pittz-network-status">
                   <div>
-                    <span>Explorer Index</span>
-                    <strong>READY</strong>
+                    <span>Collection Explorer</span>
+                    <strong>OPEN →</strong>
                   </div>
 
                   <div>
@@ -846,6 +856,18 @@ function App() {
             <a className="dawg-home-entrance" href="/dawg-pound/"><div className="dawg-entrance-copy"><small>THE PACK’S COLLECTOR DISTRICT</small><h2>Pittz Dawg Pound</h2><p>Find your next pack member. Browse Pittz for sale and collection offers.</p><strong>Enter Pound Town →</strong></div><div className="dawg-entrance-art" aria-hidden="true"/></a>
           </section>
 
+          <section id="explorer-entrance" aria-label="CryptoPittz Explorer">
+            <a className="explorer-home-entrance" href="/explorer/">
+              <div><small>EVERY PITTZ. EVERY DETAIL.</small><h2>CryptoPittz Explorer</h2><p>Find your next favorite. Browse Original and Vice Pittz, hunt rare traits, and discover listings and offers.</p><strong>Enter the Explorer →</strong></div>
+              <div className="explorer-entrance-pack" aria-hidden="true">{['01','04','08'].map(id=><img key={id} src={'/images/pittz-'+id+'.jpg'} alt="" loading="lazy"/>)}</div>
+            </a>
+          </section>
+          </>}
+          {isExplorerPage && <>
+          <section className="explorer-page-intro" aria-labelledby="explorer-page-title">
+            <div><a href="/">← Back to The PittzStop</a><small>THE PACK’S COLLECTION ARCHIVE</small><h1 id="explorer-page-title">Find your kind of Pittz.</h1><p>Original or Vice. Rare traits or pure attitude. Explore the whole pack—no wallet required to browse.</p><div className="explorer-page-links"><a href="/my-pittz/">My Pittz →</a><a href="/dawg-pound/">Pittz for sale & collection offers →</a></div></div>
+            <div className="explorer-entrance-pack" aria-hidden="true">{['01','04','08'].map(id=><img key={id} src={'/images/pittz-'+id+'.jpg'} alt=""/>)}</div>
+          </section>
           <section id="explorer" ref={explorerHeadingRef}>
             <div className="section-title explorer-heading">
               <div>
@@ -1023,11 +1045,13 @@ function App() {
             </div>
               <div className="explorer-fold-footer">
                 <button type="button" className="explorer-fold-toggle" onClick={()=>{setExplorerExpanded(v=>!v);setExplorerPage(0);}}>{explorerExpanded?"Compact view · Show 40 per page":"Show 100 per page"}</button><button type="button" className="explorer-fold-toggle" aria-expanded={!explorerHidden} aria-controls="explorer-content" onClick={retractExplorer}>Retract Explorer ↑</button>
-                <span>Keep cruising to the Flea Market.</span>
+                <a href="/flea-market/">Visit the Flea Market →</a>
               </div>
             </div>
           </section>
 
+          </>}
+          {!isExplorerPage && <>
           <section id="merch" className="merch-coming-soon">
             <div className="merch-neon-banner flea-market-entrance">
               <div className="merch-copy">
@@ -1188,6 +1212,7 @@ function App() {
               </div>
             </div>
           </section>
+          </>}
         </div>
       </main>
 
