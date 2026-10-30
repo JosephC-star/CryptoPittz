@@ -4,29 +4,34 @@ import {adminSession} from './market-admin.mjs';
 import {readJsonRequest} from '../../server/json-request.mjs';
 import {supportMessage,verifiedPurchase} from '../../shared/support-purchase.mjs';
 import {supportHistoryQuery} from '../../shared/support-history.mjs';
+import {validSupportUsd} from '../../shared/support-denominations.mjs';
+import {issuePreset,readPreset,pricedPurchase} from '../../server/support-pricing.mjs';
 const scopeFor=origin=>origin.includes('deploy-preview-')?'preview':'live';
 async function chain(path){const r=await fetch('https://api.multiversx.com'+path,{signal:AbortSignal.timeout(15000)});if(!r.ok)fail(503,'Chain confirmation is temporarily unavailable. Try again shortly.');return r.json();}
 export async function handler(event){try{
  const origin=requestOrigin(event),scope=scopeFor(origin),route=event.queryStringParameters?.route||'booths';
- const methods={history:'GET',booths:'GET',board:'GET',image:'GET',record:'POST',edit:'POST',photo:'POST',clear:'POST'};
+ const methods={price:'GET',history:'GET',booths:'GET',board:'GET',image:'GET',record:'POST',edit:'POST',photo:'POST',clear:'POST'};
  if(!methods[route]||event.httpMethod!==methods[route])fail(405,'Unsupported request.');
  if(event.httpMethod==='POST'&&(event.headers?.origin!==origin||!event.headers?.['content-type']?.startsWith('application/json')))fail(403,'Open this action from the support room.');
  const body=readJsonRequest(event,route==='photo'?2900000:10000);
  if(route==='history'){await adminSession(event);let query;try{query=supportHistoryQuery(scope,event.queryStringParameters);}catch(e){fail(400,e.message);}const rows=await db(query);return response(200,{receipts:rows.slice(0,50),hasMore:rows.length>50});}
  const booth=Number(body.booth??event.queryStringParameters?.booth??1);if(![1,2].includes(booth))fail(400,'Choose a support booth.');
  const path='market_support_booths?scope=eq.'+scope+'&id=eq.'+booth;
+ if(route==='price'){if(!validSupportUsd(Number(event.queryStringParameters?.usd)))fail(400,'Choose $10 to $100 in $10 increments.');const economics=await chain('/economics');let preset;try{preset=issuePreset({origin,booth,usd:Number(event.queryStringParameters?.usd),price:Number(economics.price)},process.env.SUPABASE_SECRET_KEY);}catch(e){fail(400,e.message);}return response(200,{preset});}
  if(route==='booths'){const booths=await db('market_support_booths?scope=eq.'+scope+'&order=id.asc&select=id,title,description,image_path,updated_at');return response(200,{booths:booths.map(b=>({...b,image_url:b.image_path?'/.netlify/functions/market-support?route=image&booth='+b.id:null,image_path:undefined}))});}
  if(route==='board'){const offset=Number(event.queryStringParameters?.offset||0);if(!Number.isSafeInteger(offset)||offset<0||offset>100000)fail(400,'Invalid page.');const rows=await db('rpc/market_support_board','POST',{p_scope:scope,p_booth:booth,p_offset:offset});return response(200,{supporters:rows.slice(0,50),hasMore:rows.length>50});}
  if(route==='image'){const [b]=await db(path+'&select=image_path&limit=1');if(!b?.image_path?.startsWith(scope+'/'+booth+'/')||b.image_path.includes('..'))fail(404,'Picture unavailable.');const signed=await request('/storage/v1/object/sign/market-support-images/'+b.image_path,'POST',{expiresIn:300});const location=new URL('/storage/v1'+signed.signedURL,configuration().origin);if(location.origin!==configuration().origin)fail(503,'Picture unavailable.');return response(302,{}, {Location:location.href});}
  if(route==='record'){
   const address=wallet(body.address),hash=body.hash;if(typeof hash!=='string'||!/^[a-f0-9]{64}$/.test(hash)||typeof body.visible!=='boolean')fail(400,'Invalid receipt.');
-  if(!await validSignature(address,supportMessage({origin,booth,hash,address,visible:body.visible}),body.signature))fail(401,'Approve the receipt message in the purchasing wallet.');
+  let preset=null;if(body.pricingToken){try{preset=readPreset(body.pricingToken,{origin,booth},process.env.SUPABASE_SECRET_KEY);}catch(e){fail(400,e.message);}}
+  if(!await validSignature(address,supportMessage({origin,booth,hash,address,visible:body.visible,usd:preset?.usd}),body.signature))fail(401,'Approve the receipt message in the purchasing wallet.');
   const [existing]=await db('market_support_receipts?tx_hash=eq.'+hash+'&select=tx_hash,scope,booth_id&limit=1');
   if(existing){if(existing.scope!==scope||existing.booth_id!==booth)fail(409,'This purchase is already recorded at another booth.');return response(200,{recorded:true,hash});}
   let purchase;try{purchase=verifiedPurchase(await chain('/transactions/'+hash+'?withOperations=true'),hash,address);}catch(e){fail(422,e.message);}
-  const [b]=await db(path+'&select=cleared_at&limit=1');if(!b)fail(404,'Booth unavailable.');
+  const [b]=await db(path+'&select=cleared_at,preset_started_at&limit=1');if(!b)fail(404,'Booth unavailable.');
+  let pricing={};if(preset){try{pricing=pricedPurchase(preset,purchase);}catch(e){fail(422,e.message);}}else if(Date.parse(purchase.purchased_at)>=Date.parse(b.preset_started_at))fail(422,'This purchase needs its verified dollar-price receipt. Use one of the $10–$100 options.');
   let herotag=null;try{const a=await chain('/accounts/'+address);if(typeof a.username==='string'&&a.username.length<=100)herotag=a.username||null;}catch{/* ERD works without a herotag. */}
-  await db('market_support_receipts?on_conflict=tx_hash','POST',{tx_hash:hash,scope,booth_id:booth,wallet_address:address,herotag,public_name:body.visible,...purchase},{Prefer:'resolution=ignore-duplicates,return=minimal'});
+  await db('market_support_receipts?on_conflict=tx_hash','POST',{tx_hash:hash,scope,booth_id:booth,wallet_address:address,herotag,public_name:body.visible,...purchase,...pricing},{Prefer:'resolution=ignore-duplicates,return=minimal'});
   const [saved]=await db('market_support_receipts?tx_hash=eq.'+hash+'&select=scope,booth_id&limit=1');
   if(saved?.scope!==scope||saved?.booth_id!==booth)fail(409,'This purchase is already recorded at another booth.');
   return response(200,{recorded:true,hash});

@@ -1,7 +1,7 @@
 export const BONEZ = 'BONEZ-ff9a73';
 export const ROUTER = 'erd1qqqqqqqqqqqqqpgq360nakqgsp5zkmguptucpjy6n4n3du7e5snsd2swzq';
-export function supportMessage({origin,booth,hash,address,visible}) {
- return ['The PittzStop — BONEZ purchase receipt','Origin: '+origin,'Booth: '+booth,'Transaction: '+hash,'Wallet: '+address,'Public supporter name and BONEZ total: '+(visible?'yes':'no'),'Record my confirmed BONEZ purchase. No payment is requested by this signature.'].join('\n');
+export function supportMessage({origin,booth,hash,address,visible,usd}) {
+ return ['The PittzStop — BONEZ purchase receipt','Origin: '+origin,'Booth: '+booth,'Transaction: '+hash,'Wallet: '+address,'Public supporter name and '+(usd?'USD and BONEZ totals':'BONEZ total')+': '+(visible?'yes':'no'),...(usd?['Purchase budget (USD): $'+usd.toFixed(2)]:[]),'Record my confirmed BONEZ purchase. No payment is requested by this signature.'].join('\n');
 }
 export function verifiedPurchase(tx,hash,address) {
  if(!/^[a-f0-9]{64}$/.test(hash)||tx?.txHash!==hash||tx.sender!==address||tx.receiver!==ROUTER||tx.status!=='success'||tx.pendingResults)throw Error('This purchase is not fully confirmed yet. Try recording the receipt again shortly.');
