@@ -25,6 +25,31 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Content-Security-Policy = "frame-ancestors 'self'"
 
+# Keep alternate domains on the primary wallet and merchant origin.
+[[redirects]]
+  from = "https://cryptopittz.com/*"
+  to = "https://thepittzstop.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.cryptopittz.com/*"
+  to = "https://thepittzstop.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://cryptopittz.com/*"
+  to = "https://thepittzstop.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.cryptopittz.com/*"
+  to = "https://thepittzstop.com/:splat"
+  status = 301
+  force = true
+
 [[redirects]]
   from = "/collector"
   to = "/collector.html"
