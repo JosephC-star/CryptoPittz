@@ -1098,7 +1098,7 @@ function App({ explorerPage: isExplorerPage = false }) {
 
                       <a
                         className="btn"
-                        href="/?sale=listed&collection=vice#explorer"
+                        href="/dawg-pound/?collection=vice"
                       >
                         Vice Pittz for sale →
                       </a>

@@ -109,3 +109,13 @@
  .dawg-pound{background-size:auto,280px 293px,auto}
  .dawg-pound .dawg-hero:before{background-size:280px 293px;opacity:.34}
 }
+
+/* Use the complete trading artwork on phones, without the split-image gap. */
+@media(max-width:700px){
+ .dawg-pound .dawg-floor-heading{height:auto;min-height:78px;aspect-ratio:4/1;margin-bottom:12px}
+ .dawg-pound .dawg-floor-crew{background:url('/images/pound-town-trading-crew.webp') center/cover no-repeat}
+ .dawg-pound .dawg-floor-crew:before,.dawg-pound .dawg-floor-crew>span{display:none}
+ .dawg-pound .dawg-floor-heading-copy{padding:6px 3px;background:radial-gradient(ellipse,#10051baa,transparent 75%)}
+ .dawg-pound .dawg-floor-heading-copy>span{font-size:8px;letter-spacing:1px}
+ .dawg-pound .dawg-floor-heading-copy h2{font-size:clamp(16px,4.5vw,23px);margin:3px 0;line-height:1.15}
+}
