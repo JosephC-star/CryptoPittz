@@ -50,3 +50,33 @@ main .street-notes{display:grid;grid-template-columns:minmax(270px,.8fr) minmax(
 @media(min-width:1101px){.back-booths-frame{grid-template-columns:1fr 1fr;padding:10px 25px;gap:4px 22px}.back-booths-frame>strong{font-size:34px}.back-booths-frame>strong>span+span{font-size:42px}.back-booths-invite{font-size:21px;gap:18px}.back-booths-frame>small{font-size:6px;letter-spacing:1.5px}.back-booths-kicker{font-size:7px}}
 
 .back-booths-token{display:none;pointer-events:none}@media(min-width:1101px){.back-booths-token{display:block;position:absolute;width:82px;height:82px;left:calc(50% - 41px);top:calc(50% - 36px);z-index:1;background:url(/images/cryptopittz-bonez-transparent.png) center/contain no-repeat;filter:drop-shadow(0 0 15px #b148d577);opacity:.8;transform:rotate(-12deg)}}
+
+/* A recessed back-alley doorway, with the two booths visible inside. */
+.back-alley-door{height:190px;padding:0;overflow:hidden;border:1px solid #77706566;border-radius:6px;background:#131719;box-shadow:0 7px 16px #0007;transform:rotate(.5deg)}
+.back-alley-door:hover{transform:rotate(0deg) translateY(-2px);box-shadow:0 8px 23px #0009,0 0 20px #f85ed51c}
+.back-alley-wall{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#10231edd,#1c1920bb 43%,#271b26e8),url(assets/pittz-street-market.png) center 56%/cover;filter:saturate(.55)}
+.back-alley-wall::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 26px,#02070866 26px 28px);opacity:.6}
+.back-alley-header{position:absolute;left:17%;right:17%;top:10px;z-index:4;text-align:center;transform:rotate(-2deg);padding:5px 10px 8px;background:#101018f0;border:1px solid #966082;border-radius:4px;box-shadow:0 3px 5px #0009,0 0 15px #db45b833}
+.back-alley-header small{display:block;font:600 5px/1.3 Inter,Arial,sans-serif;letter-spacing:2px;color:#c7a7c8;margin-bottom:4px}
+.back-alley-header strong{display:block;font:800 29px/.9 'Barlow Condensed',Impact,sans-serif;letter-spacing:1.7px;color:#ffbce9;text-shadow:0 0 4px #fc71d2,0 0 13px #e543b6aa;white-space:nowrap;animation:back-neon 5s ease-in-out infinite alternate}
+.back-alley-header em{font-style:normal;color:#c0f7ff;text-shadow:0 0 4px #6ed7ff,0 0 14px #39b3e6bb}
+.back-alley-passage{position:absolute;top:54px;bottom:0;left:25%;right:25%;background:radial-gradient(ellipse at 25% 45%,#ba1e9c44,transparent 60%),radial-gradient(ellipse at 85% 40%,#0786b844,transparent 60%),#070c12;border:5px solid #45464a;border-bottom:0;box-shadow:inset 0 0 24px #000,0 0 0 3px #1a1d21,0 0 18px #d431a52b;overflow:hidden}
+.alley-wall{position:absolute;top:0;bottom:0;width:22%;z-index:2;background:repeating-linear-gradient(0deg,transparent 0 15px,#03040799 15px 17px),linear-gradient(90deg,#333b3a,#131b22)}
+.wall-left{left:0;clip-path:polygon(0 0,100% 17%,100% 76%,0 100%);box-shadow:inset 4px 0 #ed67c233}
+.wall-right{right:0;clip-path:polygon(0 17%,100% 0,100% 100%,0 76%);background:repeating-linear-gradient(0deg,transparent 0 15px,#03040799 15px 17px),linear-gradient(90deg,#101820,#353842)}
+.alley-floor{position:absolute;bottom:0;left:0;right:0;height:32%;background:repeating-linear-gradient(0deg,transparent 0 14px,#7ca0a51c 14px 15px),linear-gradient(90deg,#e64ebd22,transparent 50%,#34d2ff33);clip-path:polygon(22% 0,78% 0,100% 100%,0 100%)}
+.alley-ceiling{position:absolute;top:0;left:0;right:0;height:20%;background:linear-gradient(180deg,#242328,#05080c);clip-path:polygon(0 0,100% 0,78% 100%,22% 100%)}
+.alley-door{position:absolute;top:23%;bottom:23%;width:25%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:repeating-linear-gradient(90deg,#0d131c 0 11px,#101923 11px 12px);border:1px solid #db64ba99;border-top:3px solid #f197db;box-shadow:0 0 10px #e84cb83b,inset 0 0 13px #c8448e26;transform:perspective(180px) rotateY(5deg)}
+.door-one{left:23%}.door-two{right:23%;border-color:#66d4e8aa;border-top-color:#a3f4ff;box-shadow:0 0 11px #49c1e23b,inset 0 0 14px #299fb226;transform:perspective(180px) rotateY(-5deg)}
+.alley-door b{color:#f6c0e6;text-shadow:0 0 7px #f174cb;font:800 22px/1 'Barlow Condensed',Impact,sans-serif}.door-two b{color:#b8f7ff;text-shadow:0 0 7px #48d9ff}
+.alley-door small{font:600 5px/1.3 Inter,Arial,sans-serif;letter-spacing:1px;color:#cfbfce;margin-top:5px}
+.alley-light{position:absolute;top:8px;bottom:-20px;width:70%;clip-path:polygon(48% 0,52% 0,100% 100%,0 100%);transform-origin:50% 0;pointer-events:none;z-index:3;opacity:.5}
+.light-one{left:-10%;background:linear-gradient(#ff44c02b,transparent);animation:back-pink-sweep 7s ease-in-out infinite alternate}.light-two{right:-10%;background:linear-gradient(#4ed9ff33,transparent);animation:back-blue-sweep 8s ease-in-out infinite alternate}
+.alley-paws{position:absolute;bottom:3px;left:46%;z-index:3;font-size:18px;transform:rotate(-18deg);opacity:.48;filter:grayscale(1)}
+.back-alley-invite{position:absolute;left:6%;bottom:29px;z-index:3;text-align:left;transform:rotate(-8deg)}
+.back-alley-invite>span{display:block;font:18px/1.15 'Permanent Marker',cursive;color:#e9ff95;text-shadow:0 0 7px #b5d75455}.back-alley-invite b{font:25px/1 Inter,Arial,sans-serif;padding-left:3px}.back-alley-invite>small{display:block;margin-top:8px;font:600 5px/1.3 Inter,Arial,sans-serif;letter-spacing:1px;color:#acc594}
+.back-alley-poster{position:absolute;right:6%;bottom:26px;font:15px/.95 'Permanent Marker',cursive;letter-spacing:1px;color:#3c333a;background:#c3ac987d;border:2px solid #64594f;padding:8px;transform:rotate(8deg);box-shadow:2px 3px #0006}
+.back-alley-poster b{color:#412544;font-weight:inherit}
+@media(max-width:1100px){.back-alley-door{height:180px}.back-alley-header{left:8%;right:8%}.back-alley-header strong{font-size:25px}.back-alley-passage{left:23%;right:23%}.back-alley-invite{left:3%;font-size:15px;bottom:28px}.back-alley-invite>span{font-size:12px}.back-alley-invite b{font-size:17px}.back-alley-invite>small{font-size:4px;letter-spacing:0}.back-alley-poster{right:2%;font-size:10px;padding:5px}}
+@media(max-width:760px){.back-alley-door{height:183px}.back-alley-header{left:12%;right:12%}.back-alley-header strong{font-size:28px}.back-alley-passage{left:24%;right:24%}.back-alley-invite{left:5%}.back-alley-invite>span{font-size:15px}.back-alley-invite b{font-size:20px}.back-alley-poster{right:4%;font-size:13px}.back-alley-invite>small{font-size:4px}}
+@media(max-width:390px){.back-alley-header{left:8%;right:8%}.back-alley-header strong{font-size:25px}.back-alley-invite{left:3%}.back-alley-invite>span{font-size:12px}.back-alley-invite b{font-size:16px}.back-alley-poster{right:2%;font-size:10px}}
