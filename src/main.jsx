@@ -29,7 +29,7 @@ window.addEventListener('hashchange',routeLegacyExplorerLink);
 const pagePath = window.location.pathname.replace(/\/$/, "");
 
 const pageTitles = {
-  "/community-support": "Community Support Room · The PittzStop",
+  "/community-support": "The Back Booths · Pittz Flea Market",
   "/explorer": "CryptoPittz Explorer · The PittzStop",
   "/my-pittz": "My Pittz · The PittzStop",
   "/collector": "Collector’s Pack · The PittzStop",
