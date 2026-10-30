@@ -1,4 +1,5 @@
 import PackCover from './features/my-pittz/PackCover';
+import FeaturedMarketEntrance from './features/home/FeaturedMarketEntrance';
 import {NeonWelcome,IntroDisclosure} from "./features/home/NeonWelcome";
 import {loginWithWallet,hasWalletBridge,usesDirectWalletConnection} from './utils/connectWallet';
 import WalletConnectModal from './components/WalletConnectModal';
@@ -1029,11 +1030,7 @@ function App({ explorerPage: isExplorerPage = false }) {
                 <a className="btn primary" href="/flea-market/">Enter the Flea Market →</a>
                 <div className="market-entrance-tags" aria-label="The three Pittz bloodlines"><span>Street</span><span>Regal</span><span>Loyal</span></div>
               </div>
-              <div className="market-entrance-window">
-                <span className="market-sticker">PACK UNITY</span>
-                <div className="market-shop-strip"><b>GordonCrypto · Stache Rugs</b><span>Rug shop opening soon · Prices TBD</span><small>YOUR STORE COULD BE NEXT ↗</small></div>
-                <i className="market-sign-shimmer" aria-hidden="true" />
-              </div>
+              <FeaturedMarketEntrance />
             </div>
           </section>
 
