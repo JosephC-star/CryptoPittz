@@ -1,14 +1,16 @@
+import {buyExpected, assertPurchaseFunds} from './purchasePayment.mjs';
+import {assertSimulation} from '../xoxno/validation.js';
 import { Address } from '@multiversx/sdk-core';
 import { OOXClient, parseAmount } from '@oox-marketplace/sdk-core';
 import { getAccount } from '@multiversx/sdk-dapp/out/methods/account/getAccount';
 import { getNetworkConfig } from '@multiversx/sdk-dapp/out/methods/network/getNetworkConfig';
 import { getAccountProvider } from '@multiversx/sdk-dapp/out/providers/helpers/accountProvider';
 import { TransactionManager } from '@multiversx/sdk-dapp/out/managers/TransactionManager/TransactionManager';
-import { CONTRACT, validateQuote } from './validation';
+import { BONEZ, CONTRACT, validateQuote } from './validation';
 import { checkTransaction } from './transactionValidation';
 export const client = new OOXClient({ network: 'mainnet', marketplaceContract: CONTRACT });
-export async function json(url) {
-  const r=await fetch(url,{signal:AbortSignal.timeout(15000)});
+export async function json(url, options={}) {
+  const r=await fetch(url,{...options,signal:AbortSignal.timeout(15000)});
   if(!r.ok) throw Error(`Network request failed (${r.status}).`);
   return r.json();
 }
@@ -34,7 +36,7 @@ export async function prepare(action,nft,listing,price,days) {
     const result=await client.prepareBuy({buyer:address,auctionId:listing.auctionId,nonce:BigInt(account.nonce)});
     validateQuote(result.quote,listing,nft,address);
     tx=result.transaction; amount=BigInt(result.quote.totalPrice);
-    expected={sender:address,receiver:CONTRACT,value:amount.toString(),gasLimit:16000000,data:btoa(`buy@${hex(listing.auctionId)}@${textHex(nft.collection)}@${hex(listing.nonce)}`)};
+    expected=buyExpected(address,nft,listing,result.quote.totalPrice,CONTRACT);
   } else {
     if(!['PITTZ-1a4c2d','PITTZVICE-c3ec94'].includes(nft.collection)) throw Error('Unsupported collection.');
     const nonce=Number.parseInt(nft.identifier.split('-').at(-1),16);
@@ -50,9 +52,15 @@ export async function prepare(action,nft,listing,price,days) {
   }
   const payload=checkTransaction(tx,expected);
   const feeCap=BigInt(payload.gasLimit)*BigInt(payload.gasPrice);
-  if(BigInt(account.balance)<amount+feeCap) throw Error('Insufficient EGLD for this action and its conservative fee cap.');
+  if(BigInt(account.balance)<(listing?.paymentToken===BONEZ&&action==='buy'?0n:amount)+feeCap) throw Error('Insufficient EGLD for this action and its conservative fee cap.');
+  if(action==='buy'&&listing.paymentToken===BONEZ){await bonezFunds(address,listing.price,feeCap,account);await simulate(tx);}
   return {tx,expected,payload,address,nft,listing,action,created:Date.now(),feeCap:feeCap.toString()};
 }
+async function bonezFunds(address,price,feeCap,account){
+ const token=await json(`https://api.multiversx.com/accounts/${address}/tokens/${BONEZ}`).catch(()=>{throw Error('Could not verify your BONEZ balance. Your wallet needs enough BONEZ for this purchase.');});
+ assertPurchaseFunds(account.balance,token.identifier===BONEZ?token.balance:null,price,feeCap);
+}
+async function simulate(tx){return assertSimulation(await json('https://api.multiversx.com/transaction/simulate?checkSignature=false',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...tx.toSendable(),signature:'0'.repeat(128)})}));}
 let inFlight=false;
 export async function submit(review) {
   if(inFlight) throw Error('Another marketplace transaction is in progress.');
@@ -69,6 +77,7 @@ export async function submit(review) {
       if(owned.identifier!==review.nft.identifier||owned.type!=='NonFungibleESDT') throw Error('This Pitt is no longer available in the test wallet.');
     }
     checkTransaction(review.tx,review.expected);
+    if(review.action==='buy'&&review.listing.paymentToken===BONEZ){const a=await json(`https://gateway.multiversx.com/address/${review.address}`);await bonezFunds(review.address,review.listing.price,BigInt(review.feeCap),a.data.account);await simulate(review.tx);}
     const signed=await getAccountProvider().signTransactions([review.tx]);
     if(signed?.length!==1) throw Error('Signing was cancelled.');
     // Providers may update nonce; all purchase/listing and payment fields must stay exact.
@@ -76,6 +85,7 @@ export async function submit(review) {
     if(getAccount().address!==review.address||getNetworkConfig().network.chainId!=='1') throw Error('Wallet/network changed before sending.');
     if(review.action==='buy') validateQuote(await client.api.getQuote({buyer:review.address,auctionId:review.listing.auctionId}),review.listing,review.nft,review.address);
     if(getAccount().address!==review.address||getNetworkConfig().network.chainId!=='1') throw Error('Wallet/network changed before broadcast.');
+    if(review.action==='buy'&&review.listing.paymentToken===BONEZ){await simulate(signed[0]);if(getAccount().address!==review.address||getNetworkConfig().network.chainId!=='1')throw Error('Wallet/network changed before broadcast.');}
     const manager=TransactionManager.getInstance();
     const sent=await manager.send(signed);
     let session;

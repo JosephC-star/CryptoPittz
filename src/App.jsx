@@ -821,12 +821,12 @@ function App({ explorerPage: isExplorerPage = false }) {
           <section id="explorer-entrance" aria-label="CryptoPittz Explorer">
             <a className="explorer-home-entrance" href="/explorer/">
               <div><small>EVERY PITTZ. EVERY DETAIL.</small><h2>CryptoPittz Explorer</h2><p>Find your next favorite. Browse Original and Vice Pittz, hunt rare traits, and discover listings and offers.</p><strong>Enter the Explorer →</strong></div>
-              <div className="explorer-entrance-pack" aria-hidden="true">{['01','04','08'].map(id=><img key={id} src={'/images/pittz-'+id+'.jpg'} alt="" loading="lazy"/>)}</div>
+              <div className="explorer-guide-art" aria-hidden="true"><img src="/images/pittz-explorer-guide.jpg" alt="" loading="lazy"/></div>
             </a>
           </section>
           </>}
           {isExplorerPage && <>
-          <section className="explorer-page-intro" aria-labelledby="explorer-page-title">
+          <section className="explorer-page-intro explorer-guide-intro" aria-labelledby="explorer-page-title">
             <div><a href="/">← Back to The PittzStop</a><small>THE PACK’S COLLECTION ARCHIVE</small><h1 id="explorer-page-title">Find your kind of Pittz.</h1><p>Original or Vice. Rare traits or pure attitude. Explore the whole pack—no wallet required to browse.</p><div className="explorer-page-links"><a href="/my-pittz/">My Pittz →</a><a href="/dawg-pound/">Pittz for sale & collection offers →</a></div></div>
             <ExplorerSpotlight onSelect={openNftDetails} />
           </section>
