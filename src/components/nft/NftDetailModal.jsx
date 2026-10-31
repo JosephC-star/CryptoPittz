@@ -188,8 +188,8 @@ export default function NftDetailModal({
 
           {stats.type && <p className="nft-type-label">Type · {stats.type}</p>}
           {earnings && <p className="nft-earnings-summary">Potential BONEZ · {earnings.weekly.toLocaleString()} weekly · {earnings.monthly.toLocaleString()} per 30 days</p>}
-          <details className="nft-trait-disclosure">
-          <summary>Trait rarity <small>Rarest first · {collection === 'PITTZVICE-c3ec94' ? 'Vice' : 'Original'}</small></summary>
+          <section className="nft-trait-disclosure" aria-label="Trait rarity">
+          <h3 className="nft-traits-heading">Trait rarity <small>Rarest first · {collection === 'PITTZVICE-c3ec94' ? 'Vice' : 'Original'}</small></h3>
           <div className="nft-detail-traits">
             {traits.map((item) => (
               <div className="nft-detail-trait" key={`${nft.identifier}-${item.trait}`}>
@@ -199,7 +199,7 @@ export default function NftDetailModal({
               </div>
             ))}
           </div>
-          </details>
+          </section>
           <button className="btn" type="button" onClick={onClose}>Close details</button>
         </div>
       </div>

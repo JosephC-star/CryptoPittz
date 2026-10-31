@@ -104,8 +104,6 @@ export default function NftCard({
 
         </div>
 
-        {compactTraits && <details className="card-trait-details" onClick={event=>event.stopPropagation()} onKeyDown={event=>event.stopPropagation()}><summary>More traits &amp; details</summary><div className="pittz-stats">{rareTraits.slice(2).map(traitBox)}</div>{stats.type&&<small className="nft-type-label">Type · {stats.type}</small>}<button type="button" className="card-open-details" onClick={event=>{event.stopPropagation();onClick?.();}}>Open Pittz details ↗</button></details>}
-
         {isOwned && <button type="button" className="btn owned-pittz-action" onClick={event=>{event.stopPropagation();onClick?.();}}>Sell / Send this Pittz →</button>}
         {!compactTraits && stats.type && <small className="nft-type-label">Type · {stats.type}</small>}
 
