@@ -22,10 +22,12 @@ export default function NftCard({
   const stats = getPittzStats(nft.attributes);
   const traits = showTraits ? decodePittzAttributes(nft.attributes) : [];
   const collection = nft.collection || nft.identifier?.split('-').slice(0,2).join('-');
-  const rareTraits = rarestTraits(nft.attributes, rarity[collection], isOwned ? 2 : 3);
+  const rareTraits = rarestTraits(nft.attributes, rarity[collection], isOwned ? 2 : Infinity);
   const earnings = isOwned ? (bonez || getBonezGeneration({...nft,collection})) : null;
   const image = getNftImage(nft);
   const isExplorer = variant === "explorer";
+  const compactTraits = isExplorer && !isOwned;
+  const traitBox = item => <div className="pittz-stat rarity-stat" key={item.trait} title={`${item.trait}: ${item.value} — 1 of ${item.count} with this trait in this collection`}><span>{item.trait}</span><strong>{item.value}</strong><small>{item.percentage.toFixed(2)}% · 1 of {item.count.toLocaleString()}</small></div>;
 
   return (
     <div
@@ -89,7 +91,7 @@ export default function NftCard({
           </div>
         )}
 
-        <div className="pittz-stats">
+        <div className={`pittz-stats ${compactTraits ? "compact-trait-stats" : ""}`}>
           {stats.rank && (
             <div className="pittz-stat rank-stat">
               <span>🏆 Rank</span>
@@ -98,18 +100,14 @@ export default function NftCard({
           )}
 
           {earnings && <div className="pittz-stat earnings-stat"><span>🦴 BONEZ / day</span><strong>{earnings.daily.toLocaleString(undefined,{maximumFractionDigits:2})}</strong></div>}
-          {rareTraits.map(item => (
-            <div className="pittz-stat rarity-stat" key={item.trait} title={`${item.trait}: ${item.value} — 1 of ${item.count} with this trait in this collection`}>
-              <span>{item.trait}</span>
-              <strong>{item.value}</strong>
-              <small>{item.percentage.toFixed(2)}% · 1 of {item.count.toLocaleString()}</small>
-            </div>
-          ))}
+          {rareTraits.slice(0,2).map(traitBox)}
 
         </div>
 
+        {compactTraits && <details className="card-trait-details" onClick={event=>event.stopPropagation()} onKeyDown={event=>event.stopPropagation()}><summary>More traits &amp; details</summary><div className="pittz-stats">{rareTraits.slice(2).map(traitBox)}</div>{stats.type&&<small className="nft-type-label">Type · {stats.type}</small>}<button type="button" className="card-open-details" onClick={event=>{event.stopPropagation();onClick?.();}}>Open Pittz details ↗</button></details>}
+
         {isOwned && <button type="button" className="btn owned-pittz-action" onClick={event=>{event.stopPropagation();onClick?.();}}>Sell / Send this Pittz →</button>}
-        {stats.type && <small className="nft-type-label">Type · {stats.type}</small>}
+        {!compactTraits && stats.type && <small className="nft-type-label">Type · {stats.type}</small>}
 
         {traits.length > 0 && (
           <div className="pittz-traits">
