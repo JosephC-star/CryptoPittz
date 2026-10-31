@@ -57,3 +57,12 @@ body:has(.financial-district){margin:0;background:#0b0b09}
 .district-founder-plaque:before,.district-founder-plaque:after{content:'';position:absolute;top:50%;width:4px;height:4px;border-radius:50%;background:#533b1c;box-shadow:0 1px #f5dda1;transform:translateY(-50%)}.district-founder-plaque:before{left:8px}.district-founder-plaque:after{right:8px}
 .district-founder-plaque strong{display:block;font:700 13px/1.3 Georgia,serif;letter-spacing:1.2px}.district-founder-plaque span{display:block;font-size:7px;font-weight:700;letter-spacing:1.1px;margin-top:5px}
 @media(max-width:680px){.district-gallery{padding-top:30px;padding-bottom:28px}.district-founder-portrait{margin-top:30px}.district-portrait-moulding{padding:19px}.district-portrait-mat{padding:9px}.district-portrait-corner{width:46px;height:46px}.district-founder-plaque strong{font-size:12px}}
+
+/* Market information precedes the service cards on phones. */
+@media(max-width:700px){
+ .district-main{display:flex;flex-direction:column}
+ .district-main>.district-hero{order:0}
+ .district-main>.district-market-strip{order:1;margin:0 0 20px}
+ .district-main>.district-services{order:2;width:100%;box-sizing:border-box}
+ .district-main>.district-gallery{order:3}
+}
