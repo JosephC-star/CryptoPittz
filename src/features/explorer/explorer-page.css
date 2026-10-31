@@ -27,3 +27,17 @@
 .explorer-spotlight>button:focus-visible{outline:3px solid #9ff5ff;outline-offset:5px;z-index:2}
 @media(max-width:650px){.explorer-spotlight>button,.explorer-spotlight>span{max-width:100px}}
 @media(prefers-reduced-motion:reduce){.explorer-spotlight>button{transition:none}}
+
+/* The pack’s explorer leads the way; the collectible spotlight stays clickable. */
+.explorer-home-entrance{grid-template-columns:minmax(0,1.1fr) minmax(230px,.9fr);min-height:290px;padding-right:0}
+.explorer-guide-art{align-self:stretch;position:relative;margin:-32px 0 -32px -15px;min-height:290px;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 20%)}
+.explorer-guide-art img{width:100%;height:100%;position:absolute;object-fit:cover;object-position:57% 35%;transform:scale(1.08)}
+.explorer-guide-intro{background:linear-gradient(90deg,#0b1425f5 5%,#0b1425dd 48%,#0b14254d),url('/images/pittz-explorer-guide.jpg') right 38%/cover;min-height:310px}
+.explorer-guide-intro .explorer-spotlight{align-self:end;position:relative;padding-top:120px}
+@media(max-width:650px){
+ .explorer-home-entrance{grid-template-columns:minmax(0,1fr);padding:24px}
+ .explorer-guide-art{grid-row:1;min-height:210px;margin:-24px -24px 2px;mask-image:linear-gradient(0deg,transparent,#000 22%)}
+ .explorer-guide-art img{object-position:55% 35%}
+ .explorer-guide-intro{background:linear-gradient(0deg,#0b1425 8%,#0b1425ee 60%,#0b142533),url('/images/pittz-explorer-guide.jpg') center top/100% auto no-repeat;padding-top:210px}
+ .explorer-guide-intro .explorer-spotlight{padding-top:12px}
+}
