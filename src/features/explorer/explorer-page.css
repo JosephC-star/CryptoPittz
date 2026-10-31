@@ -28,19 +28,26 @@
 @media(max-width:650px){.explorer-spotlight>button,.explorer-spotlight>span{max-width:100px}}
 @media(prefers-reduced-motion:reduce){.explorer-spotlight>button{transition:none}}
 
-/* Show the entire supplied illustration in a compact frame. */
-.explorer-home-entrance{grid-template-columns:minmax(0,1.15fr) minmax(230px,.85fr);min-height:0;gap:24px}
-.explorer-guide-art{display:flex;align-items:center;justify-content:center;min-width:0;width:100%;max-width:300px;aspect-ratio:1;justify-self:center;overflow:hidden;border-radius:18px;border:1px solid #6fbbad55;background:#101b1b;box-shadow:0 8px 24px #0004}
-.explorer-guide-art img{display:block;width:100%;height:100%;object-fit:contain;object-position:center;transform:none}
-.explorer-guide-intro{background:radial-gradient(ellipse at 90% 10%,#488b4d22,transparent 60%),linear-gradient(120deg,#101929,#0a1020);min-height:0}
-.explorer-guide-side{display:grid;justify-items:center;gap:15px;min-width:0}
-.explorer-guide-side .explorer-guide-art{max-width:250px}
-.explorer-guide-intro .explorer-spotlight{padding:5px 10px 8px;width:220px;max-width:100%;box-sizing:border-box}
+/* Blend the complete illustration beside the copy instead of stacking it. */
+.explorer-home-entrance,.explorer-guide-intro{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;min-height:0;background:radial-gradient(ellipse at 95% 50%,#3e77512b,transparent 65%),linear-gradient(120deg,#101929,#0a1020)}
+.explorer-home-entrance>div:first-child,.explorer-guide-intro>div:first-child{position:relative;z-index:1;max-width:60%;min-width:0}
+.explorer-guide-art{position:absolute;inset:0 0 0 auto;display:flex;align-items:center;width:48%;max-width:none;overflow:hidden;pointer-events:none;mask-image:linear-gradient(90deg,transparent,#000 28%);border:0;border-radius:0;background:none;box-shadow:none}
+.explorer-guide-art img{display:block;width:100%;height:100%;max-height:380px;object-fit:contain;object-position:center;transform:none}
+.explorer-guide-side{display:contents}
+.explorer-guide-intro .explorer-spotlight{position:relative;z-index:1;justify-self:start;padding:7px 10px;width:220px;max-width:55%;box-sizing:border-box}
 .explorer-guide-intro .explorer-spotlight>button,.explorer-guide-intro .explorer-spotlight>span{max-width:85px}
 @media(max-width:650px){
- .explorer-home-entrance{grid-template-columns:minmax(0,1fr);gap:18px;padding:22px}
- .explorer-guide-art{grid-row:1;max-width:260px;margin:0}
- .explorer-guide-intro{padding:22px;gap:20px}
- .explorer-guide-side{grid-row:1;width:100%;gap:12px}
- .explorer-guide-side .explorer-guide-art{max-width:240px}
+ .explorer-home-entrance,.explorer-guide-intro{padding:20px 16px;gap:8px}
+ .explorer-home-entrance>div:first-child,.explorer-guide-intro>div:first-child{max-width:65%}
+ .explorer-guide-art{width:48%;mask-image:linear-gradient(90deg,transparent,#000 20%)}
+ .explorer-home-entrance small,.explorer-guide-intro small{font-size:8px;letter-spacing:1px}
+ .explorer-home-entrance h2{font-size:23px;line-height:1.12;margin:10px 0}
+ .explorer-guide-intro h1{font-size:27px;line-height:1.1;margin:10px 0}
+ .explorer-home-entrance p,.explorer-guide-intro p{font-size:12px;line-height:1.55;margin:10px 0}
+ .explorer-home-entrance strong{font-size:12px;line-height:1.4;margin-top:6px}
+ .explorer-guide-intro>div>a{font-size:11px;margin-bottom:12px}
+ .explorer-page-links{gap:10px;margin-top:12px}
+ .explorer-page-links a{font-size:11px}
+ .explorer-guide-intro .explorer-spotlight{width:175px;max-width:60%;padding:7px 8px}
+ .explorer-guide-intro .explorer-spotlight>button,.explorer-guide-intro .explorer-spotlight>span{max-width:65px}
 }
