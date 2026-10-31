@@ -163,6 +163,11 @@ export default function NftDetailModal({
               </div>
             )}
 
+            {!earnings && traitStats[0] && <div className="nft-detail-stat rarest-detail-stat">
+              <span>💎 Rarest · {traitStats[0].trait}</span>
+              <strong>{traitStats[0].value}</strong>
+              <small className="trait-frequency">{traitStats[0].percentage.toFixed(2)}% · 1 of {traitStats[0].count.toLocaleString()}</small>
+            </div>}
             {stats.score && (
               <div className="nft-detail-stat">
                 <span>⚡ Score</span>
@@ -177,17 +182,13 @@ export default function NftDetailModal({
               </div>
             )}
 
-            {!earnings && traitStats[0] && <div className="nft-detail-stat rarest-detail-stat">
-              <span>💎 Rarest · {traitStats[0].trait}</span>
-              <strong>{traitStats[0].value}</strong>
-              <small className="trait-frequency">{traitStats[0].percentage.toFixed(2)}% · 1 of {traitStats[0].count.toLocaleString()}</small>
-            </div>}
             {earnings && <div className="nft-detail-stat earnings-stat"><span>🦴 Potential BONEZ / day</span><strong>{earnings.daily.toLocaleString(undefined,{maximumFractionDigits:2})}</strong></div>}
 
           </div>
 
           {stats.type && <p className="nft-type-label">Type · {stats.type}</p>}
           {earnings && <p className="nft-earnings-summary">Potential BONEZ · {earnings.weekly.toLocaleString()} weekly · {earnings.monthly.toLocaleString()} per 30 days</p>}
+          <section className="nft-trait-disclosure" aria-label="Trait rarity">
           <h3 className="nft-traits-heading">Trait rarity <small>Rarest first · {collection === 'PITTZVICE-c3ec94' ? 'Vice' : 'Original'}</small></h3>
           <div className="nft-detail-traits">
             {traits.map((item) => (
@@ -198,6 +199,7 @@ export default function NftDetailModal({
               </div>
             ))}
           </div>
+          </section>
           <button className="btn" type="button" onClick={onClose}>Close details</button>
         </div>
       </div>
