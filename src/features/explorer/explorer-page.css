@@ -28,16 +28,19 @@
 @media(max-width:650px){.explorer-spotlight>button,.explorer-spotlight>span{max-width:100px}}
 @media(prefers-reduced-motion:reduce){.explorer-spotlight>button{transition:none}}
 
-/* The pack’s explorer leads the way; the collectible spotlight stays clickable. */
-.explorer-home-entrance{grid-template-columns:minmax(0,1.1fr) minmax(230px,.9fr);min-height:290px;padding-right:0}
-.explorer-guide-art{align-self:stretch;position:relative;margin:-32px 0 -32px -15px;min-height:290px;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 20%)}
-.explorer-guide-art img{width:100%;height:100%;position:absolute;object-fit:cover;object-position:57% 35%;transform:scale(1.08)}
-.explorer-guide-intro{background:linear-gradient(90deg,#0b1425f5 5%,#0b1425dd 48%,#0b14254d),url('/images/pittz-explorer-guide.jpg') right 38%/cover;min-height:310px}
-.explorer-guide-intro .explorer-spotlight{align-self:end;position:relative;padding-top:120px}
+/* Show the entire supplied illustration in a compact frame. */
+.explorer-home-entrance{grid-template-columns:minmax(0,1.15fr) minmax(230px,.85fr);min-height:0;gap:24px}
+.explorer-guide-art{display:flex;align-items:center;justify-content:center;min-width:0;width:100%;max-width:300px;aspect-ratio:1;justify-self:center;overflow:hidden;border-radius:18px;border:1px solid #6fbbad55;background:#101b1b;box-shadow:0 8px 24px #0004}
+.explorer-guide-art img{display:block;width:100%;height:100%;object-fit:contain;object-position:center;transform:none}
+.explorer-guide-intro{background:radial-gradient(ellipse at 90% 10%,#488b4d22,transparent 60%),linear-gradient(120deg,#101929,#0a1020);min-height:0}
+.explorer-guide-side{display:grid;justify-items:center;gap:15px;min-width:0}
+.explorer-guide-side .explorer-guide-art{max-width:250px}
+.explorer-guide-intro .explorer-spotlight{padding:5px 10px 8px;width:220px;max-width:100%;box-sizing:border-box}
+.explorer-guide-intro .explorer-spotlight>button,.explorer-guide-intro .explorer-spotlight>span{max-width:85px}
 @media(max-width:650px){
- .explorer-home-entrance{grid-template-columns:minmax(0,1fr);padding:24px}
- .explorer-guide-art{grid-row:1;min-height:210px;margin:-24px -24px 2px;mask-image:linear-gradient(0deg,transparent,#000 22%)}
- .explorer-guide-art img{object-position:55% 35%}
- .explorer-guide-intro{background:linear-gradient(0deg,#0b1425 8%,#0b1425ee 60%,#0b142533),url('/images/pittz-explorer-guide.jpg') center top/100% auto no-repeat;padding-top:210px}
- .explorer-guide-intro .explorer-spotlight{padding-top:12px}
+ .explorer-home-entrance{grid-template-columns:minmax(0,1fr);gap:18px;padding:22px}
+ .explorer-guide-art{grid-row:1;max-width:260px;margin:0}
+ .explorer-guide-intro{padding:22px;gap:20px}
+ .explorer-guide-side{grid-row:1;width:100%;gap:12px}
+ .explorer-guide-side .explorer-guide-art{max-width:240px}
 }

@@ -828,7 +828,7 @@ function App({ explorerPage: isExplorerPage = false }) {
           {isExplorerPage && <>
           <section className="explorer-page-intro explorer-guide-intro" aria-labelledby="explorer-page-title">
             <div><a href="/">← Back to The PittzStop</a><small>THE PACK’S COLLECTION ARCHIVE</small><h1 id="explorer-page-title">Find your kind of Pittz.</h1><p>Original or Vice. Rare traits or pure attitude. Explore the whole pack—no wallet required to browse.</p><div className="explorer-page-links"><a href="/my-pittz/">My Pittz →</a><a href="/dawg-pound/">Pittz for sale & collection offers →</a></div></div>
-            <ExplorerSpotlight onSelect={openNftDetails} />
+            <div className="explorer-guide-side"><div className="explorer-guide-art" aria-hidden="true"><img src="/images/pittz-explorer-guide.jpg" alt="" loading="lazy"/></div><ExplorerSpotlight onSelect={openNftDetails} /></div>
           </section>
           <section id="explorer" ref={explorerHeadingRef}>
             <div className="section-title explorer-heading">
