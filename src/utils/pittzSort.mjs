@@ -12,3 +12,11 @@ export function compareListingValues(a,b,sort){
  if(bv===null)return -1;
  return sort==='price-desc'||sort==='newest'?bv-av:av-bv;
 }
+
+export function matchesPittzNumber(nft,search){
+ const query=search.trim().replace(/^#/, '');
+ if(!query)return true;
+ if(!/^\d+$/.test(query))return false;
+ const number=nft.name?.match(/#(\d+)/)?.[1];
+ return number!==undefined&&Number(number)===Number(query);
+}

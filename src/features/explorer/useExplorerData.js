@@ -1,3 +1,4 @@
+import {matchesPittzNumber} from '../../utils/pittzSort.mjs';
 import {readJson} from '../../utils/readJson.mjs';
 import { useEffect, useRef, useState } from "react";
 
@@ -218,7 +219,8 @@ export default function useExplorerData(pageSize, { enabled = true } = {}) {
         return;
       }
 
-      const pittNumber = search.match(/\d+/)?.[0];
+      const rawNumber = search.match(/\d+/)?.[0];
+      const pittNumber = rawNumber === undefined ? null : String(Number(rawNumber));
       const names = collectionIds.map(id => pittNumber
         ? `${id === EXPLORER_COLLECTIONS.vice.collection ? 'CryptoPittz VICE' : 'CryptoPittz'} #${pittNumber}`
         : search);
@@ -234,7 +236,8 @@ export default function useExplorerData(pageSize, { enabled = true } = {}) {
       }
 
       const exactMatch =
-        data.find((nft) => names.some(name => (nft.name || "").toLowerCase() === name.toLowerCase())) || data[0];
+        pittNumber ? data.find(nft=>matchesPittzNumber(nft,pittNumber)) : data.find((nft) => names.some(name => (nft.name || "").toLowerCase() === name.toLowerCase())) || data[0];
+      if(!exactMatch){setSearchError(`No ${activeCollection.name} with that Pittz number was found.`);return;}
 
       setSearchResult(exactMatch);
     } catch (error) {

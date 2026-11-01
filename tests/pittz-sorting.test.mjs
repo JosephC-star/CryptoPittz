@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {compareListingValues,comparePittzNumber} from '../src/utils/pittzSort.mjs';
+import {compareListingValues,comparePittzNumber,matchesPittzNumber} from '../src/utils/pittzSort.mjs';
 import {handler} from '../netlify/functions/oox-listings.mjs';
 test('price order compares USD estimates across currencies, not token amounts',()=>{
  const listings=[{id:'bonez',paymentToken:'BONEZ-ff9a73',price:'69420',dollarValue:7.26},{id:'egld',paymentToken:'EGLD',price:'1.737',dollarValue:5.94},{id:'other',paymentToken:'OTHER-123456',price:'50',dollarValue:6.5},{id:'unknown',paymentToken:'BONEZ-ff9a73',price:'1',dollarValue:null}];
@@ -30,4 +30,11 @@ test('listing feed exposes listing start dates and keeps missing dates unknown',
   assert.deepEqual(rows.map(x=>x.listedAt),[1785525012,1785525013,null]);
   assert.equal(rows[0].dollarValue,7.26);assert.equal(rows[0].price,'69420');
  }finally{globalThis.fetch=original;}
+});
+
+test('Explorer number search matches exact displayed numbers across both collections',()=>{
+ const nft={name:'CryptoPittz #60',identifier:'PITTZ-1a4c2d-3c'};
+ for(const query of ['60','#60','060',''])assert(matchesPittzNumber(nft,query));
+ for(const query of ['6','600','PITTZ-1a4c2d-3c','word'])assert(!matchesPittzNumber(nft,query));
+ assert(matchesPittzNumber({name:'CryptoPittz VICE #60'},'60'));
 });

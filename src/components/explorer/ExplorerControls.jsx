@@ -7,24 +7,11 @@ export default function ExplorerControls({
   search,
   onSearchChange,
   onSearch,
-  sort,
-  onSortChange,
-  bloodline,
-  bloodlines,
-  onBloodlineChange,
-  type,
-  onTypeChange,
-  sale,
-  listedCount,
-  listingsLoading,
-  listingsError,
-  onSaleChange,
   shownCount,
   filteredCount,
   onReset,
 }) {
-  const filtersActive =
-    search || bloodline !== "all" || type !== "all" || sale !== "all" || sort !== "rank";
+  const filtersActive = Boolean(search);
   const progressPercent =
     loadProgress.total > 0
       ? Math.min(100, (loadProgress.loaded / loadProgress.total) * 100)
@@ -61,7 +48,7 @@ export default function ExplorerControls({
               />
             </div>
 
-            <small>Preparing collection-wide rank, score, bloodline, and type filters.</small>
+            <small>Preparing collection-wide ranks and traits.</small>
           </div>
         )}
 
@@ -78,9 +65,12 @@ export default function ExplorerControls({
         <div className="explorer-controls">
           <input
             type="text"
-            placeholder="Search CryptoPittz name or ID..."
+            inputMode="numeric"
+            pattern="[0-9]*"
+            aria-label="Search by Pittz number"
+            placeholder="Pittz number, e.g. 60"
             value={search}
-            onChange={(event) => onSearchChange(event.target.value)}
+            onChange={(event) => onSearchChange(event.target.value.replace(/[^0-9]/g,''))}
             onKeyDown={(event) => {
               if (event.key === "Enter") onSearch();
             }}
@@ -95,27 +85,7 @@ export default function ExplorerControls({
           </button>
         </div>
 
-        <select value={sort} onChange={(event) => onSortChange(event.target.value)}>
-          <option value="rank">Best Rank</option>
-          <option value="name">Pittz number</option>
-        </select>
-
-        <select value={bloodline} onChange={(event) => onBloodlineChange(event.target.value)}>
-          <option value="all">All Bloodlines</option>
-          {bloodlines.map((item) => (
-            <option key={item} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
-
-        <select value={type} onChange={(event) => onTypeChange(event.target.value)}>
-          <option value="all">All Types</option>
-          <option value="Core">Core</option>
-          <option value="Secret">Secret</option>
-          <option value="Holo">Holo</option>
-          <option value="Legendary">Legendary</option>
-        </select>
+        <div className="explorer-rank-order"><span>Rank order</span><strong>Best rank first · #1 onward</strong></div>
 
       </div>
 
