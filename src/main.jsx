@@ -5,6 +5,7 @@ import { initApp } from "@multiversx/sdk-dapp/out/methods/initApp/initApp";
 import { EnvironmentsEnum } from "@multiversx/sdk-dapp/out/types/enums.types";
 
 import "./index.css";
+import {adminWalletCallbackPath} from "./features/merchant/adminDestination.mjs";
 const MyPittzPage=lazy(()=>import("./features/my-pittz/MyPittzPage.jsx"));
 const CollectorProfile=lazy(()=>import("./features/collectors/CollectorProfile.jsx"));
 const DawgPound=lazy(()=>import("./features/dawg-pound/DawgPound.jsx"));
@@ -60,7 +61,7 @@ const config = {
             description: "CryptoPittz explorer and marketplace",
             url: window.location.origin,
             icons: [],
-            redirect: { universal: window.location.origin + window.location.pathname },
+            redirect: { universal: window.location.origin + adminWalletCallbackPath(window.location.pathname,window.location.search) },
           },
         },
         walletConnectV2ProjectId: "05f778b27cb238c8d234a60f23935297",
