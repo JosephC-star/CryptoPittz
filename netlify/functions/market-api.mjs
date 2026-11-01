@@ -287,7 +287,7 @@ export async function handler(event) {
     if(route==='inquiries'){
       const offset=Number(event.queryStringParameters?.offset||0);
       if(!Number.isSafeInteger(offset)||offset<0||offset>100000)fail(400,'Invalid inbox page.');
-      const rows=await db('market_inquiries?shop_id=eq.'+shop.id+'&select=id,product_id,customer_name,customer_email,message,reference_image_path,status,created_at&order=created_at.desc&limit=51&offset='+offset);
+      const rows=await db('market_inquiries?shop_id=eq.'+shop.id+'&select=id,product_id,customer_name,customer_email,message,message_kind,reference_image_path,status,created_at&order=created_at.desc&limit=51&offset='+offset);
       return response(200,{inquiries:rows.slice(0,50).map(row=>({...row,reference_url:row.reference_image_path?'/.netlify/functions/market-api?route=inquiry-reference&id='+row.id:null})),hasMore:rows.length>50});
     }
     if(route==='inquiry-status'){

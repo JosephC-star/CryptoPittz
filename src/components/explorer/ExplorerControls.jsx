@@ -97,8 +97,7 @@ export default function ExplorerControls({
 
         <select value={sort} onChange={(event) => onSortChange(event.target.value)}>
           <option value="rank">Best Rank</option>
-          <option value="score">Highest Score</option>
-          <option value="name">Name</option>
+          <option value="name">Pittz number</option>
         </select>
 
         <select value={bloodline} onChange={(event) => onBloodlineChange(event.target.value)}>

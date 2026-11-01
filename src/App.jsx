@@ -1,3 +1,4 @@
+import {compareListingValues,comparePittzNumber} from './utils/pittzSort.mjs';
 import PackCover from './features/my-pittz/PackCover';
 import FeaturedMarketEntrance from './features/home/FeaturedMarketEntrance';
 import {NeonWelcome,IntroDisclosure} from "./features/home/NeonWelcome";
@@ -323,12 +324,8 @@ function App({ explorerPage: isExplorerPage = false }) {
         return Number(aStats.rank || Infinity) - Number(bStats.rank || Infinity);
       }
 
-      if (explorerSort === "score") {
-        return Number(bStats.score || 0) - Number(aStats.score || 0);
-      }
-
       if (explorerSort === "name") {
-        return (a.name || "").localeCompare(b.name || "");
+        return comparePittzNumber(a,b);
       }
 
       if (explorerSort === "price-asc" || explorerSort === "price-desc") {
@@ -339,10 +336,7 @@ function App({ explorerPage: isExplorerPage = false }) {
         if (!aListing) return 1;
         if (!bListing) return -1;
 
-        const aPrice = Number(aListing.dollarValue) || Number(aListing.price) || Infinity;
-        const bPrice = Number(bListing.dollarValue) || Number(bListing.price) || Infinity;
-
-        return explorerSort === "price-asc" ? aPrice - bPrice : bPrice - aPrice;
+        return compareListingValues(aListing,bListing,explorerSort);
       }
 
       return 0;

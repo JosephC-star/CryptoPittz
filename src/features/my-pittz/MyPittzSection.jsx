@@ -1,3 +1,4 @@
+import {comparePittzNumber} from '../../utils/pittzSort.mjs';
 import { lazy, Suspense, useEffect, useState } from "react";
 
 import NftCard from "../../components/nft/NftCard";
@@ -80,8 +81,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
       if (sortBy === "rank") {
         return Number(aStats.rank || Infinity) - Number(bStats.rank || Infinity);
       }
-      if (sortBy === "score") return Number(bStats.score || 0) - Number(aStats.score || 0);
-      if (sortBy === "name") return (a.name || "").localeCompare(b.name || "");
+      if (sortBy === "name") return comparePittzNumber(a,b);
       return 0;
     });
   const totalPages = Math.max(1, Math.ceil(filteredNfts.length / PITTZ_PER_PAGE));
@@ -242,8 +242,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                   setPage(1);
                 }}>
                   <option value="rank">Best Rank</option>
-                  <option value="score">Highest Score</option>
-                  <option value="name">Name</option>
+                  <option value="name">Pittz number</option>
                 </select>
                 <select
                   value={bloodlineFilter}
