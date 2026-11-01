@@ -1,3 +1,4 @@
+import {matchesPittzNumber} from './utils/pittzSort.mjs';
 import PackCover from './features/my-pittz/PackCover';
 import FeaturedMarketEntrance from './features/home/FeaturedMarketEntrance';
 import {NeonWelcome,IntroDisclosure} from "./features/home/NeonWelcome";
@@ -46,11 +47,7 @@ function App({ explorerPage: isExplorerPage = false }) {
     explorerHeadingRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
   }
   const [explorerSearch, setExplorerSearch] = useState("");
-  const [explorerSort, setExplorerSort] = useState("rank");
-  const [explorerBloodline, setExplorerBloodline] = useState("all");
-  const [explorerType, setExplorerType] = useState("all");
   const [explorerTraits, setExplorerTraits] = useState({});
-  const [explorerSale, setExplorerSale] = useState("all");
   const [randomPittLoading, setRandomPittLoading] = useState(false);
   const [randomPittError, setRandomPittError] = useState("");
   const [randomPittMode, setRandomPittMode] = useState("surprise");
@@ -123,11 +120,7 @@ function App({ explorerPage: isExplorerPage = false }) {
 
   function resetExplorerFilters() {
     setExplorerSearch("");
-    setExplorerSort("rank");
-    setExplorerBloodline("all");
-    setExplorerType("all");
     setExplorerTraits({});
-    setExplorerSale("all");
     setExplorerPage(0);
     clearGlobalSearch();
   }
@@ -271,81 +264,22 @@ function App({ explorerPage: isExplorerPage = false }) {
     }
   }
 
-  const explorerSummary = (() => {
-    const bloodlines = {};
-    const types = {};
-
-    explorerAllNfts.forEach((nft) => {
-      const stats = getPittzStats(nft.attributes);
-
-      if (stats.bloodline) {
-        bloodlines[stats.bloodline] = (bloodlines[stats.bloodline] || 0) + 1;
-      }
-
-      if (stats.type) {
-        types[stats.type] = (types[stats.type] || 0) + 1;
-      }
-    });
-
-    return {
-      bloodlines,
-      types,
-    };
-  })();
-
   const filteredExplorerNfts = explorerAllNfts
     .filter((nft) => {
-      const stats = getPittzStats(nft.attributes);
-
-      const matchesSearch =
-        nft.name?.toLowerCase().includes(explorerSearch.toLowerCase()) ||
-        nft.identifier?.toLowerCase().includes(explorerSearch.toLowerCase());
-
-      const matchesBloodline = explorerBloodline === "all" || stats.bloodline === explorerBloodline;
-
-      const matchesType = explorerType === "all" || stats.type === explorerType;
+      const matchesSearch = matchesPittzNumber(nft,explorerSearch);
 
       const traits = getPittzTraits(nft.attributes);
       const matchesTraits = Object.entries(explorerTraits).every(([category, values]) =>
         traits.some((item) => item.trait === category && values.includes(item.value)),
       );
 
-      const matchesSale =
-        explorerSale === "all" || explorerListingMap.has(nft.identifier);
-
-      return matchesSearch && matchesBloodline && matchesType && matchesTraits && matchesSale;
+      return matchesSearch && matchesTraits;
     })
     .sort((a, b) => {
       const aStats = getPittzStats(a.attributes);
       const bStats = getPittzStats(b.attributes);
 
-      if (explorerSort === "rank") {
-        return Number(aStats.rank || Infinity) - Number(bStats.rank || Infinity);
-      }
-
-      if (explorerSort === "score") {
-        return Number(bStats.score || 0) - Number(aStats.score || 0);
-      }
-
-      if (explorerSort === "name") {
-        return (a.name || "").localeCompare(b.name || "");
-      }
-
-      if (explorerSort === "price-asc" || explorerSort === "price-desc") {
-        const aListing = explorerListingMap.get(a.identifier);
-        const bListing = explorerListingMap.get(b.identifier);
-
-        if (!aListing && !bListing) return 0;
-        if (!aListing) return 1;
-        if (!bListing) return -1;
-
-        const aPrice = Number(aListing.dollarValue) || Number(aListing.price) || Infinity;
-        const bPrice = Number(bListing.dollarValue) || Number(bListing.price) || Infinity;
-
-        return explorerSort === "price-asc" ? aPrice - bPrice : bPrice - aPrice;
-      }
-
-      return 0;
+      return Number(aStats.rank || Infinity) - Number(bStats.rank || Infinity);
     });
 
   const explorerFilteredTotal = filteredExplorerNfts.length;
@@ -893,33 +827,10 @@ function App({ explorerPage: isExplorerPage = false }) {
                       search={explorerSearch}
                       onSearchChange={(value) => {
                         setExplorerSearch(value);
+                        setExplorerPage(0);
                         clearGlobalSearch();
                       }}
                       onSearch={() => searchCryptoPittz(explorerSearch)}
-                      sort={explorerSort}
-                      onSortChange={(value) => {
-                        setExplorerSort(value);
-                        setExplorerPage(0);
-                      }}
-                      bloodline={explorerBloodline}
-                      bloodlines={Object.keys(explorerSummary.bloodlines)}
-                      onBloodlineChange={(value) => {
-                        setExplorerBloodline(value);
-                        setExplorerPage(0);
-                      }}
-                      type={explorerType}
-                      onTypeChange={(value) => {
-                        setExplorerType(value);
-                        setExplorerPage(0);
-                      }}
-                      sale={explorerSale}
-                      listedCount={explorerListingMap.size}
-                      listingsLoading={explorerListingsLoading}
-                      listingsError={explorerListingsError}
-                      onSaleChange={(value) => {
-                        setExplorerSale(value);
-                        setExplorerPage(0);
-                      }}
                       shownCount={explorerPageNfts.length}
                       filteredCount={filteredExplorerNfts.length}
                       onReset={resetExplorerFilters}

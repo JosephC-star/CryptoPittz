@@ -51,6 +51,7 @@ export async function handler(event) {
         paymentToken: listing.buyTokenId || "EGLD",
         dollarValue: Number(listing.dollarValue) || null,
         auctionId: listing.auctionId || null,
+        listedAt: Number(listing.auctionStartTime || listing.auctionInfo?.auctionStart) || null,
       }));
 
     return json(

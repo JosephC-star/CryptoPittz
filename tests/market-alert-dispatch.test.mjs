@@ -4,14 +4,28 @@ import {readFile} from 'node:fs/promises';
 // Substitute only external services; exercise the real dispatcher and default handler.
 const source=await readFile(new URL('../netlify/functions/market-alert-dispatch.mjs',import.meta.url),'utf8');
 const stub='data:text/javascript,'+encodeURIComponent('export const db=(...args)=>globalThis.__dispatchTest.db(...args);export const mailReady=()=>globalThis.__dispatchTest.ready;export const sendMarketMail=(...args)=>globalThis.__dispatchTest.mail(...args);');
-const module=await import('data:text/javascript,'+encodeURIComponent(source.replace("'./market-api.mjs'",JSON.stringify(stub)).replace("'../../server/market-email.mjs'",JSON.stringify(stub))));
+const module=await import('data:text/javascript,'+encodeURIComponent(source.replace("'../../server/merchant-signup-alert.mjs'",JSON.stringify(new URL('../server/merchant-signup-alert.mjs',import.meta.url).href)).replace("'./market-api.mjs'",JSON.stringify(stub)).replace("'../../server/market-email.mjs'",JSON.stringify(stub))));
 const production={deploy:{context:'production',published:true}};
 const originalContext=process.env.CONTEXT;
 test.after(()=>{delete globalThis.__dispatchTest;if(originalContext===undefined)delete process.env.CONTEXT;else process.env.CONTEXT=originalContext;});
-function setup(){const calls=[],mail=[];globalThis.__dispatchTest={ready:true,db:async(path,method,body)=>{calls.push({path,method,body});if(path==='rpc/market_claim_alerts')return [{id:'job',lease:'lease',shop_id:'shop',owner_wallet:'owner',recipient:'merchant@example.test',inquiry_id:'inquiry',attempts:1}];if(method==='GET'||!method)return [{id:'eligible'}];return null;},mail:async(...args)=>{mail.push(args);return 'provider-id'}};return {calls,mail};}
+function setup(){const calls=[],mail=[];globalThis.__dispatchTest={ready:true,db:async(path,method,body)=>{calls.push({path,method,body});if(path==='rpc/market_claim_signup_alerts')return [];if(path==='rpc/market_claim_alerts')return [{id:'job',lease:'lease',shop_id:'shop',owner_wallet:'owner',recipient:'merchant@example.test',inquiry_id:'inquiry',attempts:1}];if(method==='GET'||!method)return [{id:'eligible'}];return null;},mail:async(...args)=>{mail.push(args);return 'provider-id'}};return {calls,mail};}
 test('published production claims and delivers jobs with CONTEXT absent',async()=>{const {calls,mail}=setup();delete process.env.CONTEXT;const response=await module.default(new Request('https://example.test'),production);assert.equal(response.status,204);assert.equal(mail.length,1);assert.equal(mail[0][0],'merchant@example.test');assert.equal(mail[0][3],'market-inquiry/job');assert(calls.some(c=>c.method==='PATCH'&&c.body.state==='sent'&&c.body.provider_id==='provider-id'));});
 test('previews, local invocations and unpublished production never claim or send',async()=>{for(const context of [undefined,{}, {deploy:{context:'deploy-preview',published:true}},{deploy:{context:'branch-deploy',published:true}},{deploy:{context:'production',published:false}}]){const {calls,mail}=setup();process.env.CONTEXT='production';await module.dispatchAlerts(context);assert.equal(calls.length,0);assert.equal(mail.length,0);}});
 test('disabled email configuration skips all services',async()=>{const {calls,mail}=setup();globalThis.__dispatchTest.ready=false;await module.dispatchAlerts(production);assert.equal(calls.length,0);assert.equal(mail.length,0);});
 test('queue errors produce a failed invocation without sending',async()=>{const {mail}=setup();globalThis.__dispatchTest.db=async()=>{throw Error('database unavailable')};assert.equal((await module.dispatchAlerts(production)).statusCode,503);assert.equal(mail.length,0);});
 test('delivery failures preserve retry state and release the lease',async()=>{const {calls}=setup();globalThis.__dispatchTest.mail=async()=>{throw Error('provider unavailable')};await module.dispatchAlerts(production);const retry=calls.find(c=>c.method==='PATCH');assert.equal(retry.body.state,'pending');assert.equal(retry.body.lease_until,null);assert(Date.parse(retry.body.next_attempt_at)>Date.now());});
 test('disabled merchant contacts cancel queued mail',async()=>{const {calls,mail}=setup(),original=globalThis.__dispatchTest.db;globalThis.__dispatchTest.db=async(...args)=>args[0].startsWith('market_alert_contacts?')?[]:original(...args);await module.dispatchAlerts(production);assert.equal(mail.length,0);assert(calls.some(c=>c.body?.state==='cancelled'));});
+
+test('signup alerts use the configured team recipient and an idempotency key',async()=>{
+ const {calls,mail}=setup(),original=globalThis.__dispatchTest.db;
+ globalThis.__dispatchTest.db=async(...args)=>{
+  if(args[0]==='rpc/market_claim_alerts')return [];
+  if(args[0]==='rpc/market_claim_signup_alerts')return [{kind:'merchant-signup',id:'signup',lease:'lease',shop_id:'shop',owner_wallet:'owner',recipient:'wrong@example.test',attempts:1}];
+  if(args[0].startsWith('market_shops?'))return [{id:'shop',name:'New merchant',booth_number:8}];
+  return original(...args);
+ };
+ await module.dispatchAlerts(production);
+ assert.equal(mail.length,1);assert.equal(mail[0][0],'cryptopittz69@gmail.com');assert.equal(mail[0][3],'market-signup/signup');
+ assert.match(mail[0][2],/New merchant/);assert.match(mail[0][2],/booth=8/);
+ assert(calls.some(c=>c.body?.state==='sent'));
+});

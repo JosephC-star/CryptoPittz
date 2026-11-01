@@ -7,7 +7,7 @@ import { isIP } from 'node:net';
 import { Address, Message, MessageComputer, UserVerifier } from '@multiversx/sdk-core';
 
 const ORIGIN = 'https://deploy-preview-17--cryptopittz.netlify.app';
-const ALLOWED_ORIGINS = new Set([ORIGIN, 'https://deploy-preview-53--cryptopittz.netlify.app', 'https://deploy-preview-49--cryptopittz.netlify.app', 'https://deploy-preview-18--cryptopittz.netlify.app', 'https://deploy-preview-29--cryptopittz.netlify.app', 'https://deploy-preview-32--cryptopittz.netlify.app', 'https://deploy-preview-33--cryptopittz.netlify.app', 'https://thepittzstop.com', 'https://www.thepittzstop.com', 'https://cryptopittz.netlify.app']);
+const ALLOWED_ORIGINS = new Set([ORIGIN, 'https://deploy-preview-57--cryptopittz.netlify.app', 'https://deploy-preview-53--cryptopittz.netlify.app', 'https://deploy-preview-49--cryptopittz.netlify.app', 'https://deploy-preview-18--cryptopittz.netlify.app', 'https://deploy-preview-29--cryptopittz.netlify.app', 'https://deploy-preview-32--cryptopittz.netlify.app', 'https://deploy-preview-33--cryptopittz.netlify.app', 'https://thepittzstop.com', 'https://www.thepittzstop.com', 'https://cryptopittz.netlify.app']);
 if(/^https:\/\/deploy-preview-\d+--cryptopittz\.netlify\.app$/.test(process.env.DEPLOY_PRIME_URL||''))ALLOWED_ORIGINS.add(process.env.DEPLOY_PRIME_URL);
 const COOKIE = '__Host-pittz-market';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -287,7 +287,7 @@ export async function handler(event) {
     if(route==='inquiries'){
       const offset=Number(event.queryStringParameters?.offset||0);
       if(!Number.isSafeInteger(offset)||offset<0||offset>100000)fail(400,'Invalid inbox page.');
-      const rows=await db('market_inquiries?shop_id=eq.'+shop.id+'&select=id,product_id,customer_name,customer_email,message,reference_image_path,status,created_at&order=created_at.desc&limit=51&offset='+offset);
+      const rows=await db('market_inquiries?shop_id=eq.'+shop.id+'&select=id,product_id,customer_name,customer_email,message,message_kind,reference_image_path,status,created_at&order=created_at.desc&limit=51&offset='+offset);
       return response(200,{inquiries:rows.slice(0,50).map(row=>({...row,reference_url:row.reference_image_path?'/.netlify/functions/market-api?route=inquiry-reference&id='+row.id:null})),hasMore:rows.length>50});
     }
     if(route==='inquiry-status'){
