@@ -1,3 +1,4 @@
+import {youtubeVideoId,youtubeWatchUrl} from '../../shared/market-product-video.mjs';
 import {featuredShop} from '../../shared/featured-shop.mjs';
 import {GALLERY_SLOTS,galleryFileName} from '../../shared/market-product-media.mjs';
 import {SHOP_CATEGORIES,shopCategories,matchesShop} from '../../public/flea-market/directory-utils.mjs';
@@ -7,7 +8,7 @@ import { isIP } from 'node:net';
 import { Address, Message, MessageComputer, UserVerifier } from '@multiversx/sdk-core';
 
 const ORIGIN = 'https://deploy-preview-17--cryptopittz.netlify.app';
-const ALLOWED_ORIGINS = new Set([ORIGIN, 'https://deploy-preview-58--cryptopittz.netlify.app', 'https://deploy-preview-57--cryptopittz.netlify.app', 'https://deploy-preview-53--cryptopittz.netlify.app', 'https://deploy-preview-49--cryptopittz.netlify.app', 'https://deploy-preview-18--cryptopittz.netlify.app', 'https://deploy-preview-29--cryptopittz.netlify.app', 'https://deploy-preview-32--cryptopittz.netlify.app', 'https://deploy-preview-33--cryptopittz.netlify.app', 'https://thepittzstop.com', 'https://www.thepittzstop.com', 'https://cryptopittz.netlify.app']);
+const ALLOWED_ORIGINS = new Set([ORIGIN, 'https://deploy-preview-59--cryptopittz.netlify.app', 'https://deploy-preview-58--cryptopittz.netlify.app', 'https://deploy-preview-57--cryptopittz.netlify.app', 'https://deploy-preview-53--cryptopittz.netlify.app', 'https://deploy-preview-49--cryptopittz.netlify.app', 'https://deploy-preview-18--cryptopittz.netlify.app', 'https://deploy-preview-29--cryptopittz.netlify.app', 'https://deploy-preview-32--cryptopittz.netlify.app', 'https://deploy-preview-33--cryptopittz.netlify.app', 'https://thepittzstop.com', 'https://www.thepittzstop.com', 'https://cryptopittz.netlify.app']);
 if(/^https:\/\/deploy-preview-\d+--cryptopittz\.netlify\.app$/.test(process.env.DEPLOY_PRIME_URL||''))ALLOWED_ORIGINS.add(process.env.DEPLOY_PRIME_URL);
 const COOKIE = '__Host-pittz-market';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -54,7 +55,16 @@ export function productInput(body, shopId) {
   if (!Number.isSafeInteger(quantity) || quantity < 0 || quantity > 1000000 || typeof body.made_to_order !== 'boolean') fail(400, 'Check the quantity and availability.');
   const image_path = body.image_path || null;
   if (image_path && (typeof image_path !== 'string' || !image_path.startsWith(shopId + '/') || !new RegExp('^' + shopId + '/[0-9a-f-]{36}\\.(jpg|png|webp)$').test(image_path))) fail(400, 'The image does not belong to this shop.');
-  return { name, description, price, currency, quantity, made_to_order: body.made_to_order, delivery: text('delivery', 240), status, image_path, updated_at: now() };
+  const video = {};
+  if (Object.hasOwn(body, 'youtube_url')) {
+    if (body.youtube_url === null || (typeof body.youtube_url === 'string' && !body.youtube_url.trim())) video.youtube_url = null;
+    else {
+      const id = youtubeVideoId(body.youtube_url);
+      if (!id) fail(400, 'Paste a valid YouTube video or Shorts link, or leave the video field empty.');
+      video.youtube_url = youtubeWatchUrl(id);
+    }
+  }
+  return { ...video, name, description, price, currency, quantity, made_to_order: body.made_to_order, delivery: text('delivery', 240), status, image_path, updated_at: now() };
 }
 function configuration() {
   const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SECRET_KEY;
@@ -86,7 +96,7 @@ function tokenFrom(event) {
 }
 async function session(event) {
   const token = tokenFrom(event);
-  if (!token || !/^[0-9a-f]{64}$/.test(token)) fail(401, 'Sign in to your merchant backroom.');
+  if (!token || !/^[0-9a-f]{64}$/.test(token)) fail(401, 'Sign in to your merchant stockroom.');
   const sessions = await db('market_sessions?token_hash=eq.' + hash(requestOrigin(event) + token) + '&revoked_at=is.null&expires_at=gt.' + encodeURIComponent(now()) + '&select=*&limit=1');
   const current = sessions?.[0];
   if (!current) fail(401, 'Your merchant session expired. Sign in again.');
@@ -178,7 +188,7 @@ export async function handler(event) {
       if (!Number.isSafeInteger(booth) || booth < 1) fail(400,'Invalid booth.');
       const shops = await db('market_shops?booth_number=eq.'+booth+'&select=id,booth_number,name,description,access_status,rental_expires_at,moderation_suspended&limit=1');
       const shop = shops?.[0]; if (!active(shop)) fail(404,'This storefront is not available.');
-      const products = await db('market_products?shop_id=eq.'+shop.id+'&status=eq.published&moderation_hidden=eq.false&select=id,name,description,price,currency,quantity,made_to_order,delivery,image_path&order=created_at.desc&limit=100');
+      const products = await db('market_products?shop_id=eq.'+shop.id+'&status=eq.published&moderation_hidden=eq.false&select=id,name,description,price,currency,quantity,made_to_order,delivery,image_path,youtube_url&order=created_at.desc&limit=100');
       const [photos,files]=await Promise.all([appearance(shop),galleryFiles(shop)]);
       return response(200,{shop:{id:shop.id,name:shop.name,description:shop.description,booth_number:shop.booth_number,...photos},products:products.map(p=>withGallery(p,files,photos.default_image_url))});
     }

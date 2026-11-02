@@ -1,4 +1,4 @@
-import {matchesPittzNumber} from './utils/pittzSort.mjs';
+import {matchesPittzNumber,compareExplorerRanks} from './utils/pittzSort.mjs';
 import PackCover from './features/my-pittz/PackCover';
 import FeaturedMarketEntrance from './features/home/FeaturedMarketEntrance';
 import {NeonWelcome,IntroDisclosure} from "./features/home/NeonWelcome";
@@ -48,6 +48,7 @@ function App({ explorerPage: isExplorerPage = false }) {
   }
   const [explorerSearch, setExplorerSearch] = useState("");
   const [explorerTraits, setExplorerTraits] = useState({});
+  const [explorerRankOrder,setExplorerRankOrder] = useState("rank-high-to-low");
   const [randomPittLoading, setRandomPittLoading] = useState(false);
   const [randomPittError, setRandomPittError] = useState("");
   const [randomPittMode, setRandomPittMode] = useState("surprise");
@@ -279,7 +280,7 @@ function App({ explorerPage: isExplorerPage = false }) {
       const aStats = getPittzStats(a.attributes);
       const bStats = getPittzStats(b.attributes);
 
-      return Number(aStats.rank || Infinity) - Number(bStats.rank || Infinity);
+      return compareExplorerRanks(aStats.rank,bStats.rank,explorerRankOrder);
     });
 
   const explorerFilteredTotal = filteredExplorerNfts.length;
@@ -824,6 +825,8 @@ function App({ explorerPage: isExplorerPage = false }) {
                       indexLoading={explorerAllLoading}
                       indexReady={explorerIndexReady}
                       loadProgress={explorerLoadProgress}
+                      rankOrder={explorerRankOrder}
+                      onRankOrderChange={(value)=>{setExplorerRankOrder(value);setExplorerPage(0);}}
                       search={explorerSearch}
                       onSearchChange={(value) => {
                         setExplorerSearch(value);

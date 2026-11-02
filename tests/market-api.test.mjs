@@ -151,3 +151,20 @@ test('merchant unread count excludes other shops and messages already read or cl
 });
 
 test('term expiry pauses public catalog and editing without deleting inventory; renewal restores both',async()=>{setup();await login();const id=randomUUID();tables.market_products.push({id,shop_id:shopId,status:'published',name:'Saved item',quantity:1});tables.market_shops[0].access_status='active';tables.market_shops[0].rental_expires_at=new Date(Date.now()-1000).toISOString();assert.equal((await call('catalog')).statusCode,404);assert.equal((await call('products')).statusCode,403);assert.equal(tables.market_products.length,1);tables.market_shops[0].rental_expires_at=new Date(Date.now()+86400000).toISOString();assert.equal((await call('catalog')).statusCode,200);assert.equal((await call('products')).statusCode,200);assert.equal(tables.market_products[0].id,id);});
+
+test('merchant product video survives save, reload, visibility updates and removal',async()=>{
+ setup();await login();
+ const body={name:'Video rug',quantity:1,made_to_order:false,status:'published',youtube_url:'https://youtu.be/M7lc1UVf-VE?si=tracking'};
+ const saved=await call('product',body);assert.equal(saved.statusCode,201,saved.body);
+ const product=JSON.parse(saved.body).product;
+ assert.equal(product.youtube_url,'https://www.youtube.com/watch?v=M7lc1UVf-VE');
+ assert.equal(JSON.parse((await call('products')).body).products[0].youtube_url,product.youtube_url);
+ assert.equal(JSON.parse((await call('catalog')).body).products[0].youtube_url,product.youtube_url);
+ assert(fetches.some(({url})=>new URL(url).searchParams.get('select')?.includes('youtube_url')));
+ assert.equal((await call('product',{...body,id:product.id,youtube_url:'https://evil.test/video'})).statusCode,400);
+ const {youtube_url,...withoutVideo}=body;
+ assert.equal((await call('product',{...withoutVideo,id:product.id,status:'draft'})).statusCode,200);
+ assert.equal(tables.market_products[0].youtube_url,product.youtube_url);
+ assert.equal((await call('product',{...body,id:product.id,youtube_url:''})).statusCode,200);
+ assert.equal(JSON.parse((await call('catalog')).body).products[0].youtube_url,null);
+});

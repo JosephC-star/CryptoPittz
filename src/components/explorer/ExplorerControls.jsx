@@ -1,5 +1,7 @@
 export default function ExplorerControls({
   activeCollection,
+  rankOrder,
+  onRankOrderChange,
   collectionTotal,
   indexLoading,
   indexReady,
@@ -85,7 +87,13 @@ export default function ExplorerControls({
           </button>
         </div>
 
-        <div className="explorer-rank-order"><span>Rank order</span><strong>Best rank first · #1 onward</strong></div>
+        <label className="explorer-rank-order">
+          <span>Sort</span>
+          <select aria-label="Sort Explorer by rank" value={rankOrder} onChange={(event)=>onRankOrderChange(event.target.value)}>
+            <option value="rank-high-to-low">Rank High to Low</option>
+            <option value="rank-low-to-high">Rank Low to High</option>
+          </select>
+        </label>
 
       </div>
 

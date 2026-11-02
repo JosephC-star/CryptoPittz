@@ -59,7 +59,7 @@ Completed in preview source:
 - [x] Added a branded homepage title, description and Open Graph/Twitter metadata using the existing CryptoPittz logo. The actual social-platform crop is still unverified.
 - [x] Added page-specific browser titles for the Financial District, Pittensor, swap and merchant routes while preserving server-generated shop titles.
 - [x] Added a visible retry/support message if wallet SDK startup fails, replacing a blank root; added a no-JavaScript notice.
-- [x] Redirected the obsolete merchant demo to the real merchant backroom and added the bookmarked trailing-slash rental route.
+- [x] Redirected the obsolete merchant demo to the real merchant stockroom and added the bookmarked trailing-slash rental route.
 - [x] Explorer/Traits navigation now opens collapsed Explorer content before scrolling.
 - [x] Authored static route/anchor/asset audit: 65 unique local references resolve. Existing market audit: 73 authored references resolve. Compiled playground script syntax checks pass.
 - [x] All 234 automated tests pass; Vite build succeeds (existing large-chunk warning remains).
@@ -87,7 +87,7 @@ These checks are not live financial execution tests. No transaction was signed o
 
 ## Mobile xPortal popup pass
 
-- [x] Moved xPortal's connection mount into one reusable native modal, portaled to document.body, for the homepage, swap, liquidity, staking, merchant backroom, rentals and admin login. This keeps the connection options in the viewport and above the Financial District's custom modal instead of below page content.
+- [x] Moved xPortal's connection mount into one reusable native modal, portaled to document.body, for the homepage, swap, liquidity, staking, merchant stockroom, rentals and admin login. This keeps the connection options in the viewport and above the Financial District's custom modal instead of below page content.
 - [x] Added bounded viewport height, safe-area spacing, background scroll lock, a close control and Escape handling. Closing requests cancellation from the existing account provider.
 - [x] Removed the duplicate homepage wallet anchor. Connection success/error cleanup closes and clears the shared mount.
 - [x] Build and all 237 existing automated tests pass.

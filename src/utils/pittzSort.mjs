@@ -20,3 +20,11 @@ export function matchesPittzNumber(nft,search){
  const number=nft.name?.match(/#(\d+)/)?.[1];
  return number!==undefined&&Number(number)===Number(query);
 }
+
+// A high rank is #1; unranked items stay last in both directions.
+export function compareExplorerRanks(a,b,order='rank-high-to-low'){
+ const av=positive(a),bv=positive(b);
+ if(av===null)return bv===null?0:1;
+ if(bv===null)return -1;
+ return order==='rank-low-to-high'?bv-av:av-bv;
+}
