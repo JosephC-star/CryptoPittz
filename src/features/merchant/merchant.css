@@ -60,3 +60,16 @@
 .merchant-live .ml-claim-button:hover{background:#ffe4a6}.merchant-live .ml-claim-button:focus-visible{outline:3px solid white;outline-offset:4px}
 .merchant-live .ml-claim-booth p{font-size:14px;line-height:1.6;margin:16px 0}
 @media(max-width:550px){.merchant-live .ml-claim-booth{padding:18px}.merchant-live .ml-claim-button{width:100%;text-align:center}}
+
+/* Keep storefront summaries short; full merchant copy stays in a dialog. */
+.merchant-live .ml-catalog-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));align-items:start}
+.merchant-live .ml-catalog-grid>article{min-width:0}
+.merchant-live .ml-copy-preview-wrap{min-width:0;margin:16px 0}
+.merchant-live .ml-copy-preview{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden;overflow-wrap:anywhere;white-space:normal;font:15px/1.8 Inter,system-ui,sans-serif;color:#e0ddd0;margin:0 0 12px}
+.merchant-live .ml-copy-preview-wrap.ml-shop-story{margin:28px 0 32px}
+.merchant-live .ml-read-more{min-height:44px;font-size:14px;color:var(--ml-gold)}
+.merchant-live dialog.ml-copy-dialog{width:min(680px,calc(100vw - 28px));max-width:680px;max-height:85dvh;overflow:auto;overscroll-behavior:contain;padding:22px}
+.merchant-live .ml-copy-dialog-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:20px}
+.merchant-live .ml-copy-dialog-heading h2{margin:0;font-size:24px;line-height:1.25;overflow-wrap:anywhere}
+.merchant-live .ml-copy-dialog-heading button{flex-shrink:0;min-width:44px;min-height:44px;font-size:26px;padding:2px 10px}
+.merchant-live .ml-copy-dialog button:focus-visible,.merchant-live .ml-read-more:focus-visible{outline:3px solid var(--ml-gold);outline-offset:3px}
