@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {compareListingValues,comparePittzNumber,matchesPittzNumber} from '../src/utils/pittzSort.mjs';
+import {compareListingValues,comparePittzNumber,matchesPittzNumber,compareExplorerRanks} from '../src/utils/pittzSort.mjs';
 import {handler} from '../netlify/functions/oox-listings.mjs';
 test('price order compares USD estimates across currencies, not token amounts',()=>{
  const listings=[{id:'bonez',paymentToken:'BONEZ-ff9a73',price:'69420',dollarValue:7.26},{id:'egld',paymentToken:'EGLD',price:'1.737',dollarValue:5.94},{id:'other',paymentToken:'OTHER-123456',price:'50',dollarValue:6.5},{id:'unknown',paymentToken:'BONEZ-ff9a73',price:'1',dollarValue:null}];
@@ -37,4 +37,14 @@ test('Explorer number search matches exact displayed numbers across both collect
  for(const query of ['60','#60','060',''])assert(matchesPittzNumber(nft,query));
  for(const query of ['6','600','PITTZ-1a4c2d-3c','word'])assert(!matchesPittzNumber(nft,query));
  assert(matchesPittzNumber({name:'CryptoPittz VICE #60'},'60'));
+});
+
+test('Explorer high rank begins at #1 and low rank begins with the worst number',()=>{
+ const ranks=[25,1,5310,9,null,undefined,0];
+ assert.deepEqual([...ranks].sort((a,b)=>compareExplorerRanks(a,b)).slice(0,4),[1,9,25,5310]);
+ assert.deepEqual([...ranks].sort((a,b)=>compareExplorerRanks(a,b,'rank-low-to-high')).slice(0,4),[5310,25,9,1]);
+ for(const rank of [null,undefined,0,-1,'bad',Infinity]){
+  assert.equal(compareExplorerRanks(rank,1,'rank-high-to-low'),1);
+  assert.equal(compareExplorerRanks(rank,5310,'rank-low-to-high'),1);
+ }
 });
