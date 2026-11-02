@@ -96,7 +96,7 @@ function tokenFrom(event) {
 }
 async function session(event) {
   const token = tokenFrom(event);
-  if (!token || !/^[0-9a-f]{64}$/.test(token)) fail(401, 'Sign in to your merchant backroom.');
+  if (!token || !/^[0-9a-f]{64}$/.test(token)) fail(401, 'Sign in to your merchant stockroom.');
   const sessions = await db('market_sessions?token_hash=eq.' + hash(requestOrigin(event) + token) + '&revoked_at=is.null&expires_at=gt.' + encodeURIComponent(now()) + '&select=*&limit=1');
   const current = sessions?.[0];
   if (!current) fail(401, 'Your merchant session expired. Sign in again.');

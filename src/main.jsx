@@ -38,7 +38,7 @@ const pageTitles = {
   "/financial-district": "Financial District · The PittzStop",
   "/pittensor": "Pittensor · The PittzStop",
   "/bonez-swap": "Token Swap · The PittzStop",
-  "/merchant-access": "Merchant Backroom · The PittzStop",
+  "/merchant-access": "Merchant Stockroom · The PittzStop",
   "/market-rent": "Storefront Rentals · The PittzStop",
   "/market-admin": "Market Administration · The PittzStop",
 };

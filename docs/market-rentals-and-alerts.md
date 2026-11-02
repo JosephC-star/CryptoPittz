@@ -20,7 +20,7 @@ Create a sending-only API key, preferably restricted to the verified sending dom
 
 Set these for Production; add Deploy Previews only if testing verification there. Redeploy after environment changes. Never paste the API key into a chat or source code.
 
-Each merchant signs in, opens Shop details, enters their alert email, and verifies the eight-digit code. Codes expire after 15 minutes, allow five attempts, and can be requested at most five times per day with a one-minute interval. Alerts only start after verification. They contain an inquiry reference and the backroom link; customer names, email addresses, messages and pictures stay in the private inbox.
+Each merchant signs in, opens Shop details, enters their alert email, and verifies the eight-digit code. Codes expire after 15 minutes, allow five attempts, and can be requested at most five times per day with a one-minute interval. Alerts only start after verification. They contain an inquiry reference and the stockroom link; customer names, email addresses, messages and pictures stay in the private inbox.
 
 The `market-alert-dispatch` scheduled function runs once per minute on production. A failed delivery does not remove the inquiry. Jobs use atomic leases and provider idempotency keys, with retries limited to 20 hours (within the provider's 24-hour idempotency window). Alerts accepted by the provider are not a guarantee of inbox delivery; inspect provider delivery/bounce logs if mail is missing. There is no delivery-webhook UI in this version. Existing inquiries are not emailed retroactively.
 

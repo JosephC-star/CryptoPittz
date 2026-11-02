@@ -7,7 +7,7 @@ export async function handler(event){try{
  if(!['public','mine','save','remove','image'].includes(route))fail(404,'Unknown gallery action.');
  const writing=['save','remove'].includes(route);
  if(event.httpMethod!==(writing?'POST':'GET'))fail(405,'Unsupported request method.');
- if(writing&&event.headers?.origin!==origin)fail(403,'Open your merchant backroom to make this change.');
+ if(writing&&event.headers?.origin!==origin)fail(403,'Open your merchant stockroom to make this change.');
  if(writing&&!event.headers?.['content-type']?.startsWith('application/json'))fail(415,'JSON required.');
  if(route==='mine'||writing){
   const {shop}=await session(event);
