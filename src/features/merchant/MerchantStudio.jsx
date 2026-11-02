@@ -1,3 +1,5 @@
+import ProductVideo from './ProductVideo';
+import {youtubeVideoId} from '../../../shared/market-product-video.mjs';
 import PortfolioStudio from './PortfolioStudio';
 import {loginWithWallet,hasWalletBridge,usesDirectWalletConnection} from '../../utils/connectWallet';
 import WalletConnectModal from '../../components/WalletConnectModal';
@@ -22,7 +24,7 @@ async function api(route, body) {
   if(!response.ok)throw Object.assign(new Error(content.error||'Please try again.'),{status:response.status});
   return content;
 }
-const blank = () => ({name:'',description:'',price:'',currency:'USD',quantity:1,made_to_order:false,delivery:'Arrange with merchant',status:'draft',image_path:null});
+const blank = () => ({name:'',description:'',price:'',currency:'USD',quantity:1,made_to_order:false,delivery:'Arrange with merchant',status:'draft',image_path:null,youtube_url:''});
 function errorText(error){return error instanceof Error ? error.message : 'The wallet request was cancelled or could not complete.';}
 export default function MerchantStudio() {
   const account=useGetAccount(),anchor=useRef(null),editor=useRef(null);
@@ -56,7 +58,7 @@ export default function MerchantStudio() {
   }catch(error){setMessage(errorText(error));}finally{setBusy(false)}}
   async function logout(){setBusy(true);try{await api('logout',{});setShop(null);setProducts([]);setMessage('Merchant session ended.');}catch(error){if(error.status===401||error.status===403){setShop(null);setProducts([]);}setMessage(errorText(error));}finally{setBusy(false)}}
   function openEditor(product){setDraft(product?{...product,price:product.price??''}:blank());setFile(null);setExtraFiles({});setRemovedPhotos([]);setExtraPreparing({});setMessage('');editor.current.showModal();}
-  async function saveProduct(event){event.preventDefault();if(anyPhotoBusy)return;setBusy(true);setMessage('Saving your product…');try{
+  async function saveProduct(event){event.preventDefault();if(anyPhotoBusy)return;if(draft.youtube_url?.trim()&&!youtubeVideoId(draft.youtube_url)){setMessage('Paste a valid YouTube video or Shorts link, or leave the video field empty.');return;}setBusy(true);setMessage('Saving your product…');try{
     let data={...draft,quantity:Number(draft.quantity)};
     if(file){const encoded=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=()=>reject(Error('The picture could not be read.'));r.readAsDataURL(file);});const uploaded=await api('upload',{type:file.type,data:encoded});data.image_path=uploaded.image_path;setDraft(current=>({...current,image_path:uploaded.image_path}));setFile(null);}
     const saved=await api('product',data),id=saved.product.id;setDraft(current=>({...current,id}));
@@ -83,6 +85,7 @@ export default function MerchantStudio() {
     <ProductPhoto key={draft.id||'new'} file={file} onSelect={setFile} onPreparing={setPhotoBusy} disabled={busy}/>{(filePreview||draft.image_path)&&<><img className="ml-photo-preview" src={filePreview||draft.primary_image_url||draft.image_url} alt="Product preview"/><button type="button" disabled={busy||anyPhotoBusy} onClick={()=>{setFile(null);setDraft({...draft,image_path:null,image_url:null,primary_image_url:null})}}>Remove photo</button></>}
     <ExtraProductPhotos draft={draft} files={extraFiles} removed={removedPhotos} disabled={busy} onPreparing={(slot,preparing)=>setExtraPreparing(current=>({...current,[slot]:preparing}))} onFile={(slot,photo)=>{setExtraFiles(current=>({...current,[slot]:photo}));setRemovedPhotos(current=>current.filter(value=>value!==slot));}} onRemove={slot=>{setExtraFiles(current=>({...current,[slot]:null}));setRemovedPhotos(current=>current.includes(slot)?current.filter(value=>value!==slot):draft.gallery_photos?.some(photo=>photo.slot===slot)?[...current,slot]:current);}}/>
     {!file&&!draft.image_path&&shopPhotos.default_image_url&&<p>Your shop’s default inventory picture will appear for this item.</p>}
+    <label>YouTube product video (optional)<input type="url" maxLength={2048} value={draft.youtube_url||''} disabled={busy} placeholder="https://www.youtube.com/watch?v=…" aria-describedby="product-video-help" onChange={e=>setDraft({...draft,youtube_url:e.target.value})}/></label><p id="product-video-help">Paste a YouTube video or Shorts link to show your merch in action. Use a public or unlisted video with embedding enabled. Leave blank for photos only.</p><ProductVideo url={draft.youtube_url} name={draft.name||'Product preview'}/>{draft.youtube_url&&<button type="button" disabled={busy} onClick={()=>setDraft({...draft,youtube_url:''})}>Remove video</button>}
     <label>Visibility<select value={draft.status} onChange={e=>setDraft({...draft,status:e.target.value})}><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></label><p role="status">{message}</p><button className="ml-primary" disabled={busy||anyPhotoBusy}>{anyPhotoBusy?'Preparing photos…':busy?'Saving…':'Save product'}</button></form></dialog>
     </>}
     <WalletConnectModal open={walletOpen} anchorRef={anchor} onClose={()=>setWalletOpen(false)}/></main><MarketFooter/></div>;

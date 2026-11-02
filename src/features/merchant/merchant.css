@@ -92,3 +92,9 @@
  .merchant-live #market-shop-inquiry form>label{margin:8px 0}
  .merchant-live #market-shop-inquiry form>button{justify-self:start}
 }
+
+/* Optional YouTube clips fit both compact cards and the single-product layout. */
+.merchant-live .ml-product-video{min-width:0;margin:18px 0}
+.merchant-live .ml-product-video h3{font-size:16px;margin:0 0 10px}
+.merchant-live .ml-product-video iframe{display:block;width:100%;aspect-ratio:16/9;min-height:200px;border:0;border-radius:12px;background:#080a10}
+.merchant-live .ml-product-video a{display:inline-block;margin-top:8px;font-size:12px}
