@@ -11,3 +11,12 @@ body.embedded{overflow:hidden}body.embedded>header{display:none}body.embedded ma
 @media(max-width:500px){.flip-table>.stage{height:clamp(290px,43svh,350px)}.flip-table .stage .coinspace{width:125px;height:125px;margin-left:-62.5px}.flip-table .result strong{font-size:16px}.bet-strip{grid-template-columns:minmax(0,1fr) 72px}.flip-table-top{padding:10px 14px}.flip-action .payout>span{font-size:0}.flip-action .payout>span:after{content:'Win return';font-size:9px}.game-details .foot{display:block}.game-details .foot>div{margin-top:16px}}
 
 .details-settings{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}.details-settings button{min-height:44px;background:#1d2a28;color:#eceddf;border:1px solid #ffffff25;border-radius:9px;padding:10px 12px}body:not(.embedded) #playground-settings{display:none}
+
+/* Side and round mode share one compact row above the coin. */
+.play-choices{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;padding:0 14px 10px}
+.play-choices .sides,.play-choices .mode-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:0;margin:0;border:0;background:none;min-width:0}
+.play-choices .side,.play-choices .mode{min-width:0;min-height:44px;margin:0;padding:6px 4px;border:1px solid #ffffff20;border-radius:8px;font-size:11px;white-space:nowrap}
+.play-choices .side.active,.play-choices .mode.active{border-color:var(--gold);color:var(--gold)}
+.play-choices .side[data-side="vice"].active{border-color:#d8a2d1;color:#e1b4db}
+.play-choices .side .pack-nft{width:20px;height:20px}.play-choices .side .pack-name{font-size:10px;letter-spacing:.4px}.play-choices .side.active:after{display:none}
+@media(max-width:420px){.play-choices{gap:8px}.play-choices .side .pack-nft{display:none}.play-choices .side .pack-name{font-size:9px}.play-choices .mode{font-size:10px}}
