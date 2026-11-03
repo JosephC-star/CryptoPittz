@@ -1,4 +1,4 @@
-export default function ExplorerPagination({ currentPage, totalItems, pageSize, onPageChange }) {
+export default function ExplorerPagination({ currentPage, totalItems, pageSize, onPageChange, scrollTargetId = "explorer" }) {
   const totalPages = Math.ceil(totalItems / pageSize);
 
   if (totalPages <= 1) return null;
@@ -6,7 +6,7 @@ export default function ExplorerPagination({ currentPage, totalItems, pageSize, 
   function goToPage(page) {
     onPageChange(page);
 
-    document.getElementById("explorer")?.scrollIntoView({
+    document.getElementById(scrollTargetId)?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     });
