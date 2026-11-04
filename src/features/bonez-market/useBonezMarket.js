@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { BONEZ_DEXSCREENER_URL, BONEZ_TOKEN_ID } from "../../config/collections";
+import { BONEZ_TOKEN_ID } from "../../config/collections";
 import { buildBonezChart } from "../../utils/chartUtils";
 
 function useBonezMarket(enabled = true, { historyEnabled = true } = {}) {
@@ -51,7 +51,7 @@ function useBonezMarket(enabled = true, { historyEnabled = true } = {}) {
     async function fetchMarket(attempt = 0) {
       try {
         if (attempt === 0) setMarketStatus((current) => current === "connected" ? current : "checking");
-        const response = await fetch(BONEZ_DEXSCREENER_URL);
+        const response = await fetch('/.netlify/functions/bonez-market');
         if (!response.ok) {
           const error = new Error("Unable to load BONEZ market data");
           error.status = response.status;

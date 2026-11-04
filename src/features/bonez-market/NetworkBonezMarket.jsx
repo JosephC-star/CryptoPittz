@@ -16,7 +16,7 @@ export default function NetworkBonezMarket() {
   return <section className="network-bonez-market" aria-label="Live BONEZ market data">
     <div className="network-market-caption">
       <span>BONEZ Market</span>
-      <span role="status" title={marketUpdated ? `Last updated ${marketUpdated.toLocaleTimeString()}. Source: Dexscreener, BONEZ / EGLD on xExchange.` : undefined}>{status}</span>
+      <span role="status" title={marketUpdated ? `Last updated ${marketUpdated.toLocaleTimeString()}. Source: ${market?.source || 'Market provider'}, BONEZ / EGLD on xExchange.` : undefined}>{status}</span>
     </div>
     <div className="pittz-network-status">
       {rows.map(([label, value]) => <div key={label}>
