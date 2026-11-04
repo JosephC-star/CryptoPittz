@@ -225,3 +225,16 @@
   to = "/explorer.html"
   status = 200
   force = true
+
+# Fresh launch URL serves the homepage with independent social card metadata.
+[[redirects]]
+  from = "/welcome"
+  to = "/welcome.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/welcome/"
+  to = "/welcome.html"
+  status = 200
+  force = true
