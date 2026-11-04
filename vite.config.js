@@ -8,8 +8,8 @@ export default defineConfig({
       // Preview metadata must load the new asset from this deploy, not production.
       const preview = process.env.CONTEXT === "deploy-preview" && process.env.DEPLOY_PRIME_URL;
       return preview ? html.replaceAll(
-        "https://thepittzstop.com/images/pittzstop-social-roadtrip.jpg",
-        new URL("/images/pittzstop-social-roadtrip.jpg", preview).href
+        "https://thepittzstop.com/images/pittzstop-launch-nov2026.jpg",
+        new URL("/images/pittzstop-launch-nov2026.jpg", preview).href
       ) : html;
     },
   }],
