@@ -20,7 +20,6 @@ import ExplorerPagination from "./components/explorer/ExplorerPagination";
 import NftCard from "./components/nft/NftCard";
 import NftDetailModal from "./components/nft/NftDetailModal";
 import "./features/bonez-burn/pittensor.css";
-import NetworkBonezMarket from "./features/bonez-market/NetworkBonezMarket";
 import useExplorerData from "./features/explorer/useExplorerData";
 import useOoxListings from "./features/explorer/useOoxListings";
 import "./features/my-pittz/my-pittz-page.css";
@@ -335,12 +334,14 @@ function App({ explorerPage: isExplorerPage = false }) {
                   Explore <span className="caret" aria-hidden="true"></span>
                 </button>
                 <div className="dropdown" role="menu">
-                  <a href={isExplorerPage ? "/#arcade" : "#arcade"} onClick={() => setDesktopGroup(null)}>Pittz Playground</a>
                   <a href="/my-pittz/" onClick={() => setDesktopGroup(null)}>My Pittz</a>
+                  <a href="/financial-district/" onClick={() => setDesktopGroup(null)}>Financial District</a>
                   <a href="/dawg-pound/" onClick={() => setDesktopGroup(null)}>Pittz Dawg Pound</a>
-                  <a href="/explorer/" onClick={event => { if(isExplorerPage){event.preventDefault();navigateExplorer("explorer");} }}>CryptoPittz Explorer</a>
-                  <a href="/explorer/#traits" onClick={event => { if(isExplorerPage){event.preventDefault();navigateExplorer("traits");} }}>Traits</a>
+                  <a href="/explorer/" onClick={event => { setDesktopGroup(null); if(isExplorerPage){event.preventDefault();navigateExplorer("explorer");} }}>CryptoPittz Explorer</a>
+                  <a href="/pittensor/" onClick={() => setDesktopGroup(null)}>Pittensor</a>
+                  <a href={isExplorerPage ? "/#arcade" : "#arcade"} onClick={() => setDesktopGroup(null)}>Pittz Playground</a>
                   <a href={isExplorerPage ? "/#merch" : "#merch"} onClick={() => setDesktopGroup(null)}>Pittz Flea Market</a>
+                  <a href="/explorer/#traits" onClick={event => { setDesktopGroup(null); if(isExplorerPage){event.preventDefault();navigateExplorer("traits");} }}>Traits</a>
                 </div>
               </div>
 
@@ -454,27 +455,14 @@ function App({ explorerPage: isExplorerPage = false }) {
               </button>
 
               <div className="mobile-links">
-                <a href={isExplorerPage ? "/#arcade" : "#arcade"} onClick={closeMobileMenu}>
-                  Pittz Playground
-                </a>
-
-                <a href="/my-pittz/" onClick={closeMobileMenu}>
-                  My Pittz
-                </a>
-
+                <a href="/my-pittz/" onClick={closeMobileMenu}>My Pittz</a>
+                <a href="/financial-district/" onClick={closeMobileMenu}>Financial District</a>
                 <a href="/dawg-pound/" onClick={closeMobileMenu}>Pittz Dawg Pound</a>
-
-                <a href="/explorer/" onClick={event => { if(isExplorerPage){event.preventDefault();navigateExplorer("explorer");} }}>
-                  CryptoPittz Explorer
-                </a>
-
-                <a href="/explorer/#traits" onClick={event => { if(isExplorerPage){event.preventDefault();navigateExplorer("traits");} }}>
-                  Traits
-                </a>
-
-                <a href={isExplorerPage ? "/#merch" : "#merch"} onClick={closeMobileMenu}>
-                  Pittz Flea Market
-                </a>
+                <a href="/explorer/" onClick={event => { closeMobileMenu(); if(isExplorerPage){event.preventDefault();navigateExplorer("explorer");} }}>CryptoPittz Explorer</a>
+                <a href="/pittensor/" onClick={closeMobileMenu}>Pittensor</a>
+                <a href={isExplorerPage ? "/#arcade" : "#arcade"} onClick={closeMobileMenu}>Pittz Playground</a>
+                <a href={isExplorerPage ? "/#merch" : "#merch"} onClick={closeMobileMenu}>Pittz Flea Market</a>
+                <a href="/explorer/#traits" onClick={event => { closeMobileMenu(); if(isExplorerPage){event.preventDefault();navigateExplorer("traits");} }}>Traits</a>
               </div>
             </div>
 
@@ -695,35 +683,6 @@ function App({ explorerPage: isExplorerPage = false }) {
                   </button>
                 </div>
               </div>
-              <div className="pittz-network">
-                <div className="pittz-network-header">
-                  <div>
-                    <span className="pittz-network-eyebrow">Network Status</span>
-                    <h3>PITTZ NETWORK</h3>
-                  </div>
-
-                  <div className="pittz-network-live">
-                    <span className="pittz-network-dot" />
-                    Online
-                  </div>
-                </div>
-
-                <div className="pittz-network-grid">
-                  <div className="pittz-network-stat cyan">
-                    <span>Original Pittz</span>
-                    <strong>{originalTotal?.toLocaleString() || "5,310"}</strong>
-                  </div>
-
-                  <div className="pittz-network-stat magenta">
-                    <span>Vice Pittz</span>
-                    <strong>{viceTotal?.toLocaleString() || "1,395"}</strong>
-                  </div>
-                </div>
-
-                <NetworkBonezMarket />
-
-                <div className="pittz-network-scan" />
-              </div>
               {randomPittError && <div className="random-pitt-error">{randomPittError}</div>}
             </div>
           </div>
@@ -735,6 +694,16 @@ function App({ explorerPage: isExplorerPage = false }) {
             <div className="financial-entrance-art" aria-hidden="true"><i className="financial-entrance-shine"/><i className="financial-entrance-dust"/></div>
           </a>
 
+          <section id="dawg-pound-entrance" aria-label="Pittz Dawg Pound">
+            <a className="dawg-home-entrance" href="/dawg-pound/"><div className="dawg-entrance-copy"><small>THE PACK’S COLLECTOR DISTRICT</small><h2>Pittz Dawg Pound</h2><p>Find your next pack member. Browse Pittz for sale and collection offers.</p><strong>Enter Pound Town →</strong></div><div className="dawg-entrance-art" aria-hidden="true"/></a>
+          </section>
+
+          <section id="explorer-entrance" aria-label="CryptoPittz Explorer">
+            <a className="explorer-home-entrance" href="/explorer/">
+              <div><small>EVERY PITTZ. EVERY DETAIL.</small><h2>CryptoPittz Explorer</h2><p>Find your next favorite. Browse Original and Vice Pittz, hunt rare traits, and discover listings and offers.</p><strong>Enter the Explorer →</strong></div>
+              <div className="explorer-guide-art" aria-hidden="true"><img src="/images/pittz-explorer-guide.jpg" alt="" loading="lazy"/></div>
+            </a>
+          </section>
           <a className="pittensor-entrance" href="/pittensor/">
             <div><small>THE PACK’S INDUSTRIAL HEART</small><h2>Pittensor</h2><p>You earn, we burn! Add BONEZ to the pack’s monthly burn pile.</p><strong>Enter Pittensor →</strong></div>
             <div className="pittensor-entrance-art" aria-hidden="true" />
@@ -750,16 +719,6 @@ function App({ explorerPage: isExplorerPage = false }) {
             </div>
             <div className="playground-release-art neon-yard-entrance-art" aria-hidden="true"><i className="neon-yard-entrance-glint" /></div>
           </a>
-          <section id="dawg-pound-entrance" aria-label="Pittz Dawg Pound">
-            <a className="dawg-home-entrance" href="/dawg-pound/"><div className="dawg-entrance-copy"><small>THE PACK’S COLLECTOR DISTRICT</small><h2>Pittz Dawg Pound</h2><p>Find your next pack member. Browse Pittz for sale and collection offers.</p><strong>Enter Pound Town →</strong></div><div className="dawg-entrance-art" aria-hidden="true"/></a>
-          </section>
-
-          <section id="explorer-entrance" aria-label="CryptoPittz Explorer">
-            <a className="explorer-home-entrance" href="/explorer/">
-              <div><small>EVERY PITTZ. EVERY DETAIL.</small><h2>CryptoPittz Explorer</h2><p>Find your next favorite. Browse Original and Vice Pittz, hunt rare traits, and discover listings and offers.</p><strong>Enter the Explorer →</strong></div>
-              <div className="explorer-guide-art" aria-hidden="true"><img src="/images/pittz-explorer-guide.jpg" alt="" loading="lazy"/></div>
-            </a>
-          </section>
           </>}
           {isExplorerPage && <>
           <section className="explorer-page-intro explorer-guide-intro" aria-labelledby="explorer-page-title">

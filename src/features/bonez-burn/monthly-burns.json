@@ -1,0 +1,10 @@
+{
+  "startMonth": "2026-11",
+  "receipts": [
+    {
+      "hash": "1962f93b5baf48048698f593509986474fff49c5fb9d9cbdee0032ec052b6cca",
+      "burnedAt": "2026-11-02T18:07:45Z",
+      "atomic": "1050577000000"
+    }
+  ]
+}
