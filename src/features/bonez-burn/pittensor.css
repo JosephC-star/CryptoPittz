@@ -264,17 +264,11 @@
   .pittensor-page .burn-scene-actions { display: none; }
 }
 
+/* Compact monthly burn total with a month selector. */
 .monthly-burn-board{position:relative;margin:28px 0;padding:clamp(18px,4vw,32px);border:1px solid #bd874a70;border-radius:22px;background:linear-gradient(135deg,#241725,#101821);color:#eee3da}
-.monthly-burn-heading{display:flex;justify-content:space-between;gap:20px;align-items:center;flex-wrap:wrap}
-.monthly-burn-heading h2{margin:8px 0;font-size:clamp(24px,4vw,34px)}
-.monthly-burn-total{display:grid;gap:8px;color:#ffc779}
-.monthly-burn-total span,.monthly-burn-board>p,.monthly-burn-board>small{color:#c5b9b5;line-height:1.65}
-.monthly-burn-list{list-style:none;padding:0;margin:24px 0;display:grid;gap:12px}
-.monthly-burn-list li{padding:18px;border:1px solid #bd874a45;border-radius:14px;background:#080b1280}
-.monthly-burn-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.monthly-burn-row h3{margin:0;font-size:18px}
-.monthly-burn-row strong{color:#ffc779;font-size:15px}
-.monthly-burn-list p{color:#c5b9b5}
-.monthly-burn-receipts{display:flex;gap:16px;flex-wrap:wrap}
-.monthly-burn-receipts a{color:#74eadc;text-underline-offset:4px}
-.monthly-burn-receipts a:focus-visible{outline:2px solid #ffc779;outline-offset:4px}
+.monthly-burn-heading{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}
+.monthly-burn-heading h2{margin:0;font-size:clamp(24px,4vw,34px)}
+.monthly-burn-total{margin-top:24px;color:#ffc779;font-size:clamp(26px,5vw,40px);overflow-wrap:anywhere}
+.monthly-burn-filter select{max-width:100%;padding:12px 36px 12px 14px;border:1px solid #bd874a70;border-radius:10px;background:#15131d;color:#eee3da;font:inherit;cursor:pointer}
+.monthly-burn-filter select:focus-visible{outline:2px solid #ffc779;outline-offset:3px}
+.monthly-burn-filter .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
