@@ -98,3 +98,5 @@
 .merchant-live .ml-product-video h3{font-size:16px;margin:0 0 10px}
 .merchant-live .ml-product-video iframe{display:block;width:100%;aspect-ratio:16/9;min-height:200px;border:0;border-radius:12px;background:#080a10}
 .merchant-live .ml-product-video a{display:inline-block;margin-top:8px;font-size:12px}
+
+.merchant-live .ml-inquiry-message{scroll-margin-block:100px;overflow-wrap:anywhere}.merchant-live .ml-inquiry-message.success{border:1px solid #79d99c;background:#193d2b;color:#d5ffe2}.merchant-live .ml-inquiry-message.error{border:1px solid #e5a1a1;background:#462727;color:#ffe1e1}
