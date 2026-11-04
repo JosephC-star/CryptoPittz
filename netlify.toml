@@ -25,7 +25,12 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Content-Security-Policy = "frame-ancestors 'self'"
 
-# Keep alternate domains on the primary wallet and merchant origin.
+# Handle aliases before static routing, including crawler Range requests.
+[[edge_functions]]
+  function = "canonical-domain"
+  path = "/*"
+
+# Fallback redirects keep aliases on the primary wallet and merchant origin.
 [[redirects]]
   from = "https://cryptopittz.com/*"
   to = "https://thepittzstop.com/:splat"
