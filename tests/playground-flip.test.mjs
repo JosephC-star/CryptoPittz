@@ -46,3 +46,16 @@ test('finished-game refill is available only for low balances and retains histor
  const history=[{id:'old-round',side:'original',picked:'vice',amount:25,win:false}];
  const low=await game({[vault]:'5',[journal]:JSON.stringify({balance:5,history,pending:null})});assert.equal(low.query('#refill').hidden,false);await low.run("$('#refill').onclick()");assert.equal(low.data.get(vault),'1000');assert.equal(JSON.parse(low.data.get(journal)).history.length,1);assert.equal(low.query('#refill').hidden,true);
 });
+
+test('embedded frame accepts height only from its own same-origin game window',async()=>{
+ const script=await readFile(new URL('public/playground/flip-frame.js',root),'utf8');
+ const handlers={},frame={style:{},contentWindow:{},setAttribute(){},closest:()=>({scrollIntoView(){}})},button={addEventListener(){}},body={classList:{toggle(){},add(){},remove(){}}};
+ const context={document:{body,querySelector:s=>s==='.bonez-flip-frame'?frame:button},location:{origin:'https://thepittzstop.com'},addEventListener:(name,fn)=>handlers[name]=fn,MutationObserver:class{observe(){}},requestAnimationFrame:fn=>fn(),matchMedia:()=>({matches:true}),Number,Math};context.window=context;
+ vm.runInNewContext(script,context);
+ const event={origin:context.location.origin,source:frame.contentWindow,data:{type:'pittz-flip-height',height:610}};
+ handlers.message({...event,origin:'https://other.test'});assert.equal(frame.style.height,undefined);
+ handlers.message({...event,source:{}});assert.equal(frame.style.height,undefined);
+ handlers.message({...event,data:{type:'pittz-flip-height',height:Infinity}});assert.equal(frame.style.height,undefined);
+ handlers.message(event);assert.equal(frame.style.height,'610px');
+ handlers.message({...event,data:{type:'pittz-flip-height',height:1350}});assert.equal(frame.style.height,'1350px');
+});
