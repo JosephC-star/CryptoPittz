@@ -21,8 +21,10 @@ function displayAmount(raw, decimals, roundUp = false) {
   if (BigInt(raw) > 0n && whole === '0' && !/[1-9]/.test(fraction.slice(0, 4))) return '<0.0001';
   return whole + '.' + fraction.slice(0, 4).padEnd(4, '0');
 }
-export default function BonezSwap({embedded=false,onBusyChange,purchaseOnly=false,onSubmitted,purchaseBooth=1}) {
+export default function BonezSwap({embedded=false,onBusyChange,purchaseOnly=false,onSubmitted,onConfirmed,purchaseBooth=1}) {
   const account=useGetAccount();
+  const onConfirmedRef=useRef(onConfirmed);
+  useEffect(()=>{onConfirmedRef.current=onConfirmed;},[onConfirmed]);
   const [input,setInput]=useState('EGLD'),[output,setOutput]=useState(BONEZ),[amount,setAmount]=useState('0.01'),[slippage,setSlippage]=useState(50);
   const [usd,setUsd]=useState(10);
   const [quote,setQuote]=useState(null),[review,setReview]=useState(null),[busy,setBusy]=useState(false);
@@ -54,7 +56,7 @@ export default function BonezSwap({embedded=false,onBusyChange,purchaseOnly=fals
       try{
         const tx=await getJson(`https://api.multiversx.com/transactions/${sent.hash}`);
         if(cancelled)return;
-        if(transactionState(tx)==='confirmed'){setConfirmed(true);setSettled(true);setStatus('Swap complete. You earn, we burn!');return;}
+        if(transactionState(tx)==='confirmed'){setConfirmed(true);setSettled(true);setStatus('Swap complete. You earn, we burn!');if(sent.receipt)void onConfirmedRef.current?.(sent.receipt);return;}
         if(transactionState(tx)==='failed'){setSettled(true);setStatus('The swap failed. Check the transaction details before trying again.');return;}
       }catch{/* Indexing may lag after broadcast. Keep the transaction link available. */}
       if(!cancelled)timer=setTimeout(poll,6000);
@@ -97,7 +99,7 @@ export default function BonezSwap({embedded=false,onBusyChange,purchaseOnly=fals
   async function sign(){
     if(lock.current||!review)return;
     lock.current=true;setBusy(true);setStatus('Approve the swap in your wallet. Open xPortal manually if needed.');
-    try{const result=await submitSwap(review);setSent(result);if(result.hash)onSubmitted?.({hash:result.hash,address:review.address,...(purchaseOnly?{usd:review.usd,pricingToken:review.pricingToken}:{})});setSettled(false);setQuote(null);setReview(null);setStatus(result.hash?'Swap sent. Waiting for network confirmation…':'Swap submitted. Check your wallet history for confirmation.');}
+    try{const result=await submitSwap(review);const receipt=result.hash?{hash:result.hash,address:review.address,...(purchaseOnly?{usd:review.usd,pricingToken:review.pricingToken}:{})}:null;setSent({...result,receipt});if(receipt)onSubmitted?.(receipt);setSettled(false);setQuote(null);setReview(null);setStatus(result.hash?'Swap sent. Waiting for network confirmation…':'Swap submitted. Check your wallet history for confirmation.');}
     catch(e){setStatus(e.message||'Signing was cancelled.');setReview(null);setQuote(null);}
     finally{lock.current=false;setBusy(false);}
   }

@@ -18,6 +18,6 @@ export default function SupporterBoard({rows,offset=0}){
    <div className="support-name"><strong title={r.wallet_address}>{name}</strong><small>{rank===1?'PACK LEADER':rank<=3?'TOP SUPPORTER':'PART OF THE PACK'}</small></div>
    <div className="support-score" title={human(r.total_bonez,6)+' BONEZ'}><strong>{dollars(r.total_usd_cents)}</strong><small className="support-bonez-total">{amount(r.total_bonez)} BONEZ</small></div>
   </li>;
- })}</ol>:<div className="support-board-welcome"><div aria-hidden="true"><span>01</span><span>🐾</span><span>03</span></div><strong>The first pawprints go here.</strong><p>Buy BONEZ, then choose to share your name and total. The pack will see your support right here.</p></div>}
+ })}</ol>:<div className="support-board-welcome"><div aria-hidden="true"><span>01</span><span>🐾</span><span>03</span></div><strong>The first pawprints go here.</strong><p>Buy BONEZ and approve the free receipt message after confirmation. Your herotag or shortened ERD and total will appear here if public sharing is selected.</p></div>}
  <div className="support-board-foot"><span aria-hidden="true">✦</span> Quoted USD at purchase · totals since the last reset.</div></div>;
 }
