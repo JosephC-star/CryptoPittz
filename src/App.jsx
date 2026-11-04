@@ -20,7 +20,6 @@ import ExplorerPagination from "./components/explorer/ExplorerPagination";
 import NftCard from "./components/nft/NftCard";
 import NftDetailModal from "./components/nft/NftDetailModal";
 import "./features/bonez-burn/pittensor.css";
-import NetworkBonezMarket from "./features/bonez-market/NetworkBonezMarket";
 import useExplorerData from "./features/explorer/useExplorerData";
 import useOoxListings from "./features/explorer/useOoxListings";
 import "./features/my-pittz/my-pittz-page.css";
@@ -683,35 +682,6 @@ function App({ explorerPage: isExplorerPage = false }) {
                     {randomPittLoading ? "Finding a Pitt..." : "🎲 Random Pitt"}
                   </button>
                 </div>
-              </div>
-              <div className="pittz-network">
-                <div className="pittz-network-header">
-                  <div>
-                    <span className="pittz-network-eyebrow">Network Status</span>
-                    <h3>PITTZ NETWORK</h3>
-                  </div>
-
-                  <div className="pittz-network-live">
-                    <span className="pittz-network-dot" />
-                    Online
-                  </div>
-                </div>
-
-                <div className="pittz-network-grid">
-                  <div className="pittz-network-stat cyan">
-                    <span>Original Pittz</span>
-                    <strong>{originalTotal?.toLocaleString() || "5,310"}</strong>
-                  </div>
-
-                  <div className="pittz-network-stat magenta">
-                    <span>Vice Pittz</span>
-                    <strong>{viceTotal?.toLocaleString() || "1,395"}</strong>
-                  </div>
-                </div>
-
-                <NetworkBonezMarket />
-
-                <div className="pittz-network-scan" />
               </div>
               {randomPittError && <div className="random-pitt-error">{randomPittError}</div>}
             </div>
