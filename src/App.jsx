@@ -735,6 +735,16 @@ function App({ explorerPage: isExplorerPage = false }) {
             <div className="financial-entrance-art" aria-hidden="true"><i className="financial-entrance-shine"/><i className="financial-entrance-dust"/></div>
           </a>
 
+          <section id="dawg-pound-entrance" aria-label="Pittz Dawg Pound">
+            <a className="dawg-home-entrance" href="/dawg-pound/"><div className="dawg-entrance-copy"><small>THE PACK’S COLLECTOR DISTRICT</small><h2>Pittz Dawg Pound</h2><p>Find your next pack member. Browse Pittz for sale and collection offers.</p><strong>Enter Pound Town →</strong></div><div className="dawg-entrance-art" aria-hidden="true"/></a>
+          </section>
+
+          <section id="explorer-entrance" aria-label="CryptoPittz Explorer">
+            <a className="explorer-home-entrance" href="/explorer/">
+              <div><small>EVERY PITTZ. EVERY DETAIL.</small><h2>CryptoPittz Explorer</h2><p>Find your next favorite. Browse Original and Vice Pittz, hunt rare traits, and discover listings and offers.</p><strong>Enter the Explorer →</strong></div>
+              <div className="explorer-guide-art" aria-hidden="true"><img src="/images/pittz-explorer-guide.jpg" alt="" loading="lazy"/></div>
+            </a>
+          </section>
           <a className="pittensor-entrance" href="/pittensor/">
             <div><small>THE PACK’S INDUSTRIAL HEART</small><h2>Pittensor</h2><p>You earn, we burn! Add BONEZ to the pack’s monthly burn pile.</p><strong>Enter Pittensor →</strong></div>
             <div className="pittensor-entrance-art" aria-hidden="true" />
@@ -750,16 +760,6 @@ function App({ explorerPage: isExplorerPage = false }) {
             </div>
             <div className="playground-release-art neon-yard-entrance-art" aria-hidden="true"><i className="neon-yard-entrance-glint" /></div>
           </a>
-          <section id="dawg-pound-entrance" aria-label="Pittz Dawg Pound">
-            <a className="dawg-home-entrance" href="/dawg-pound/"><div className="dawg-entrance-copy"><small>THE PACK’S COLLECTOR DISTRICT</small><h2>Pittz Dawg Pound</h2><p>Find your next pack member. Browse Pittz for sale and collection offers.</p><strong>Enter Pound Town →</strong></div><div className="dawg-entrance-art" aria-hidden="true"/></a>
-          </section>
-
-          <section id="explorer-entrance" aria-label="CryptoPittz Explorer">
-            <a className="explorer-home-entrance" href="/explorer/">
-              <div><small>EVERY PITTZ. EVERY DETAIL.</small><h2>CryptoPittz Explorer</h2><p>Find your next favorite. Browse Original and Vice Pittz, hunt rare traits, and discover listings and offers.</p><strong>Enter the Explorer →</strong></div>
-              <div className="explorer-guide-art" aria-hidden="true"><img src="/images/pittz-explorer-guide.jpg" alt="" loading="lazy"/></div>
-            </a>
-          </section>
           </>}
           {isExplorerPage && <>
           <section className="explorer-page-intro explorer-guide-intro" aria-labelledby="explorer-page-title">
