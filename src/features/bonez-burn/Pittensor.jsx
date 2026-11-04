@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { useGetAccount } from '@multiversx/sdk-dapp/out/react/account/useGetAccount';
 import { UnlockPanelManager } from '@multiversx/sdk-dapp/out/managers/UnlockPanelManager';
 import BonezBurner from './BonezBurner';
+import MonthlyBurnBoard from './MonthlyBurnBoard';
 import EmberField from './EmberField';
 import './pittensor.css';
 export default function Pittensor() {
@@ -40,6 +41,7 @@ export default function Pittensor() {
     <main className="pittensor-main"><section className="pittensor-hero"><span className="pittensor-kicker"><i /> THE PACK’S INDUSTRIAL HEART</span><h1>PITTENSOR</h1><p className="pittensor-motto">You earn, we burn!</p><p className="pittensor-intro">Feed the pack’s monthly burn pile.<br />The team burns collected BONEZ on the 1st of each month.</p><div className="pittensor-tools"><span>FURNACE 01 · {firing ? 'OVERDRIVE' : 'STANDING BY'}</span><button type="button" aria-pressed={effects} onClick={() => setEffects(!effects)}>Flying embers: {effects ? 'On' : 'Off'}</button><label className="pittensor-effects-choice">Effects<select value={quality} onChange={e => setQuality(e.target.value)}><option value="lite">Lite · smoother on phones</option><option value="full">Full · all details</option></select></label></div></section>
       {walletError && <p role="status" className="burn-error">{walletError}</p>}
       <BonezBurner address={account.address} onConnect={connect} onFireChange={setFiring} dedicated />
+      <MonthlyBurnBoard />
       <div className="pittensor-bottom"><span>POWERED BY THE PACK</span><p>Every bone has a story. This is where the next one starts.</p><a href="https://taostats.io/account/5ChwfAKs7YEHX6QNJub6DYzKhP47bxikVdFCh3ndX6vXVMa7/transactions" target="_blank" rel="noreferrer">Pittensor on TaoStats ↗</a></div>
     </main><footer className="pittensor-footer"><a href="/">THE PITTZSTOP</a><span>You earn, we burn!</span></footer>
     {createPortal(<div className="pittensor-wallet-overlay" hidden={!walletOpen}>
