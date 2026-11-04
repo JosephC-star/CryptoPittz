@@ -335,12 +335,14 @@ function App({ explorerPage: isExplorerPage = false }) {
                   Explore <span className="caret" aria-hidden="true"></span>
                 </button>
                 <div className="dropdown" role="menu">
-                  <a href={isExplorerPage ? "/#arcade" : "#arcade"} onClick={() => setDesktopGroup(null)}>Pittz Playground</a>
                   <a href="/my-pittz/" onClick={() => setDesktopGroup(null)}>My Pittz</a>
+                  <a href="/financial-district/" onClick={() => setDesktopGroup(null)}>Financial District</a>
                   <a href="/dawg-pound/" onClick={() => setDesktopGroup(null)}>Pittz Dawg Pound</a>
-                  <a href="/explorer/" onClick={event => { if(isExplorerPage){event.preventDefault();navigateExplorer("explorer");} }}>CryptoPittz Explorer</a>
-                  <a href="/explorer/#traits" onClick={event => { if(isExplorerPage){event.preventDefault();navigateExplorer("traits");} }}>Traits</a>
+                  <a href="/explorer/" onClick={event => { setDesktopGroup(null); if(isExplorerPage){event.preventDefault();navigateExplorer("explorer");} }}>CryptoPittz Explorer</a>
+                  <a href="/pittensor/" onClick={() => setDesktopGroup(null)}>Pittensor</a>
+                  <a href={isExplorerPage ? "/#arcade" : "#arcade"} onClick={() => setDesktopGroup(null)}>Pittz Playground</a>
                   <a href={isExplorerPage ? "/#merch" : "#merch"} onClick={() => setDesktopGroup(null)}>Pittz Flea Market</a>
+                  <a href="/explorer/#traits" onClick={event => { setDesktopGroup(null); if(isExplorerPage){event.preventDefault();navigateExplorer("traits");} }}>Traits</a>
                 </div>
               </div>
 
@@ -454,27 +456,14 @@ function App({ explorerPage: isExplorerPage = false }) {
               </button>
 
               <div className="mobile-links">
-                <a href={isExplorerPage ? "/#arcade" : "#arcade"} onClick={closeMobileMenu}>
-                  Pittz Playground
-                </a>
-
-                <a href="/my-pittz/" onClick={closeMobileMenu}>
-                  My Pittz
-                </a>
-
+                <a href="/my-pittz/" onClick={closeMobileMenu}>My Pittz</a>
+                <a href="/financial-district/" onClick={closeMobileMenu}>Financial District</a>
                 <a href="/dawg-pound/" onClick={closeMobileMenu}>Pittz Dawg Pound</a>
-
-                <a href="/explorer/" onClick={event => { if(isExplorerPage){event.preventDefault();navigateExplorer("explorer");} }}>
-                  CryptoPittz Explorer
-                </a>
-
-                <a href="/explorer/#traits" onClick={event => { if(isExplorerPage){event.preventDefault();navigateExplorer("traits");} }}>
-                  Traits
-                </a>
-
-                <a href={isExplorerPage ? "/#merch" : "#merch"} onClick={closeMobileMenu}>
-                  Pittz Flea Market
-                </a>
+                <a href="/explorer/" onClick={event => { closeMobileMenu(); if(isExplorerPage){event.preventDefault();navigateExplorer("explorer");} }}>CryptoPittz Explorer</a>
+                <a href="/pittensor/" onClick={closeMobileMenu}>Pittensor</a>
+                <a href={isExplorerPage ? "/#arcade" : "#arcade"} onClick={closeMobileMenu}>Pittz Playground</a>
+                <a href={isExplorerPage ? "/#merch" : "#merch"} onClick={closeMobileMenu}>Pittz Flea Market</a>
+                <a href="/explorer/#traits" onClick={event => { closeMobileMenu(); if(isExplorerPage){event.preventDefault();navigateExplorer("traits");} }}>Traits</a>
               </div>
             </div>
 
