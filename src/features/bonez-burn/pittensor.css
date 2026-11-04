@@ -258,3 +258,8 @@
 .pittensor-wallet-anchor{width:100%;min-width:0}
 .pittensor-wallet-close{position:absolute;top:10px;right:10px;width:38px;height:38px;border:1px solid #bd874a88;border-radius:50%;background:#30202a;color:#ffe2ad;font-size:25px;cursor:pointer}
 .pittensor-wallet-close:focus-visible{outline:2px solid #ffc779;outline-offset:3px}
+
+/* The stacked mobile furnace already fills its available width. */
+@media (max-width: 850px) {
+  .pittensor-page .burn-scene-actions { display: none; }
+}
