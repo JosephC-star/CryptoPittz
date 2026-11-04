@@ -616,8 +616,9 @@ function App({ explorerPage: isExplorerPage = false }) {
                   5310 art pieces released in to wild back in 2021 and the 2nd collection, Vice
                   Pittz, consisting of only 1395 retro themed nfts. Both collections feature
                   references from pop culture, and possess a free-spirited, gritty, degen vibe. Hold
-                  your Pittz in your wallet and earn $BONEZ automatically every Sunday. No staking,
-                  just pure passive accumulation. Every month the team uses 75% of the profits from
+                  your Pittz in your wallet. Pittz holder BONEZ distributions are currently paused
+                  while the new in-wallet rewards system is prepared. Watch official announcements
+                  for the restart. Every month the team uses 75% of the profits from
                   the Pittensor fund, on Bittensor, to buy back and burn the $BONEZ. the remaining
                   25% gets compounded back into the Pettensor fund, crushing supply and building
                   long-term value. You Earn, We Burn! We are a tight crew of degens who love art,
