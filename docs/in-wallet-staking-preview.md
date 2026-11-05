@@ -8,24 +8,24 @@ This branch is an interactive design and economics simulator. It has no wallet a
 - Fresh 6.3-year program, with halvings every nine months.
 - Vice receives a 20% bonus relative to the same Original tier.
 - Wednesday claims through Monday; expired allocated rewards move to an LP reward allocation Tuesday.
-- Listed Pittz do not qualify. A minimum two-day holding period is requested.
+- Listed Pittz do not qualify. Continuous ownership for at least 48 hours is required at the Wednesday snapshot. Subsequent transfers or listings leave that week’s allocation with the snapshot owner.
 - LP allocation should reflect both amount and time supplied.
 - Purchase bonuses and giveaways use a separate budget.
 
 ## Explicit modeling assumptions, not approved rules
 
-- Illustrative launch: Wednesday November 11, 2026 at 00:00 UTC. No launch is scheduled.
+- Target first snapshot is November 18, 2026 at 06:00 UTC. The first claim cutoff is November 24 at 06:00 UTC. Weekly boundaries follow midnight America/Chicago and display in UTC.
 - 6.3 average Gregorian years rounded to 2,301 days; exact end-date convention needs confirmation.
 - Draft weights: SR 100, Holoz 50, Lego 25, Platinum 12, Gold 6, Silver 3, Bronze 1. Vice weight is exactly 6/5 of Original.
-- Denominator uses the announcement's full collection counts. Existing site's rank boundaries differ and must be reconciled against authoritative NFT metadata.
-- All 33 million are normalized across the finite program. This yields an initial weekly budget near 423,389 BONEZ, not the old 94,586. It is a proposed recalculation, not an approved emission rate.
+- The denominator is the combined weight of eligible NFTs. Collection and nonce identify each NFT, including distinct NFTs with the same rank. Verify the supplied rank ranges against authoritative NFT metadata before launch.
+- All 33 million are normalized across the finite program. This yields an initial weekly budget near 423,415 BONEZ, not the old 94,586. It is a proposed recalculation, not an approved emission rate.
 - Weekly budgets integrate the time spent on each side of a calendar halving, use integer token units (six decimals), and allocate rounding residuals deterministically. Sum equals the reserve exactly.
-- The LP simulator assumes all of a selected week's budget was allocated. It does not silently sweep unallocated or future funds into LP rewards.
+- Only expired allocations feed the LP example for BONEZWEGLD-c5db6b. The first LP bonus would follow the first claim week. Unallocated reserves stay separate.
 - LP token-days illustrate a time integral; production requires transfer-aware, farm-aware accounting over the approved measurement window.
 
 ## Decisions before implementation of real allocations
 
-Confirm launch and timezone; calendar end convention; weights and tier/rank mapping; snapshot versus ongoing eligibility; treatment of sales/listings after snapshot; unallocated rewards; eligible LP pool and farm positions; Tuesday LP claim mechanism and expiration; no eligible LP participants; cancellation/correction procedure; administrative control and contract upgrade policy.
+Verify calendar end convention, tier weights, and NFT data. Decide the policy for empty snapshots, the LP duration bonus, supported LP positions, LP payout and expiration, empty LP periods, correction procedures, and contract administration.
 
 ## Next implementation stages
 
