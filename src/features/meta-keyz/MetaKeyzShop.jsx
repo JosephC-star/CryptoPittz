@@ -98,7 +98,7 @@ export default function MetaKeyzShop() {
       <main className="key-shop-main">
         <section className="key-shop-hero">
           <div>
-            <span className="key-shop-kicker">Pittz Flea Market / After Dark</span>
+            <span className="key-shop-kicker">Pittz Flea Market</span>
             <h1>The Meta Key Shop</h1>
             <p>Pick a Meta Key from the rack, review the listing here, then approve the EGLD purchase in your wallet.</p>
             {address ? <p className="key-shop-wallet">Wallet connected · {address.slice(0, 10)}…{address.slice(-6)}</p>
