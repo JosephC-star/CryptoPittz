@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useGetAccount } from '@multiversx/sdk-dapp/out/react/account/useGetAccount';
 import { UnlockPanelManager } from '@multiversx/sdk-dapp/out/managers/UnlockPanelManager';
 import WalletConnectModal from '../../components/WalletConnectModal';
@@ -10,44 +10,97 @@ import './meta-keyz-shop.css';
 const keyArtwork = '/flea-market/assets/meta-key.jpg';
 const pageSize = 4;
 
-function KeyListing({ nft, visible }) {
-  const [checkoutOpened, setCheckoutOpened] = useState(false);
-  const [autoplay] = useState(() => !window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+function KeyMedia({ nft, active }) {
+  const [autoplay] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [animationFailed, setAnimationFailed] = useState(false);
-  const artwork = `https://media.xoxno.com/nftmedia/${nft.collection}/${nft.identifier}.webp`;
+
+  if (active && nft.animationUrl && !animationFailed) {
+    return (
+      <video
+        src={nft.animationUrl}
+        poster={nft.url}
+        aria-label={`${nft.name} animation`}
+        autoPlay={autoplay}
+        preload={autoplay ? 'metadata' : 'none'}
+        muted
+        loop
+        playsInline
+        controls
+        onError={() => setAnimationFailed(true)}
+      />
+    );
+  }
+
+  return <img src={nft.url} alt={nft.name} loading="lazy" onError={event => {
+    if (!event.currentTarget.src.endsWith(keyArtwork)) event.currentTarget.src = keyArtwork;
+  }} />;
+}
+
+function KeyListing({ nft, visible, address, connecting, onConnect }) {
+  const [checkoutOpened, setCheckoutOpened] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const dialog = useRef(null);
+  const titleId = useId();
+  const key = useMemo(() => ({
+    ...nft,
+    url: `https://media.xoxno.com/nftmedia/${nft.collection}/${nft.identifier}.webp`,
+  }), [nft]);
+
+  useEffect(() => {
+    if (!checkoutOpen) return;
+    const node = dialog.current;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    node.showModal();
+    return () => {
+      node.close();
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [checkoutOpen]);
 
   return (
     <article className="key-shop-card" hidden={!visible}>
-      {visible && nft.animationUrl && !animationFailed ? (
-        <video
-          src={nft.animationUrl}
-          poster={artwork}
-          aria-label={`${nft.name} animation`}
-          autoPlay={autoplay}
-          preload={autoplay ? "metadata" : "none"}
-          muted
-          loop
-          playsInline
-          controls
-          onError={() => setAnimationFailed(true)}
-        />
-      ) : (
-        <img src={artwork} alt={nft.name} loading="lazy" onError={event => {
-          if (!event.currentTarget.src.endsWith(keyArtwork)) event.currentTarget.src = keyArtwork;
-        }} />
-      )}
+      <KeyMedia nft={key} active={visible && !checkoutOpen} />
       <div className="key-shop-card-body">
         <h3>{nft.name}</h3>
         <small>{nft.keyType || 'Type unavailable'}</small>
         <p className="key-shop-price">{compactNftPrice(nft.price, true)} EGLD</p>
-        {animationFailed && <p role="status">Animation unavailable.</p>}
-        <details onToggle={event => {
-          if (event.currentTarget.open) setCheckoutOpened(true);
-        }}>
-          <summary>Open checkout</summary>
-          {checkoutOpened && <XoxnoPurchasePanel nft={nft} />}
-        </details>
+        <button type="button" className="key-shop-buy" aria-haspopup="dialog" onClick={() => {
+          setCheckoutOpened(true);
+          setCheckoutOpen(true);
+        }}>Buy →</button>
       </div>
+      {checkoutOpened && (
+        <dialog
+          className="key-shop-checkout"
+          ref={dialog}
+          aria-labelledby={titleId}
+          onClose={() => setCheckoutOpen(false)}
+          onCancel={event => {
+            event.preventDefault();
+            setCheckoutOpen(false);
+          }}
+          onClick={event => {
+            if (event.target === event.currentTarget) setCheckoutOpen(false);
+          }}
+        >
+          <div className="key-shop-checkout-layout">
+            <button type="button" className="key-shop-checkout-close" aria-label="Close checkout" autoFocus onClick={() => setCheckoutOpen(false)}>×</button>
+            <div className="key-shop-checkout-art"><KeyMedia nft={key} active={checkoutOpen} /></div>
+            <div className="key-shop-checkout-details">
+              <span className="key-shop-kicker">For sale · XOXNO</span>
+              <h2 id={titleId}>{nft.name}</h2>
+              <p className="key-shop-checkout-id">{nft.keyType || 'Meta Key'} · {nft.identifier}</p>
+              {!address && <button type="button" disabled={connecting} onClick={() => {
+                dialog.current.close();
+                setCheckoutOpen(false);
+                onConnect();
+              }}>Connect wallet</button>}
+              <XoxnoPurchasePanel nft={key} />
+            </div>
+          </div>
+        </dialog>
+      )}
     </article>
   );
 }
@@ -152,7 +205,8 @@ export default function MetaKeyzShop() {
             {error && <p role="alert">{error}</p>}
             {!loading && !error && filtered.length === 0 && <p>No fixed-price EGLD keys match this filter.</p>}
             <div className="key-shop-grid">
-              {listings.map(nft => <KeyListing key={nft.identifier} nft={nft} visible={visibleIds.has(nft.identifier)} />)}
+              {listings.map(nft => <KeyListing key={nft.identifier} nft={nft} visible={visibleIds.has(nft.identifier)}
+                  address={address} connecting={connecting} onConnect={connect} />)}
             </div>
             {pageCount > 1 && (
               <nav className="key-shop-pagination" aria-label="Key listing pages">

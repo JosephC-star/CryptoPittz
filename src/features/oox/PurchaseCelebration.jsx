@@ -3,10 +3,10 @@ import { createPortal } from 'react-dom';
 import { getNftImage } from '../../utils/nftUtils';
 import { drawPaperBurn, REVEAL_DURATION } from './paperBurn';
 import { shareUrl } from './exportRevealGif';
-export default function PurchaseCelebration({ nft, hash }) {
-  return <BurnCelebration key={`${nft.identifier}:${hash}`} nft={nft} hash={hash} />;
+export default function PurchaseCelebration({ nft, hash, itemLabel = "Pittz" }) {
+  return <BurnCelebration key={`${nft.identifier}:${hash}`} nft={nft} hash={hash} itemLabel={itemLabel} />;
 }
-function BurnCelebration({ nft, hash }) {
+function BurnCelebration({ nft, hash, itemLabel }) {
   const [open,setOpen]=useState(true);
   const dialog=useRef(null),titleId=useId();
   const [reveal,setReveal]=useState('covered'),[origin,setOrigin]=useState({x:0,y:0});
@@ -61,7 +61,7 @@ function BurnCelebration({ nft, hash }) {
     finally{if(!controller.signal.aborted){setExporting(false);job.current=null;}}
   };
   return <>
-    {!open&&<button className="btn primary" onClick={()=>setOpen(true)}>View your purchased Pittz ✨</button>}
+    {!open&&<button className="btn primary" onClick={()=>setOpen(true)}>View your purchased {itemLabel} ✨</button>}
     {createPortal(<dialog ref={dialog} className="pitt-reveal-dialog" aria-labelledby={titleId} onCancel={event=>{event.preventDefault();event.stopPropagation();dismiss();}} onClick={event=>event.stopPropagation()} onKeyDown={event=>event.stopPropagation()}>
     <div className={`pitt-purchase-party paper-reveal ${reveal}`}>
     <button className="pitt-reveal-close" onClick={dismiss} aria-label="Close purchase reveal" autoFocus>×</button>
@@ -72,10 +72,10 @@ function BurnCelebration({ nft, hash }) {
     <div className="pitt-party-frame"><div className={`pitt-burn-art ${reveal}`}>
       <img src={getNftImage(nft)} alt={nft.name}/>
       {reveal!=='revealed'&&<><canvas className="paper-burn-canvas" ref={canvas} aria-hidden="true"/>
-        <button className="pitt-burn-cover" onClick={ignite} disabled={reveal==='burning'} aria-label={`Tap to reveal ${nft.name}`}><span className="pitt-burn-motto">YOU EARN,<br/>WE BURN</span><span className="pitt-burn-prompt">Tap to reveal your Pittz</span></button></>}
+        <button className="pitt-burn-cover" onClick={ignite} disabled={reveal==='burning'} aria-label={`Tap to reveal ${nft.name}`}><span className="pitt-burn-motto">YOU EARN,<br/>WE BURN</span><span className="pitt-burn-prompt">Tap to reveal your {itemLabel}</span></button></>}
     </div></div>
     {reveal!=='revealed'&&<button className="pitt-skip-reveal" onClick={()=>setReveal('revealed')}>Skip reveal</button>}
-    <h4>{nft.name}</h4><p aria-live="polite">{reveal==='revealed'?'WELCOME TO YOUR PACK 🐾':'Purchase confirmed. Tap to meet your new pack member.'}</p>
+    <h4>{nft.name}</h4><p aria-live="polite">{reveal==='revealed'?'WELCOME TO YOUR PACK 🐾':(itemLabel === 'Meta Key' ? 'Purchase confirmed. Tap to reveal your key.' : 'Purchase confirmed. Tap to meet your new pack member.')}</p>
     <div className="pitt-reveal-actions">
       <button className="btn" onClick={()=>setReveal('covered')} disabled={reveal==='burning'}>Replay reveal ↻</button>
       <button className="btn" onClick={()=>download('gif')} disabled={exporting}>{exporting&&exportKind==='gif'?`Creating GIF… ${progress}%`:'Download sharper GIF'}</button>

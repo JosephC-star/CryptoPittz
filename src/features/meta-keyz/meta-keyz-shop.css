@@ -199,3 +199,81 @@
   .key-shop-hero h1 { font-size: clamp(25px, 8vw, 36px); }
   .key-shop-hero p { font-size: .82rem; }
 }
+
+.key-shop-card .key-shop-buy {
+  width: 100%;
+  min-height: 40px;
+  border-color: #d4a77b;
+  background: linear-gradient(110deg, #784f3d, #52354b);
+  font-weight: 750;
+}
+
+.key-shop-checkout {
+  position: fixed;
+  width: min(820px, calc(100% - 28px));
+  max-height: 92dvh;
+  padding: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid #a877a2;
+  border-radius: 22px;
+  background: #11131f;
+  color: #fff1f6;
+}
+
+.key-shop-checkout::backdrop {
+  background: #03050cd9;
+  backdrop-filter: blur(8px);
+}
+
+.key-shop-checkout-layout {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+}
+
+.key-shop-checkout-art {
+  display: grid;
+  align-items: center;
+  background: #0a0a13;
+}
+
+.key-shop-checkout-art :is(img, video) {
+  width: 100%;
+  display: block;
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+
+.key-shop-checkout-details {
+  min-width: 0;
+  padding: 32px 24px 18px;
+}
+
+.key-shop-checkout-details h2 { margin: 8px 0; overflow-wrap: anywhere; }
+.key-shop-checkout-id { color: #d9bacf; font-size: .82rem; overflow-wrap: anywhere; }
+
+.key-shop .key-shop-checkout-close {
+  position: absolute;
+  z-index: 1;
+  top: 8px;
+  right: 8px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  background: #16111de8;
+  font-size: 25px;
+}
+
+.key-shop-checkout .oox-price strong { white-space: nowrap; }
+
+@media (max-width: 700px) {
+  .key-shop-checkout-layout { grid-template-columns: minmax(0, 1fr); }
+  .key-shop-checkout-art :is(img, video) { max-height: min(33dvh, 240px); }
+  .key-shop-checkout-details { padding: 16px; }
+}
+
+@media (max-width: 360px) {
+  .key-shop-checkout .pitt-buy-row { grid-template-columns: 1fr; }
+}

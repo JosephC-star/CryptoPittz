@@ -60,7 +60,8 @@ export default function XoxnoPurchasePanel({nft,onAvailabilityChanged}){
  useEffect(()=>{onAvailabilityChanged?.(canBuy);},[canBuy,onAvailabilityChanged]);
  if(!known&&!purchase&&!submitted&&!isMetaKey)return null;
  return <section className="oox-preview pitt-trade-panel pitt-buy-compact" aria-label="XOXNO purchase">
-  {!isMetaKey&&confirmed&&purchase&&<PurchaseCelebration nft={nft} hash={purchase.hash}/>}
+  {confirmed&&purchase&&<PurchaseCelebration nft={nft} hash={purchase.hash} itemLabel={isMetaKey ? "Meta Key" : "Pittz"}/>}
+  {isMetaKey&&!listing&&!message&&<p role="status">Checking the current listing…</p>}
   <div className="pitt-buy-row">
     {listing&&<p className="oox-price"><strong title={`${amount(listing.price)} EGLD`}>{compactNftPrice(listing.price,true)} EGLD</strong></p>}
     {canBuy&&!submitted&&<button className="btn primary" disabled={!account.address||busy||!purchasesEnabled} onClick={reviewPurchase}>{busy?'Checking…':'🐾 Buy →'}</button>}
