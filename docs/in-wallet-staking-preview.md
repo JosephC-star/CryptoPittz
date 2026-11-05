@@ -42,3 +42,24 @@ Automation needs an external transaction sender for publication and expiration h
 `node --test tests/in-wallet-staking-preview.test.mjs`
 
 `npm run build`
+
+## Step 2 data audit · November 5, 2026
+
+Run `python3 scripts/audit-staking-ranks.py` to repeat the read-only collection audit. The 5,310 OG and 1,395 Vice NFTs returned by MultiversX all have one embedded project `Rank-<number>` tag within the owner-supplied tier ranges. The embedded counts exactly match both owner tables. Use those tags for reward tiers and the full identifier for NFT identity. Keep the explorer's display ranks separate.
+
+| Collection | Embedded tier counts, rarest to most common | API ranks differing from embedded ranks |
+| --- | --- | --- |
+| OG | 4, 15, 50, 494, 786, 1,625, 2,336 | 5,306 |
+| Vice | 1, 5, 11, 100, 200, 400, 678 | 1,392 |
+
+For example, OG `PITTZ-1a4c2d-44` has API rank 2 and embedded rank 1. Vice `PITTZVICE-c3ec94-0f` has API rank 3 and embedded rank 2. Using the API rank would also put eight Vice NFTs outside the owner-approved ranges.
+
+### Ownership and listing evidence
+
+- [OG transfer response](https://api.multiversx.com/nfts/PITTZ-1a4c2d-01/transfers?size=5) includes a batch transaction that moved OG nonce `0ae6`, with no OG nonce `01` in the transfer event. [Transaction details](https://api.multiversx.com/transactions/1033c8b49e89eaaef2c85cc34941da9e5ce3eae22e70859cdc8411d2b918cd3c?withLogs=true&withResults=true) expose the actual transfer events. A history row, transaction receiver, or current owner alone cannot establish uninterrupted ownership.
+- [A real batch listing transaction](https://api.multiversx.com/transactions/44939f54bb9d9983a1fd7258fa408e8cb7d92f7d10ef7fb09b9a7df272753dbe?withLogs=true&withResults=true) emits token-specific auction events in the smart-contract results, including Vice nonce `01d1` and auction ID `1136462`. The parent call's function name alone cannot identify which NFTs were listed.
+- The current OOX feed and XOXNO endpoint both returned auction `1434880` for `PITTZ-1a4c2d-02f6`. XOXNO attributed it to XOXNO and identified a seller distinct from the MultiversX owner address. The same listing can appear in both feeds, so cross-check the venue and auction rather than counting feeds as independent listings. These endpoints describe observed present state and do not establish listing status at a past cutoff.
+
+### Next verification gate
+
+Replay finalized token movements around a past cutoff using decoded token-level events and ownership anchors. Verify marketplace listing creation, cancellation, sale, and expiry against contract-specific events and current records for both OOX and XOXNO. Reconcile conflicting or missing history as unknown and stop publication while any affected eligibility is unresolved. Omitting uncertain NFTs would redistribute their share to others. This audit verifies rank mapping and illustrates the available evidence. Full historical replay and a real weekly eligibility manifest remain open.
