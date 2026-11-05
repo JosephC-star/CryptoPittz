@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { formatBurnAmount, monthlyBurnHistory } from './monthly-burns.mjs';
 
 export default function MonthlyBurnBoard() {
-  const [month, setMonth] = useState('all');
   const [rows, setRows] = useState([]);
   const [error, setError] = useState(false);
   useEffect(() => {
@@ -24,15 +23,26 @@ export default function MonthlyBurnBoard() {
     document.addEventListener('visibilitychange', refresh);
     return () => { stopped = true; controller.abort(); clearInterval(timer); document.removeEventListener('visibilitychange', refresh); };
   }, []);
-  const selected = month === 'all' ? rows : rows.filter(row => row.month === month);
-  const total = selected.reduce((sum, row) => sum + row.atomic, 0n);
-  const monthLabel = value => new Date(`${value}-01T00:00:00Z`).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
-  return <section className="monthly-burn-board" aria-labelledby="monthly-burn-heading">
-    <div className="monthly-burn-heading">
+  return (
+    <section className="monthly-burn-board" aria-labelledby="monthly-burn-heading">
       <h2 id="monthly-burn-heading">Monthly Burn History</h2>
-      <label className="monthly-burn-filter"><span className="sr-only">Filter burns by month</span><select value={month} onChange={event => setMonth(event.target.value)}><option value="all">All months</option>{rows.map(row => <option key={row.month} value={row.month}>{monthLabel(row.month)}</option>)}</select></label>
-    </div>
-    <div className="monthly-burn-total" aria-live="polite"><strong>{selected.length ? formatBurnAmount(total) : '—'} BONEZ</strong></div>
-    {error && <small role="status">{rows.length ? 'Refresh delayed · showing last loaded total' : 'Burn total temporarily unavailable'}</small>}
-  </section>;
+      {rows.length > 0 ? (
+        <div className="monthly-burn-scroll" role="region" aria-label="Monthly BONEZ totals" tabIndex={0}>
+          <ul>
+            {rows.map(({ month, atomic }) => (
+              <li key={month}>
+                <time dateTime={month}>
+                  {new Date(`${month}-01T00:00:00Z`).toLocaleDateString('en-US', {
+                    month: 'long', year: 'numeric', timeZone: 'UTC',
+                  })}
+                </time>
+                <strong>{formatBurnAmount(atomic)} BONEZ</strong>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : <p role="status">{error ? 'Burn history temporarily unavailable.' : 'Loading monthly burns…'}</p>}
+      {error && rows.length > 0 && <small role="status">Refresh delayed · showing the last loaded history.</small>}
+    </section>
+  );
 }
