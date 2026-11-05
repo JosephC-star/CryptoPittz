@@ -1,4 +1,4 @@
-const pattern=/^(PITTZ-1a4c2d|PITTZVICE-c3ec94)-[a-f0-9]{1,16}$/;
+const pattern=/^(PITTZ-1a4c2d|PITTZVICE-c3ec94|CPMK-8d8a01)-[a-f0-9]{1,16}$/;
 export async function handler(event){
  const reply=(statusCode,body)=>({statusCode,headers:{'Content-Type':'application/json','Cache-Control':'no-store'},body:JSON.stringify(body)});
  if(event.httpMethod!=='GET')return reply(405,{error:'GET only.'});

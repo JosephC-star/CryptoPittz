@@ -3,6 +3,7 @@ import { BONEZ_TOKEN, bonezHuman, burnAtomic, validateBurnToken } from './amount
 import './burner.css';
 import FurnaceValve from './FurnaceValve';
 import FurnaceScene from './VideoFurnace';
+import MonthlyBurnBoard from './MonthlyBurnBoard';
 import { prepareContribution, submitContribution, pendingContribution } from './burnTransactions';
 import { BURN_PILE_ADDRESS, assertContributionReceipt } from './contributionValidation';
 import { assertBurnReceipt } from './burnValidation';
@@ -57,7 +58,6 @@ function LegacyFurnaceScene({ firing, expanded, celebration }) {
   </div>;
 }
 export default function BonezBurner({ address, onConnect, onFireChange, dedicated = false }) {
-  const [expanded, setExpanded] = useState(false);
   const [firing, setFiring] = useState(false);
   const [amount, setAmount] = useState('');
   const [waitingForXPortal, setWaitingForXPortal] = useState(false);
@@ -151,10 +151,10 @@ export default function BonezBurner({ address, onConnect, onFireChange, dedicate
       catch (e) { setInputError(e.message); }
     }
   }
-  return <section id="bonez-burner" className={`burner ${expanded ? 'burner-open' : ''}`}>
+  return <section id="bonez-burner" className={dedicated ? "burner burner-with-history" : "burner"}>
     <div className="burner-header"><div><span className="burn-eyebrow">THE PACK’S INDUSTRIAL QUARTER</span><h2>{dedicated ? "The Furnace Room" : "Pittensor"}</h2><p>Feed the furnace. Fuel the legend.</p></div><span className="burner-status"><i /> FURNACE ONLINE <small>Team burn · 1st of each month</small></span></div>
     <div className="burner-layout">
-      <div className="burner-showcase"><FurnaceScene firing={firing} expanded={expanded} celebration={celebration} /><div className="burn-scene-actions"><button type="button" onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>{expanded ? 'Close furnace room ↑' : 'Expand the furnace room →'}</button></div></div>
+      <div className="burner-showcase"><FurnaceScene firing={firing} celebration={celebration} /></div>
       <div className="burn-control"><span className="burn-eyebrow">FURNACE CONTROL</span><h3>You earn, we burn!</h3><p>Add BONEZ to the pack’s burn pile. Your contribution goes to the team wallet; the team performs its scheduled burn on the 1st of each month.</p>
         <div className="burn-pile-summary"><span>BONEZ currently in the team burn wallet</span><strong>{pileBalance === null ? '—' : exactBalance(pileBalance)}</strong><small>Team-managed wallet · contributions are not burned immediately</small><a href={`https://explorer.multiversx.com/accounts/${BURN_PILE_ADDRESS}`} target="_blank" rel="noreferrer">View team burn wallet ↗</a></div>
         <div className="burn-wallet"><span>Your wallet BONEZ</span><strong>{address ? balance === null ? 'Loading…' : display(bonezHuman(balance)) : 'Connect to view'}</strong><small>Only liquid tokens in your wallet</small></div>
@@ -173,5 +173,6 @@ export default function BonezBurner({ address, onConnect, onFireChange, dedicate
     </div>
     <div className="burn-stats"><div><span>Total BONEZ burned · all time</span><strong>{token ? display(bonezHuman(token.burnt)) : '—'}</strong></div><div><span>Current token supply</span><strong>{token ? display(token.supply) : '—'}</strong></div><div><span>Verified token</span><strong>{BONEZ_TOKEN}</strong><small>6 decimal places · Mainnet</small></div><button type="button" onClick={() => setRefresh(n => n + 1)}>Refresh stats ↻</button></div>
     {error && <p className="burn-error" role="status">{error}</p>}
+    {dedicated && <MonthlyBurnBoard />}
   </section>;
 }
