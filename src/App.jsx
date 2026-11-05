@@ -6,6 +6,7 @@ import {loginWithWallet,hasWalletBridge,usesDirectWalletConnection} from './util
 import WalletConnectModal from './components/WalletConnectModal';
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
+import "./features/home/mystery-pitt.css";
 import "./features/explorer/explorer-page.css";
 import "./features/dawg-pound/entrance.css";
 
@@ -624,6 +625,7 @@ function App({ explorerPage: isExplorerPage = false }) {
             </div>
 
             <div className="panel hero-art">
+              <span className="mystery-pitt-mark" aria-hidden="true">?</span>
               <div className="mock" aria-label="CryptoPittz artwork preview">
                 <div className="label">
                   <img
