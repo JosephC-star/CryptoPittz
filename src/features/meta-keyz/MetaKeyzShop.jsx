@@ -99,7 +99,7 @@ export default function MetaKeyzShop() {
         <section className="key-shop-hero">
           <div>
             <span className="key-shop-kicker">Pittz Flea Market / After Dark</span>
-            <h1>The Letter Key Shop</h1>
+            <h1>The Meta Key Shop</h1>
             <p>Pick a Meta Key from the rack, review the listing here, then approve the EGLD purchase in your wallet.</p>
             {address ? <p className="key-shop-wallet">Wallet connected · {address.slice(0, 10)}…{address.slice(-6)}</p>
               : <button type="button" disabled={connecting} onClick={connect}>{connecting ? 'Connecting…' : 'Connect wallet'}</button>}

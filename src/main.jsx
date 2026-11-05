@@ -31,7 +31,7 @@ window.addEventListener('hashchange',routeLegacyExplorerLink);
 const pagePath = window.location.pathname.replace(/\/$/, "");
 
 const pageTitles = {
-  "/meta-keyz": "The Letter Key Shop · The PittzStop",
+  "/meta-keyz": "The Meta Key Shop · The PittzStop",
   "/community-support": "The Back Booths · Pittz Flea Market",
   "/explorer": "CryptoPittz Explorer · The PittzStop",
   "/my-pittz": "My Pittz · The PittzStop",

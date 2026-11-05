@@ -48,7 +48,7 @@ export default function MetaKeyzEntrance() {
       </svg>
       <div>
         <span className="meta-keyz-whisper">Psst… looking for a key?</span>
-        <h2>The Letter Key Shop</h2>
+        <h2>The Meta Key Shop</h2>
         <p>Follow the Pitt in the trench coat to the Meta Keyz listings.</p>
         <strong>See what’s in the coat <span aria-hidden="true">↗</span></strong>
       </div>
