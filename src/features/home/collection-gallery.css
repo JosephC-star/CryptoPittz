@@ -1,0 +1,89 @@
+.home-collection-gallery {
+  display: none;
+}
+
+@media (width > 900px) {
+  .hero > .hero-art {
+    align-content: center;
+    row-gap: 20px;
+    padding-block: 22px;
+  }
+
+  .home-collection-gallery {
+    display: block;
+    width: min(320px, 78%);
+  }
+
+  .home-collection-gallery > p {
+    margin: 0 0 9px;
+    color: #e0d8ed;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+
+  .home-collection-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .home-collection-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    padding: 8px;
+    border: 1px solid color-mix(in srgb, var(--collection-accent) 45%, transparent);
+    border-radius: 15px;
+    background: #10101e;
+    box-shadow: 0 0 16px color-mix(in srgb, var(--collection-accent) 15%, transparent);
+    color: #f7f1ff;
+    text-decoration: none;
+  }
+
+  .home-collection-card.original {
+    --collection-accent: #62eaff;
+    --collection-art: url("https://media.multiversx.com/nfts/thumbnail/PITTZ-1a4c2d-c5996251");
+  }
+
+  .home-collection-card.vice {
+    --collection-accent: #ff83dc;
+    --collection-art: url("https://media.multiversx.com/nfts/thumbnail/PITTZVICE-c3ec94-0bba82c8");
+  }
+
+  .home-collection-art {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 9px;
+    background: var(--collection-art) center / cover no-repeat,
+      radial-gradient(ellipse at top, var(--collection-accent), #141123 80%);
+  }
+
+  .home-collection-card strong {
+    margin-top: 3px;
+    font-size: 14px;
+  }
+
+  .home-collection-card > span:not(.home-collection-art) {
+    font-size: 11px;
+  }
+
+  .home-collection-card .home-collection-link {
+    margin-top: auto;
+    padding-top: 4px;
+    color: var(--collection-accent);
+    font-weight: 700;
+  }
+
+  .home-collection-card:hover,
+  .home-collection-card:focus-visible {
+    border-color: var(--collection-accent);
+  }
+
+  .home-collection-card:focus-visible {
+    outline: 2px solid var(--collection-accent);
+    outline-offset: 3px;
+  }
+}

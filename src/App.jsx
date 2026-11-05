@@ -6,6 +6,7 @@ import {loginWithWallet,hasWalletBridge,usesDirectWalletConnection} from './util
 import WalletConnectModal from './components/WalletConnectModal';
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
+import "./features/home/collection-gallery.css";
 import "./features/explorer/explorer-page.css";
 import "./features/dawg-pound/entrance.css";
 
@@ -684,6 +685,23 @@ function App({ explorerPage: isExplorerPage = false }) {
                 </div>
               </div>
               {randomPittError && <div className="random-pitt-error">{randomPittError}</div>}
+              <nav className="home-collection-gallery" aria-label="Browse the Pittz collections">
+                <p>Meet the collections</p>
+                <div className="home-collection-cards">
+                  <a className="home-collection-card original" href="/explorer/?collection=original">
+                    <span className="home-collection-art" aria-hidden="true" />
+                    <strong>Original Pittz</strong>
+                    <span>The pack that started it</span>
+                    <span className="home-collection-link">Browse Original <span aria-hidden="true">↗</span></span>
+                  </a>
+                  <a className="home-collection-card vice" href="/explorer/?collection=vice">
+                    <span className="home-collection-art" aria-hidden="true" />
+                    <strong>Vice Pittz</strong>
+                    <span>Retro after dark</span>
+                    <span className="home-collection-link">Browse Vice <span aria-hidden="true">↗</span></span>
+                  </a>
+                </div>
+              </nav>
             </div>
           </div>
 
