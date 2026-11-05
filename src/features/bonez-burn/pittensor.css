@@ -319,3 +319,35 @@
 
 .monthly-burn-scroll strong { color: #ffb875; overflow-wrap: anywhere; }
 .monthly-burn-board > small { display: block; margin-top: 12px; color: #c0a69b; }
+
+.monthly-burn-month { display: none; }
+
+@media (max-width: 900px) {
+  .monthly-burn-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .monthly-burn-heading h2 { margin: 0; }
+
+  .monthly-burn-month {
+    display: block;
+    flex-shrink: 0;
+    max-width: 50%;
+    min-height: 36px;
+    padding: 5px 7px;
+    border: 1px solid #bd874a70;
+    border-radius: 8px;
+    background: #211713;
+    color: #f4be8a;
+    font: inherit;
+    font-size: .85rem;
+  }
+
+  .monthly-burn-month:focus-visible { outline: 2px solid #ffc779; outline-offset: 3px; }
+  .monthly-burn-scroll { max-height: none; overflow: visible; }
+  .monthly-burn-scroll li[data-selected="false"] { display: none; }
+}
