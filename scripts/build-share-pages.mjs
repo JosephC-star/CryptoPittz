@@ -5,11 +5,11 @@ const launchArtwork = ['/images/pittzstop-launch-nov2026.jpg','Welcome to The Pi
 for(const [path,title,description,image,imageAlt] of [
  ['welcome','The PittzStop · Home of the CryptoPittz','Collectibles, games, BONEZ tools and community storefronts. Find your corner of The PittzStop.',...launchArtwork],
  ['community-support','The Back Booths · Pittz Flea Market','Buy BONEZ and meet the pack supporting the community.',...launchArtwork],
- ['explorer','CryptoPittz Explorer · The PittzStop','Explore Original and Vice Pittz, discover rare traits, browse listings and make offers.','/images/cryptopittz-logo.jpg','CryptoPittz community logo'],
- ['my-pittz','My Pittz · The PittzStop','Your Original and Vice collection, earnings, listings, offers and transfers.','/images/cryptopittz-logo.jpg','CryptoPittz community logo'],
- ['collector','Collector’s Pack · The PittzStop','Browse a collector’s wallet-held Original and Vice Pittz and make direct offers.','/images/cryptopittz-logo.jpg','CryptoPittz community logo'],
- ['dawg-pound','Pittz Dawg Pound · The PittzStop','Browse Pittz for sale and collection offers from OOX and XOXNO.','/images/cryptopittz-logo.jpg','CryptoPittz community logo'],
+ ['explorer','CryptoPittz Explorer · The PittzStop','Explore Original and Vice Pittz, discover rare traits, browse listings and make offers.',...launchArtwork],
+ ['my-pittz','My Pittz · The PittzStop','Your Original and Vice collection, earnings, listings, offers and transfers.',...launchArtwork],
+ ['collector','Collector’s Pack · The PittzStop','Browse a collector’s wallet-held Original and Vice Pittz and make direct offers.',...launchArtwork],
+ ['dawg-pound','Pittz Dawg Pound · The PittzStop','Browse Pittz for sale and collection offers from OOX and XOXNO.',...launchArtwork],
  ['financial-district','Financial District · The PittzStop','Swap supported tokens, manage BONEZ staking and liquidity, and visit the pack’s golden quarter.','/images/financial-district-golden-quarter.webp','The Pittz Financial District golden quarter'],
- ['pittensor','Pittensor · The PittzStop','You earn, we burn! Add BONEZ to the pack’s monthly burn pile.','/images/cryptopittz-logo.jpg','CryptoPittz community logo'],
- ['bonez-swap','Token Swap · The PittzStop','Review supported token quotes and swap through your connected MultiversX wallet.','/images/cryptopittz-logo.jpg','CryptoPittz community logo'],
+ ['pittensor','Pittensor · The PittzStop','You earn, we burn! Add BONEZ to the pack’s monthly burn pile.',...launchArtwork],
+ ['bonez-swap','Token Swap · The PittzStop','Review supported token quotes and swap through your connected MultiversX wallet.',...launchArtwork],
 ])await writeFile('dist/'+path+'.html',pageShareHtml(root,{title,description,url:origin+'/'+path+'/',image:origin+image,imageAlt}));
