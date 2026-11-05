@@ -1,11 +1,12 @@
 export const CONTRACT='erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8';
-const COLLECTIONS=['PITTZ-1a4c2d','PITTZVICE-c3ec94'];
+export const META_KEYZ_COLLECTION = 'CPMK-8d8a01';
+const COLLECTIONS=['PITTZ-1a4c2d','PITTZVICE-c3ec94',META_KEYZ_COLLECTION];
 export function hex(value){const s=BigInt(value).toString(16);return s.padStart(Math.ceil(s.length/2)*2,'0');}
 export function textHex(value){return Array.from(new TextEncoder().encode(value),b=>b.toString(16).padStart(2,'0')).join('');}
 export function validateListing(data,nft,buyer,now=Date.now()/1000){
  const s=data?.saleInfo,collection=nft.identifier.split('-').slice(0,2).join('-');
  if(!COLLECTIONS.includes(collection)||nft.collection!==collection||data?.identifier!==nft.identifier||data.collection!==collection)throw Error('XOXNO returned a different NFT.');
- if(!s||s.marketplace!=='xoxno')throw Error('This Pitt is no longer listed on XOXNO.');
+ if(!s||s.marketplace!=='xoxno')throw Error('This NFT is no longer listed on XOXNO.');
  if(s.auctionType!=='Nft'||s.paymentToken!=='EGLD'||s.paymentTokenNonce!==0||s.quantity!==1)throw Error('Only fixed-price EGLD NFT purchases are supported on XOXNO here.');
  if(!Number.isSafeInteger(s.auctionId)||s.auctionId<=0||typeof s.minBid!=='string'||!/^\d{1,40}$/.test(s.minBid)||BigInt(s.minBid)<=0n||s.minBid!==s.maxBid)throw Error('The XOXNO fixed price could not be verified.');
  if(!Number.isSafeInteger(s.startTime)||!Number.isSafeInteger(s.deadline)||s.startTime<0||s.startTime>now||s.deadline<0||(s.deadline!==0&&s.deadline<=now))throw Error('This listing has not started or has expired.');

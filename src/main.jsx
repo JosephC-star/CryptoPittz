@@ -14,6 +14,7 @@ const RentalCenter = lazy(() => import("./features/merchant/RentalCenter.jsx"));
 const MarketShop = lazy(() => import("./features/merchant/MarketShop.jsx"));
 const MarketAdmin = lazy(() => import("./features/merchant/MarketAdmin.jsx"));
 const MerchantStudio = lazy(() => import("./features/merchant/MerchantStudio.jsx"));
+const MetaKeyzShop=lazy(()=>import("./features/meta-keyz/MetaKeyzShop.jsx"));
 const SupportRoom=lazy(()=>import("./features/community-support/SupportRoom.jsx"));
 const BonezSwap = lazy(() => import("./features/bonez-swap/BonezSwap.jsx"));
 
@@ -30,6 +31,7 @@ window.addEventListener('hashchange',routeLegacyExplorerLink);
 const pagePath = window.location.pathname.replace(/\/$/, "");
 
 const pageTitles = {
+  "/meta-keyz": "The Letter Key Shop · The PittzStop",
   "/community-support": "The Back Booths · Pittz Flea Market",
   "/explorer": "CryptoPittz Explorer · The PittzStop",
   "/my-pittz": "My Pittz · The PittzStop",
@@ -51,7 +53,7 @@ const config = {
   },
 
   dAppConfig: {
-    environment: (["/community-support", "/explorer", "/my-pittz", "/collector", "/dawg-pound", "/bonez-swap", "/financial-district", "/pittensor", "/merchant-access", "/market-admin", "/market-rent", "/market-shop"].includes(pagePath) || (import.meta.env.VITE_OOX_OFFERS === "true" || (import.meta.env.VITE_OOX_TRANSACTIONS === "true" && import.meta.env.VITE_OOX_PREVIEW === "true"))) ? EnvironmentsEnum.mainnet : EnvironmentsEnum.devnet,
+    environment: (["/meta-keyz", "/community-support", "/explorer", "/my-pittz", "/collector", "/dawg-pound", "/bonez-swap", "/financial-district", "/pittensor", "/merchant-access", "/market-admin", "/market-rent", "/market-shop"].includes(pagePath) || (import.meta.env.VITE_OOX_OFFERS === "true" || (import.meta.env.VITE_OOX_TRANSACTIONS === "true" && import.meta.env.VITE_OOX_PREVIEW === "true"))) ? EnvironmentsEnum.mainnet : EnvironmentsEnum.devnet,
 
     providers: {
       walletConnect: {
@@ -75,7 +77,7 @@ initApp(config)
     createRoot(document.getElementById("root")).render(
       <StrictMode>
         <Suspense fallback={<p style={{padding:"24px",color:"#e9c77a"}}>Loading PittzStop…</p>}>
-          {pagePath === "/community-support" ? <SupportRoom /> : pagePath === "/my-pittz" ? <MyPittzPage /> : pagePath === "/collector" ? <CollectorProfile /> : pagePath === "/dawg-pound" ? <DawgPound /> : pagePath === "/market-rent" ? <RentalCenter /> : pagePath === "/market-shop" ? <MarketShop /> : pagePath === "/market-admin" ? <MarketAdmin /> : pagePath === "/merchant-access" ? <MerchantStudio /> : pagePath === "/pittensor" ? <Pittensor /> : pagePath === "/financial-district" ? <FinancialDistrict /> : pagePath === "/bonez-swap" ? <BonezSwap /> : <App explorerPage={pagePath === "/explorer"} />}
+          {pagePath === "/meta-keyz" ? <MetaKeyzShop /> : pagePath === "/community-support" ? <SupportRoom /> : pagePath === "/my-pittz" ? <MyPittzPage /> : pagePath === "/collector" ? <CollectorProfile /> : pagePath === "/dawg-pound" ? <DawgPound /> : pagePath === "/market-rent" ? <RentalCenter /> : pagePath === "/market-shop" ? <MarketShop /> : pagePath === "/market-admin" ? <MarketAdmin /> : pagePath === "/merchant-access" ? <MerchantStudio /> : pagePath === "/pittensor" ? <Pittensor /> : pagePath === "/financial-district" ? <FinancialDistrict /> : pagePath === "/bonez-swap" ? <BonezSwap /> : <App explorerPage={pagePath === "/explorer"} />}
         </Suspense>
       </StrictMode>,
     );

@@ -1,0 +1,87 @@
+.key-shop {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 80% 12%, #48263d, transparent 42%), #100d17;
+  color: #fff1f6;
+  font-family: system-ui, sans-serif;
+}
+
+.key-shop-nav, .key-shop-main {
+  width: min(1120px, calc(100% - 32px));
+  margin: auto;
+}
+
+.key-shop-nav, .key-shop-rack-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 18px 0;
+}
+
+.key-shop a { color: #ffd392; }
+
+.key-shop-hero {
+  display: grid;
+  grid-template-columns: 1fr minmax(140px, 220px);
+  align-items: center;
+  gap: 24px;
+  padding: clamp(20px, 4vw, 48px);
+  border: 1px solid #995b78;
+  border-radius: 24px;
+  background: linear-gradient(120deg, #2b192b, #1b1624);
+}
+
+.key-shop-hero h1 {
+  margin: .15em 0;
+  font-size: clamp(32px, 7vw, 74px);
+  letter-spacing: -.055em;
+  line-height: 1.02;
+}
+
+.key-shop-hero img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 1px solid #a2756d;
+  border-radius: 18px;
+}
+
+.key-shop-kicker {
+  color: #f1b977;
+  font-size: .75rem;
+  font-weight: 750;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.key-shop button, .key-shop-card summary {
+  border: 1px solid #a67972;
+  border-radius: 10px;
+  padding: 9px 13px;
+  background: #322132;
+  color: #fff0da;
+  font: inherit;
+  cursor: pointer;
+}
+
+.key-shop button:disabled { opacity: .6; cursor: default; }
+.key-shop :is(a, button, summary):focus-visible { outline: 2px solid #ffd392; outline-offset: 3px; }
+.key-shop-notice { color: #ffd392; }
+.key-shop-rack-header h2 { margin: .2em 0; }
+.key-shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr)); gap: 16px; }
+.key-shop-card { align-self: start; overflow: hidden; background: #211725; border: 1px solid #72435f; border-radius: 16px; }
+.key-shop-card > img { width: 100%; display: block; aspect-ratio: 1; object-fit: cover; background: #15101b; }
+.key-shop-card-body { padding: 15px; }
+.key-shop-card-body h2 { margin: 0 0 4px; font-size: 1rem; }
+.key-shop-card-body small { color: #d2bccb; overflow-wrap: anywhere; }
+.key-shop-price { color: #ffd392; font-weight: 750; }
+.key-shop-card details > section { margin-top: 12px; }
+.key-shop-card .pitt-buy-details > summary { font-size: .8rem; }
+.key-shop-wallet { color: #d9ebbd; }
+
+@media (max-width: 580px) {
+  .key-shop-hero { grid-template-columns: 1fr; }
+  .key-shop-hero img { width: min(165px, 100%); }
+}

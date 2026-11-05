@@ -1,0 +1,81 @@
+.support-room .meta-keyz-entrance {
+  display: grid;
+  grid-template-columns: minmax(180px, 320px) 1fr;
+  align-items: center;
+  gap: clamp(12px, 3vw, 36px);
+  margin: 28px 0;
+  padding: clamp(12px, 2.5vw, 26px);
+  border: 1px solid #975577;
+  border-radius: 20px;
+  background: radial-gradient(ellipse at 18% 70%, #48243e, transparent 58%), #1a111e;
+  color: #fff1f6;
+  text-decoration: none;
+}
+
+.meta-keyz-dealer {
+  display: block;
+  width: 100%;
+}
+
+.meta-keyz-whisper {
+  color: #ffd392;
+  font-size: .8rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.meta-keyz-entrance h2 {
+  margin: 8px 0;
+}
+
+.meta-keyz-entrance p {
+  margin: 0 0 12px;
+  color: #dec8d8;
+}
+
+.meta-keyz-entrance strong {
+  color: #ffd392;
+}
+
+.meta-keyz-lapel {
+  transform-box: fill-box;
+  transition: transform .38s ease;
+}
+
+.meta-keyz-lapel.left {
+  transform-origin: left top;
+}
+
+.meta-keyz-lapel.right {
+  transform-origin: right top;
+}
+
+.meta-keyz-entrance:is(:hover, :focus-visible) .meta-keyz-lapel.left {
+  transform: translateX(-21px) rotate(16deg);
+}
+
+.meta-keyz-entrance:is(:hover, :focus-visible) .meta-keyz-lapel.right {
+  transform: translateX(21px) rotate(-16deg);
+}
+
+.meta-keyz-entrance:focus-visible {
+  outline: 2px solid #ffd392;
+  outline-offset: 4px;
+}
+
+@media (hover: none) {
+  .meta-keyz-lapel.left { transform: translateX(-21px) rotate(16deg); }
+  .meta-keyz-lapel.right { transform: translateX(21px) rotate(-16deg); }
+}
+
+@media (max-width: 580px) {
+  .support-room .meta-keyz-entrance {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  .meta-keyz-dealer { max-width: 280px; margin: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meta-keyz-lapel { transition: none; }
+}

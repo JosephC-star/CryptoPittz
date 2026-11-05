@@ -1,0 +1,58 @@
+import { META_KEYZ_COLLECTION, validateListing } from '../../src/features/xoxno/validation.js';
+
+const LIMIT = 100;
+
+function reply(statusCode, body) {
+  return {
+    statusCode,
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': statusCode === 200 ? 'public, max-age=20, s-maxage=40' : 'no-store',
+    },
+    body: JSON.stringify(body),
+  };
+}
+
+export async function handler(event) {
+  if (event.httpMethod !== 'GET') return reply(405, { error: 'GET only.' });
+
+  try {
+    const filter = {
+      top: LIMIT,
+      filters: {
+        collection: [META_KEYZ_COLLECTION],
+        onSale: true,
+        saleInfo: { marketplace: ['xoxno'] },
+      },
+    };
+    const query = new URLSearchParams({ filter: JSON.stringify(filter) });
+    const response = await fetch(`https://api.xoxno.com/nft/query?${query}`, {
+      signal: AbortSignal.timeout(10000),
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) throw Error('Marketplace unavailable');
+    const data = await response.json();
+    if (!Array.isArray(data.resources) || data.resources.length > LIMIT) throw Error('Invalid listing feed');
+
+    const listings = new Map();
+    for (const nft of data.resources) {
+      if (nft?.collection !== META_KEYZ_COLLECTION || nft.onSale !== true ||
+          typeof nft.identifier !== 'string') continue;
+      try {
+        const listing = validateListing(nft, nft);
+        listings.set(nft.identifier, {
+          identifier: nft.identifier,
+          collection: META_KEYZ_COLLECTION,
+          name: typeof nft.name === 'string' ? nft.name.slice(0, 100) : 'CryptoPittz Meta Key',
+          price: listing.price,
+        });
+      } catch {
+        // The in-site checkout accepts active fixed-price EGLD listings only.
+      }
+    }
+
+    return reply(200, { listings: [...listings.values()], hasMore: data.hasMoreResults === true });
+  } catch {
+    return reply(502, { error: 'The Meta Keyz listing feed is temporarily unavailable.' });
+  }
+}
