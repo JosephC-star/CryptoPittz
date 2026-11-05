@@ -1,6 +1,13 @@
 import { META_KEYZ_COLLECTION, validateListing } from '../../src/features/xoxno/validation.js';
 
 const LIMIT = 100;
+const keyTypes = new Set(['Hodler', 'Diamond']);
+
+function keyAnimation(nft) {
+  if (nft.media?.originalMedia?.contentType !== 'video/mp4' || typeof nft.url !== 'string') return null;
+  const path = nft.url.match(/^https:\/\/media\.(?:elrond|multiversx)\.com(\/nfts\/asset\/[A-Za-z0-9]+\/[A-Za-z0-9_-]+\.mp4)$/i)?.[1];
+  return path ? `https://media.multiversx.com${path}` : null;
+}
 
 function reply(statusCode, body) {
   return {
@@ -40,11 +47,16 @@ export async function handler(event) {
           typeof nft.identifier !== 'string') continue;
       try {
         const listing = validateListing(nft, nft);
+        const traits = nft.metadata?.attributes;
+        const type = Array.isArray(traits)
+          ? traits.find(trait => trait?.trait_type === 'Type')?.value : null;
         listings.set(nft.identifier, {
           identifier: nft.identifier,
           collection: META_KEYZ_COLLECTION,
           name: typeof nft.name === 'string' ? nft.name.slice(0, 100) : 'CryptoPittz Meta Key',
           price: listing.price,
+          keyType: keyTypes.has(type) ? type : null,
+          animationUrl: keyAnimation(nft),
         });
       } catch {
         // The in-site checkout accepts active fixed-price EGLD listings only.
