@@ -6,7 +6,7 @@ import {loginWithWallet,hasWalletBridge,usesDirectWalletConnection} from './util
 import WalletConnectModal from './components/WalletConnectModal';
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
-import "./features/home/mystery-pitt.css";
+import NetworkBonezMarket from "./features/bonez-market/NetworkBonezMarket";
 import "./features/explorer/explorer-page.css";
 import "./features/dawg-pound/entrance.css";
 
@@ -52,6 +52,17 @@ function App({ explorerPage: isExplorerPage = false }) {
   const [randomPittLoading, setRandomPittLoading] = useState(false);
   const [randomPittError, setRandomPittError] = useState("");
   const [randomPittMode, setRandomPittMode] = useState("surprise");
+  const [showDesktopNetwork, setShowDesktopNetwork] = useState(
+    () => window.matchMedia("(width > 900px)").matches
+  );
+  useEffect(() => {
+    const desktop = window.matchMedia("(width > 900px)");
+    const sync = () => setShowDesktopNetwork(desktop.matches);
+    desktop.addEventListener("change", sync);
+    sync();
+    return () => desktop.removeEventListener("change", sync);
+  }, []);
+
   const walletConnectAnchorRef = useRef(null);
   const [walletOverlayOpen, setWalletOverlayOpen] = useState(false);
 
@@ -625,7 +636,6 @@ function App({ explorerPage: isExplorerPage = false }) {
             </div>
 
             <div className="panel hero-art">
-              <span className="mystery-pitt-mark" aria-hidden="true">?</span>
               <div className="mock" aria-label="CryptoPittz artwork preview">
                 <div className="label">
                   <img
@@ -685,6 +695,37 @@ function App({ explorerPage: isExplorerPage = false }) {
                   </button>
                 </div>
               </div>
+              {showDesktopNetwork && (
+                <div className="pittz-network">
+                  <div className="pittz-network-header">
+                    <div>
+                      <span className="pittz-network-eyebrow">Network Status</span>
+                      <h3>PITTZ NETWORK</h3>
+                    </div>
+
+                    <div className="pittz-network-live">
+                      <span className="pittz-network-dot" />
+                      Online
+                    </div>
+                  </div>
+
+                  <div className="pittz-network-grid">
+                    <div className="pittz-network-stat cyan">
+                      <span>Original Pittz</span>
+                      <strong>{originalTotal?.toLocaleString() || "5,310"}</strong>
+                    </div>
+
+                    <div className="pittz-network-stat magenta">
+                      <span>Vice Pittz</span>
+                      <strong>{viceTotal?.toLocaleString() || "1,395"}</strong>
+                    </div>
+                  </div>
+
+                  <NetworkBonezMarket />
+
+                  <div className="pittz-network-scan" />
+                </div>
+              )}
               {randomPittError && <div className="random-pitt-error">{randomPittError}</div>}
             </div>
           </div>
