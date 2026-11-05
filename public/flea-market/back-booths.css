@@ -174,3 +174,32 @@ main .street-notes{display:grid;grid-template-columns:minmax(270px,.8fr) minmax(
 @media (prefers-reduced-motion: reduce) {
   .meta-keyz-cutout img { transition: none; }
 }
+
+@media (width > 900px) {
+  main .street-note-cluster {
+    padding-right: 148px;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .street-note-cluster .unity-mural {
+    grid-row: auto;
+    justify-self: center;
+  }
+
+  .back-alley-corner {
+    position: relative;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .back-alley-corner .meta-keyz-cutout {
+    position: absolute;
+    right: calc(100% + 12px);
+    bottom: 0;
+    width: 136px;
+  }
+
+  .back-alley-corner .meta-keyz-cutout img {
+    width: 116px;
+  }
+}
