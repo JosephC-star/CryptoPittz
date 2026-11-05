@@ -87,3 +87,60 @@
     outline-offset: 3px;
   }
 }
+
+.desktop-pittz-welcome {
+  display: none;
+}
+
+@media (width > 900px) {
+  .desktop-pittz-welcome {
+    display: grid;
+    align-items: end;
+    aspect-ratio: 1536 / 804;
+    margin-top: 18px;
+    overflow: hidden;
+    border: 1px solid #a65cb855;
+    border-radius: var(--radius2);
+    background: linear-gradient(to top, #090713f2, transparent 26%),
+      #100b24 url("/images/desktop-pittz-welcome.webp") center / cover no-repeat;
+    box-shadow: 0 18px 60px #090614aa, 0 0 35px #ae4ce123;
+  }
+
+  .desktop-pittz-welcome-copy {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 24px;
+  }
+
+  .desktop-pittz-welcome-copy h1 {
+    margin: 0;
+    color: #fcf0ff;
+    font-size: clamp(18px, 2vw, 25px);
+    letter-spacing: -.02em;
+    text-shadow: 0 2px 12px #080411;
+  }
+
+  .desktop-pittz-welcome-copy a {
+    display: inline-flex;
+    gap: 9px;
+    align-items: center;
+    padding: 10px 16px;
+    border: 1px solid #7cefff88;
+    border-radius: 999px;
+    background: #101525;
+    color: #c6faff;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .desktop-pittz-welcome-copy a:is(:hover, :focus-visible) {
+    border-color: #a3f8ff;
+    box-shadow: 0 0 18px #69e4ff55;
+  }
+
+  #pittz-home-intro {
+    scroll-margin-top: 90px;
+  }
+}

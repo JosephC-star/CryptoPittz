@@ -586,7 +586,13 @@ function App({ explorerPage: isExplorerPage = false }) {
       <main id="top">
         <div className="container">
           {!isExplorerPage && <>
-          <div className="hero">
+          <section className="desktop-pittz-welcome" aria-labelledby="desktop-pittz-welcome-title">
+            <div className="desktop-pittz-welcome-copy">
+              <h1 id="desktop-pittz-welcome-title">Welcome to The PittzStop</h1>
+              <a href="#pittz-home-intro">Meet the Pack <span aria-hidden="true">↓</span></a>
+            </div>
+          </section>
+          <div className="hero" id="pittz-home-intro">
             <div className="panel hero-copy-panel hero-neon-panel">
               <div className="hero-cosmic-bg" aria-hidden="true" />
 
