@@ -87,3 +87,20 @@ Treat parent and destination-shard copies of the same transfer as one movement, 
 - XOXNO responded on retry for both provisional Pittz. OG `01` returned a null sale record and OG `0f8a` omitted it. The inspected transactions in their replay windows contained no matching recognized listing events. Their historical eligibility remains provisional because the live response and sampled indexed history do not prove complete venue coverage at the cutoff.
 
 The next reconciliation needs a complete event range or verified starting custody anchors and all subsequent movements for both collections. Keep unknown or unsupported marketplace events separate from verified absence of a listing. The evidence reader does not model deadline-only expiry, reconstruct contract state, or publish a payout file.
+
+### Collection-wide 48-hour transfer range
+
+The MultiversX transfer index returned the following for October 26 05:00 UTC through October 28 05:00 UTC, 2026. For each collection, the page matched the corresponding `/transfers/count` result, with distinct row hashes. Every parent transaction returned a matching transfer log for its collection. Multiple records for the same parent were fetched once.
+
+| Collection | Indexed transfer rows | Parent transactions | NFT nonces in matching logs |
+| --- | ---: | ---: | --- |
+| OG | 9 | 5 | `055c`, `17b1`, `1964` |
+| Vice | 10 | 10 | `7c`, `02af`, `0327`, `038c`, `0446` |
+
+Capture `/transfers` and `/transfers/count` with `token=COLLECTION&after=1792990800&before=1793163601`. Save the page and count as `COLLECTION-transfers.json` and `COLLECTION-transfers-count.json`, then save `/transactions/PARENT_HASH?withLogs=true&withResults=true` as `PARENT_HASH.tx` for each distinct parent. Use `originalTxHash` when present. Audit the capture with:
+
+```sh
+python3 scripts/audit-staking-transfer-range.py CAPTURE_DIR 2026-10-26T05:00:00Z 2026-10-28T05:00:00Z
+```
+
+This reconciles the rows returned by the public transfer index and identifies which NFT IDs appear in decoded logs. The count endpoint shares the same index, so the match cannot independently establish chain completeness. The audit identifies touched NFTs even in transactions with returns or reversals. It does not determine net ownership, verify listing expiry, or infer eligibility from an absent transfer. The remaining inputs are trusted ownership and listing state at the start of the window, plus an independent check for missing events before publishing any rewards. An escrow return still restarts the clock in the dry run pending the owner's decision.
