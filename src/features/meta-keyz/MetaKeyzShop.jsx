@@ -12,22 +12,19 @@ const pageSize = 4;
 
 function KeyListing({ nft, visible }) {
   const [checkoutOpened, setCheckoutOpened] = useState(false);
-  const [playing, setPlaying] = useState(false);
+  const [autoplay] = useState(() => !window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   const [animationFailed, setAnimationFailed] = useState(false);
   const artwork = `https://media.xoxno.com/nftmedia/${nft.collection}/${nft.identifier}.webp`;
 
-  useEffect(() => {
-    if (!visible) setPlaying(false);
-  }, [visible]);
-
   return (
     <article className="key-shop-card" hidden={!visible}>
-      {visible && playing && nft.animationUrl && !animationFailed ? (
+      {visible && nft.animationUrl && !animationFailed ? (
         <video
           src={nft.animationUrl}
           poster={artwork}
           aria-label={`${nft.name} animation`}
-          autoPlay
+          autoPlay={autoplay}
+          preload={autoplay ? "metadata" : "none"}
           muted
           loop
           playsInline
@@ -43,11 +40,6 @@ function KeyListing({ nft, visible }) {
         <h3>{nft.name}</h3>
         <small>{nft.keyType || 'Type unavailable'}</small>
         <p className="key-shop-price">{compactNftPrice(nft.price, true)} EGLD</p>
-        {nft.animationUrl && !animationFailed && (
-          <button type="button" className="key-shop-animation" onClick={() => setPlaying(value => !value)}>
-            {playing ? 'Hide animation' : '▶ Play animation'}
-          </button>
-        )}
         {animationFailed && <p role="status">Animation unavailable.</p>}
         <details onToggle={event => {
           if (event.currentTarget.open) setCheckoutOpened(true);
