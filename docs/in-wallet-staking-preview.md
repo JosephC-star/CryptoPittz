@@ -112,3 +112,9 @@ Run `node scripts/practice-staking-payout.mjs EVIDENCE.json` with a cutoff as an
 The runner checks collection counts, duplicate IDs and state continuity. Missing or unresolved evidence blocks amounts. With complete input it returns a reason and allocation per NFT, aggregated wallet amounts, and any unallocated budget in atomic units. It trusts the supplied verification flags and counts alone cannot establish that the IDs are the correct inventory. Historical custody and listing anchors, inventory identity, and event completeness still require independent reconciliation before using real data.
 
 The automated rehearsal covers all 6,705 synthetic NFT rows and the full Week 1 budget, including a 36-hour escrow return and a transfer after cutoff. It is an offline practice calculation.
+
+### Real-data practice run result
+
+The runner ingested all 5,310 OG and 1,395 Vice NFT IDs and embedded ranks for the October 28, 2026, 05:00 UTC replay, using Week 1 only as the practice budget reference. A fresh transfer capture reconciled 19 indexed rows to 15 parent transactions and eight touched NFT IDs. The result was `blocked` (exit 1), with all 6,705 rows unresolved and no wallet amounts. The inventory capture establishes the IDs and ranks seen by the public API. It supplies no independently verified starting ownership or listing state.
+
+The single-NFT read for OG `0f8a` returned the later holder, consistent with the transfer after cutoff. The tested owner and block queries did not provide a verified cutoff-state anchor. MultiversX documents historical account and VM queries through a [deep-history observer](https://docs.multiversx.com/integrators/deep-history-squad/). Access and coverage for both NFT collections and marketplace contracts still need to be validated. A prospective rehearsal with captured starting state and verified event coverage is another way to exercise the complete run.
