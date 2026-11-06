@@ -1,9 +1,10 @@
+import ShopFormDialog from './ShopFormDialog';
 import PoopRatingIcon from './PoopRatingIcon';
 import {useEffect,useState} from 'react';
 import {readJson} from '../../utils/readJson.mjs';
 import {REVIEW_LABELS} from '../../../shared/market-reviews.mjs';
 const endpoint='/.netlify/functions/market-reviews';
-export default function ShopReviews({booth}){
+export default function ShopReviews({booth,dialogRef}){
  const [data,setData]=useState(null),[offset,setOffset]=useState(0),[attempt,setAttempt]=useState(0),[loading,setLoading]=useState(true),[error,setError]=useState('');
  useEffect(()=>{if(location.hash==='#shop-reviews')document.getElementById('shop-reviews')?.scrollIntoView();},[booth]);
  const [rating,setRating]=useState(0),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[sent,setSent]=useState(false),[requestId,setRequestId]=useState(()=>crypto.randomUUID());
@@ -20,9 +21,12 @@ export default function ShopReviews({booth}){
  <div className="ml-review-list">{data.reviews.map(review=><article key={review.id}><div className="ml-review-byline"><strong>{review.display_name}</strong><time dateTime={review.created_at}>{new Date(review.created_at).toLocaleDateString()}</time></div><p className="ml-review-score"><PoopRatingIcon rating={review.rating}/><span>{review.rating} / 5 · {REVIEW_LABELS[review.rating]}</span></p><p className="ml-review-comment">{review.comment}</p></article>)}</div>
  {(offset>0||data.hasMore)&&<div className="ml-actions"><button onClick={()=>setOffset(n=>Math.max(0,n-10))} disabled={offset===0}>← Newer reviews</button><button onClick={()=>setOffset(n=>n+10)} disabled={!data.hasMore}>Older reviews →</button></div>}
  </>}
- {!sent&&<form onSubmit={submit} onChange={()=>setRequestId(crypto.randomUUID())}><h3>Leave your pack verdict</h3><fieldset disabled={busy}><legend>Your rating (required)</legend><div className="ml-poop-picker">{[1,2,3,4,5].map(value=><label key={value} className={rating===value?'is-filled':''}><input type="radio" name="rating" required value={value} checked={rating===value} onChange={()=>setRating(value)}/><PoopRatingIcon rating={value}/><span className="ml-rating-number" aria-hidden="true">{value}</span><span className="ml-visually-hidden">{value} out of 5: {REVIEW_LABELS[value]}</span></label>)}</div><p className="ml-review-rating-label" aria-live="polite">{rating?rating+' / 5 · '+REVIEW_LABELS[rating]:'Pick your poop: sad, disappointed, neutral, happy or thrilled. Higher means better.'}</p></fieldset>
+ <ShopFormDialog dialogRef={dialogRef} id="market-shop-review" title="Leave your pack verdict" busy={busy}>
+ {loading&&!sent&&<p role="status">Loading review form…</p>}
+ {error&&!sent&&<div role="status"><p>{error}</p><button type="button" onClick={()=>setAttempt(n=>n+1)}>Retry reviews</button></div>}
+ {!sent&&<form onSubmit={submit} onChange={()=>setRequestId(crypto.randomUUID())}><fieldset disabled={busy}><legend>Your rating (required)</legend><div className="ml-poop-picker">{[1,2,3,4,5].map(value=><label key={value} className={rating===value?'is-filled':''}><input type="radio" name="rating" required value={value} checked={rating===value} onChange={()=>setRating(value)}/><PoopRatingIcon rating={value}/><span className="ml-rating-number" aria-hidden="true">{value}</span><span className="ml-visually-hidden">{value} out of 5: {REVIEW_LABELS[value]}</span></label>)}</div><p className="ml-review-rating-label" aria-live="polite">{rating?rating+' / 5 · '+REVIEW_LABELS[rating]:'Pick your poop: sad, disappointed, neutral, happy or thrilled. Higher means better.'}</p></fieldset>
  <label>Public display name<input name="name" required minLength={2} maxLength={60} disabled={busy} autoComplete="nickname"/></label><label>Your experience<textarea name="comment" required minLength={10} maxLength={1500} disabled={busy} placeholder="Tell the pack about your experience with this shop."/></label>
  <div className="ml-review-trap" aria-hidden="true"><label>Website<input name="website" tabIndex={-1} autoComplete="off"/></label></div>
  <p>No private contact details, payment information, threats, or spam. Honest criticism is welcome; moderation applies to every rating.</p><label className="ml-review-consent"><input name="consent" type="checkbox" required disabled={busy}/>I’m sharing my own experience and agree to publish my name, rating, and review immediately.</label><button className="ml-primary" disabled={busy||!rating||!data}>{busy?'Sending…':'Submit pack verdict'}</button></form>}
- <p role="status" className="ml-message">{message}</p></section>;
+ <p role="status" className="ml-message">{message}</p></ShopFormDialog></section>;
 }
