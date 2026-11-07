@@ -13,7 +13,7 @@ export default function MerchantCopy({text,shop=false,compact=false,title='Full 
   <dialog ref={dialog} className="ml-copy-dialog" aria-labelledby={heading}>
    <div className="ml-copy-dialog-heading"><h2 id={heading}>{title}</h2><button type="button" aria-label="Close full description" onClick={()=>dialog.current?.close()}>×</button></div>
    <div className="ml-merchant-copy">{contents}</div>
-   <button type="button" onClick={()=>dialog.current?.close()}>Back to the shop</button>
+   <button type="button" onClick={()=>dialog.current?.close()}>Back to the booth</button>
   </dialog>
  </div>;
 }

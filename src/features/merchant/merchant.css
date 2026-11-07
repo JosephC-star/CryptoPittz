@@ -100,3 +100,8 @@
 .merchant-live .ml-product-video a{display:inline-block;margin-top:8px;font-size:12px}
 
 .merchant-live .ml-inquiry-message{scroll-margin-block:100px;overflow-wrap:anywhere}.merchant-live .ml-inquiry-message.success{border:1px solid #79d99c;background:#193d2b;color:#d5ffe2}.merchant-live .ml-inquiry-message.error{border:1px solid #e5a1a1;background:#462727;color:#ffe1e1}
+
+.merchant-live .ml-storefront-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:14px 0}
+.merchant-live .ml-storefront-actions button{min-height:44px}
+.merchant-live dialog.ml-shop-form-dialog{max-height:calc(100dvh - 28px);scroll-padding-block:20px}
+.merchant-live .ml-shop-form-dialog fieldset{min-width:0}

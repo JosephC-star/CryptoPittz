@@ -15,7 +15,7 @@ async function identity(event,origin){
  const rows=await db('market_rental_sessions?token_hash=eq.'+hash(origin+token)+'&origin=eq.'+encodeURIComponent(origin)+'&revoked_at=is.null&expires_at=gt.'+encodeURIComponent(new Date().toISOString())+'&select=*&limit=1');
  if(!rows.length)fail(401,'Rental session expired. Verify your wallet again.');return rows[0];
 }
-async function owner(address){const rows=await db('market_shops?owner_wallet=eq.'+address+'&select=*&limit=1');const shop=rows[0]||null;if(shop?.moderation_suspended||shop?.access_status==='suspended')fail(403,'This shop is suspended. Contact an administrator.');return shop;}
+async function owner(address){const rows=await db('market_shops?owner_wallet=eq.'+address+'&select=*&limit=1');const shop=rows[0]||null;if(shop?.moderation_suspended||shop?.access_status==='suspended')fail(403,'This booth is suspended. Contact an administrator.');return shop;}
 function policyMatches(r){
  try{return priceFor(r.months,r.tier).amountAtomic===String(r.amount_atomic)&&r.policy_version===RENTAL_POLICY_VERSION;}catch{return false;}
 }
@@ -57,7 +57,7 @@ export async function handler(event){try{
  if(!methods[route])fail(404,'Unknown rental action.');if(event.httpMethod!==methods[route])fail(405,'Unsupported request method.');
  if(event.httpMethod==='POST'&&(event.headers?.origin!==origin||!event.headers?.['content-type']?.startsWith('application/json')))fail(403,'Open rental actions from the market.');
  if(route==='config')return response(200,{enabled:enabled(),benefitsEnabled:benefitsEnabled(),keyRequired:false});
- if(!enabled())fail(503,'Rental enrollment is being connected. Existing shops continue to work.');
+ if(!enabled())fail(503,'Rental enrollment is being connected. Existing booths continue to work.');
  const body=readJsonRequest(event,8192);
  if(route==='challenge'){
   const address=wallet(body.address);await owner(address);
@@ -89,7 +89,7 @@ export async function handler(event){try{
  if(route==='quote'){
   if(body.acceptTerms!==true||body.termsVersion!==RENTAL_TERMS_VERSION)fail(400,'Acknowledge the final-duration, no-refund and no-proration rental terms before continuing.');
   const months=Number(body.months);if(![1,6,12].includes(months))fail(400,'Choose one, six or twelve months.');
-  const name=shop?.name||(typeof body.name==='string'?body.name.trim():'');if(!name||name.length>120)fail(400,'Enter a shop name up to 120 characters.');
+  const name=shop?.name||(typeof body.name==='string'?body.name.trim():'');if(!name||name.length>120)fail(400,'Enter a booth name up to 120 characters.');
   await clearOldReviews(address);
   const benefit=waived(shop)?{tier:"waived"}:body.useStandardRate===true?{tier:"standard"}:await currentBenefit(shop,address),price=priceFor(months,benefit.tier),account=await chain('accounts/'+address);
   if(!Number.isSafeInteger(account.nonce)||account.nonce<0)fail(503,'Wallet nonce could not be verified.');

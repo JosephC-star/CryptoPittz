@@ -54,7 +54,7 @@ export function productInput(body, shopId) {
   const quantity = Number(body.quantity);
   if (!Number.isSafeInteger(quantity) || quantity < 0 || quantity > 1000000 || typeof body.made_to_order !== 'boolean') fail(400, 'Check the quantity and availability.');
   const image_path = body.image_path || null;
-  if (image_path && (typeof image_path !== 'string' || !image_path.startsWith(shopId + '/') || !new RegExp('^' + shopId + '/[0-9a-f-]{36}\\.(jpg|png|webp)$').test(image_path))) fail(400, 'The image does not belong to this shop.');
+  if (image_path && (typeof image_path !== 'string' || !image_path.startsWith(shopId + '/') || !new RegExp('^' + shopId + '/[0-9a-f-]{36}\\.(jpg|png|webp)$').test(image_path))) fail(400, 'The image does not belong to this booth.');
   const video = {};
   if (Object.hasOwn(body, 'youtube_url')) {
     if (body.youtube_url === null || (typeof body.youtube_url === 'string' && !body.youtube_url.trim())) video.youtube_url = null;
@@ -169,7 +169,7 @@ export async function handler(event) {
     if(route==='shops'){
       const query=event.queryStringParameters?.q||'',category=event.queryStringParameters?.category||'all';
       const offset=Number(event.queryStringParameters?.offset||0),pageSize=12;
-      if(typeof query!=='string'||query.length>120||!Number.isSafeInteger(offset)||offset<0||offset>500||!(category==='all'||SHOP_CATEGORIES.some(c=>c.id===category)))fail(400,'Check the shop search and category.');
+      if(typeof query!=='string'||query.length>120||!Number.isSafeInteger(offset)||offset<0||offset>500||!(category==='all'||SHOP_CATEGORIES.some(c=>c.id===category)))fail(400,'Check the booth search and category.');
       const rows=await db('market_shops?moderation_suspended=eq.false&access_status=in.(test,active)&select=id,booth_number,name,description,access_status,rental_expires_at,moderation_suspended&order=booth_number.asc&limit=500');
       const live=rows.filter(active),matching=live.filter(shop=>matchesShop(shop,query,category));
       const page=matching.slice(offset,offset+pageSize),shops=[];
@@ -194,11 +194,11 @@ export async function handler(event) {
     }
     if(route==='shop-image'){
       const booth=Number(event.queryStringParameters?.booth),kind=event.queryStringParameters?.kind;
-      if(!Number.isSafeInteger(booth)||booth<1||!['cover','default'].includes(kind))fail(400,'Invalid shop picture.');
+      if(!Number.isSafeInteger(booth)||booth<1||!['cover','default'].includes(kind))fail(400,'Invalid booth picture.');
       const shops=await db('market_shops?booth_number=eq.'+booth+'&select=*&limit=1'),target=shops?.[0];
-      if(!active(target))fail(404,'Shop picture not available.');
+      if(!active(target))fail(404,'Booth picture not available.');
       const photos=await appearance(target);
-      if(!photos[kind==='cover'?'cover_url':'default_image_url'])fail(404,'Shop picture not found.');
+      if(!photos[kind==='cover'?'cover_url':'default_image_url'])fail(404,'Booth picture not found.');
       const signed=await request('/storage/v1/object/sign/market-product-images/'+target.id+'/storefront-'+kind+'.jpg','POST',{expiresIn:60});
       const location=new URL('/storage/v1'+signed.signedURL,configuration().origin);
       if(location.origin!==configuration().origin)fail(503,'Picture could not be opened.');
@@ -234,7 +234,7 @@ export async function handler(event) {
       if(!Number.isSafeInteger(booth)||booth<1)fail(400,'Invalid booth.');
       if(!UUID.test(body.request_id))fail(400,'Refresh the page before sending this inquiry.');
       const shops=await db('market_shops?booth_number=eq.'+booth+'&select=id,access_status,rental_expires_at,moderation_suspended&limit=1');const target=shops?.[0];
-      if(!active(target))fail(404,'This shop is not accepting inquiries.');
+      if(!active(target))fail(404,'This booth is not accepting inquiries.');
       const existing=await db('market_inquiries?id=eq.'+body.request_id+'&shop_id=eq.'+target.id+'&customer_email=eq.'+encodeURIComponent(email)+'&select=id&limit=1');
       if(existing?.length)return response(200,{received:true,reference:body.request_id,message:'This inquiry is already saved in the merchant’s inbox. No order or payment has been placed.'});
       let productId=null;
@@ -269,7 +269,7 @@ export async function handler(event) {
       const slot=Number(body.slot);
       if(!UUID.test(body.id||'')||!GALLERY_SLOTS.includes(slot))fail(400,'Choose a valid product picture slot.');
       const rows=await db('market_products?id=eq.'+body.id+'&shop_id=eq.'+shop.id+'&select=id&limit=1');
-      if(rows.length!==1)fail(404,'Product not found in your shop.');
+      if(rows.length!==1)fail(404,'Product not found in your booth.');
       const path=shop.id+'/'+galleryFileName(body.id,slot);
       if(body.remove===true)await request('/storage/v1/object/market-product-images','DELETE',{prefixes:[path]});
       else{const {bytes,type}=imageInput(body);await request('/storage/v1/object/market-product-images/'+path,'POST',bytes,{'Content-Type':type,'x-upsert':'true'});}
@@ -303,14 +303,14 @@ export async function handler(event) {
     if(route==='inquiry-status'){
       if(!UUID.test(body.id)||!['new','read','closed'].includes(body.status))fail(400,'Invalid inquiry update.');
       const rows=await db('market_inquiries?id=eq.'+body.id+'&shop_id=eq.'+shop.id,'PATCH',{status:body.status},{Prefer:'return=representation'});
-      if(rows?.length!==1)fail(404,'Inquiry not found in your shop.');
+      if(rows?.length!==1)fail(404,'Inquiry not found in your booth.');
       return response(200,{updated:true});
     }
     if(route==='inquiry-reference'){
       const id=event.queryStringParameters?.id;if(!UUID.test(id))fail(400,'Invalid inquiry.');
       const rows=await db('market_inquiries?id=eq.'+id+'&shop_id=eq.'+shop.id+'&select=reference_image_path&limit=1');
       const path=rows?.[0]?.reference_image_path;
-      if(!path||!path.startsWith(shop.id+'/')||path.includes('..'))fail(404,'Reference picture not found in your shop.');
+      if(!path||!path.startsWith(shop.id+'/')||path.includes('..'))fail(404,'Reference picture not found in your booth.');
       const signed=await request('/storage/v1/object/sign/market-inquiry-references/'+path,'POST',{expiresIn:60});
       const location=new URL('/storage/v1'+signed.signedURL,configuration().origin);
       if(location.origin!==configuration().origin)fail(503,'Reference picture could not be opened.');
@@ -321,18 +321,18 @@ export async function handler(event) {
       if(body.id){
         if(!UUID.test(body.id))fail(400,'Invalid product.');
         const rows=await db('market_products?id=eq.'+body.id+'&shop_id=eq.'+shop.id,'PATCH',product,{Prefer:'return=representation'});
-        if(rows?.length!==1)fail(404,'Product not found in your shop.');
+        if(rows?.length!==1)fail(404,'Product not found in your booth.');
         return response(200,{product:withImage(rows[0])});
       }
       const existing=await db('market_products?shop_id=eq.'+shop.id+'&select=id&limit=100');
-      if(existing.length>=100)fail(409,'This test shop supports up to 100 products.');
+      if(existing.length>=100)fail(409,'This test booth supports up to 100 products.');
       const rows=await db('market_products','POST',{...product,shop_id:shop.id},{Prefer:'return=representation'});
       return response(201,{product:withImage(rows[0])});
     }
     if(route==='shop'){
       const name=typeof body.name==='string'?body.name.trim():'';
       const description=typeof body.description==='string'?body.description.trim():'';
-      if(!name||name.length>120||description.length>2000)fail(400,'Check the shop name and description.');
+      if(!name||name.length>120||description.length>2000)fail(400,'Check the booth name and description.');
       const rows=await db('market_shops?id=eq.'+shop.id+'&owner_wallet=eq.'+shop.owner_wallet,'PATCH',{name,description},{Prefer:'return=representation'});
       if(rows?.length!==1)fail(403,'The booth assignment changed. Sign in again.');
       return response(200,{shop:rows[0]});

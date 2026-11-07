@@ -349,6 +349,7 @@ function App({ explorerPage: isExplorerPage = false }) {
                   <a href="/my-pittz/" onClick={() => setDesktopGroup(null)}>My Pittz</a>
                   <a href="/financial-district/" onClick={() => setDesktopGroup(null)}>Financial District</a>
                   <a href="/dawg-pound/" onClick={() => setDesktopGroup(null)}>Pittz Dawg Pound</a>
+                  <a href="/welcome-center/" onClick={() => setDesktopGroup(null)}>Welcome Center</a>
                   <a href="/explorer/" onClick={event => { setDesktopGroup(null); if(isExplorerPage){event.preventDefault();navigateExplorer("explorer");} }}>CryptoPittz Explorer</a>
                   <a href="/pittensor/" onClick={() => setDesktopGroup(null)}>Pittensor</a>
                   <a href={isExplorerPage ? "/#arcade" : "#arcade"} onClick={() => setDesktopGroup(null)}>Pittz Playground</a>
@@ -470,6 +471,7 @@ function App({ explorerPage: isExplorerPage = false }) {
                 <a href="/my-pittz/" onClick={closeMobileMenu}>My Pittz</a>
                 <a href="/financial-district/" onClick={closeMobileMenu}>Financial District</a>
                 <a href="/dawg-pound/" onClick={closeMobileMenu}>Pittz Dawg Pound</a>
+                <a href="/welcome-center/" onClick={closeMobileMenu}>Welcome Center</a>
                 <a href="/explorer/" onClick={event => { closeMobileMenu(); if(isExplorerPage){event.preventDefault();navigateExplorer("explorer");} }}>CryptoPittz Explorer</a>
                 <a href="/pittensor/" onClick={closeMobileMenu}>Pittensor</a>
                 <a href={isExplorerPage ? "/#arcade" : "#arcade"} onClick={closeMobileMenu}>Pittz Playground</a>
@@ -611,6 +613,7 @@ function App({ explorerPage: isExplorerPage = false }) {
                 <NeonWelcome/><div className="badge">⚡ Welcome to the CryptoPittz universe</div>
 
                 <h2 className="title">CryptoPittz is a neon-charged collectible universe.</h2>
+                <p><a className="btn" href="/welcome-center/">New here? Start at the Welcome Center →</a></p>
 
                 <IntroDisclosure>the collection has two drops: the original Pittz consisting of
                   5310 art pieces released in to wild back in 2021 and the 2nd collection, Vice

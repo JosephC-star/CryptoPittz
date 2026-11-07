@@ -22,7 +22,7 @@ export async function handler(event){try{
   let email;try{email=emailAddress(body.email);}catch(error){fail(400,error.message);}
   const code=String(randomInt(10000000,100000000)),codeHash=hash(shop.id+'|'+shop.owner_wallet+'|'+code);
   if(!await db('rpc/market_start_alert_verification','POST',{shop_key:shop.id,wallet_key:shop.owner_wallet,email_value:email,code_hash:codeHash}))fail(429,'Wait a minute before requesting another code. Up to five requests are allowed each day.');
-  await sendMarketMail(email,'Confirm your PittzStop shop alerts','Your verification code is '+code+'.\n\nEnter it in your merchant stockroom within 15 minutes. This enables new-inquiry alerts. If you did not request this, ignore this email.','market-verify/'+codeHash);
+  await sendMarketMail(email,'Confirm your PittzStop booth alerts','Your verification code is '+code+'.\n\nEnter it in your merchant stockroom within 15 minutes. This enables new-inquiry alerts. If you did not request this, ignore this email.','market-verify/'+codeHash);
   return response(200,{sent:true,message:'Check your email and enter the eight-digit code.'});
  }
  if(!/^\d{8}$/.test(body.code||''))fail(400,'Enter the eight-digit email code.');
