@@ -68,3 +68,7 @@
 @media(max-width:500px){.support-photo-dialog{padding:12px}.support-photo-heading h2{font-size:18px}}
 
 .support-board-choice{margin:14px 0;padding:14px;border:1px solid #a8cf7055;border-radius:10px;background:#1b2922}.support-board-choice label,.support-receipts label{display:flex;align-items:flex-start;gap:10px;font-size:13px}.support-board-choice input,.support-receipts input[type=checkbox]{width:18px;height:18px;flex-shrink:0;margin-top:4px;accent-color:#c5f482}.support-board-choice p{font-size:12px;color:#bdc5cc;margin-bottom:0}.support-receipt-status:not(:empty){padding:12px;border:1px solid #d2ec9b66;border-radius:9px;background:#24332a;overflow-wrap:anywhere}
+
+.support-wallet{margin-top:18px}
+.support-wallet>span{color:#d5fc79}
+.support-wallet>p{margin:8px 0 0;font-size:14px}

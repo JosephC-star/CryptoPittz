@@ -1,6 +1,9 @@
 import BoothPicture from './BoothPicture';
 import {useEffect,useRef,useState} from 'react';
 import {useGetAccount} from '@multiversx/sdk-dapp/out/react/account/useGetAccount';
+import {UnlockPanelManager} from '@multiversx/sdk-dapp/out/managers/UnlockPanelManager';
+import WalletConnectModal from '../../components/WalletConnectModal';
+import {hasWalletBridge,loginWithWallet,usesDirectWalletConnection} from '../../utils/connectWallet';
 import SupportHistory from './SupportHistory';
 import BonezSwap from '../bonez-swap/BonezSwap';
 import SupporterBoard from './SupporterBoard';
@@ -25,7 +28,8 @@ function Booth({booth,admin,onBuy,onRefresh,refreshTick=0}){
   <p role="status">{message}</p></div></article>;
 }
 export default function SupportRoom(){
- const panel=useRef(null),trigger=useRef(null),recording=useRef(false);
+ const panel=useRef(null),trigger=useRef(null),recording=useRef(false),walletAnchor=useRef(null);
+ const [connecting,setConnecting]=useState(false),[walletOpen,setWalletOpen]=useState(false),[walletError,setWalletError]=useState('');
  const account=useGetAccount();const [booths,setBooths]=useState([]),[chosen,setChosen]=useState(null),[pending,setPending]=useState(readPending),[visible,setVisible]=useState(true),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[swapBusy,setSwapBusy]=useState(false),[tick,setTick]=useState(0);
  useEffect(()=>{let live=true;api('booths').then(d=>{if(live)setBooths(d.booths);}).catch(e=>{if(live)setMessage(e.message);});return()=>{live=false;};},[tick]);
  useEffect(()=>{
@@ -34,6 +38,26 @@ export default function SupportRoom(){
   panel.current?.querySelector('button')?.focus();
   return()=>{document.body.style.overflow=previous;trigger.current?.focus({preventScroll:true});};
  },[chosen]);
+ async function connectWallet(){
+  if(connecting)return;
+  setConnecting(true);
+  setWalletError('');
+  try{
+   if(usesDirectWalletConnection()){
+    setWalletOpen(!hasWalletBridge());
+    await loginWithWallet(walletAnchor.current);
+   }else{
+    UnlockPanelManager.init({loginHandler:()=>{}});
+    await UnlockPanelManager.getInstance().openUnlockPanel();
+   }
+  }catch(error){
+   setWalletError(error.message||'Could not connect your wallet.');
+  }finally{
+   walletAnchor.current?.replaceChildren();
+   setWalletOpen(false);
+   setConnecting(false);
+  }
+ }
  function closeBuyer(){if(!swapBusy&&!busy)setChosen(null);}
  function buyerKeys(event){
   if(event.defaultPrevented||document.querySelector('dialog[open]'))return;
@@ -58,13 +82,19 @@ export default function SupportRoom(){
   finally{recording.current=false;setBusy(false);}
  }
  function confirmed(receipt){const saved=pending.find(r=>r.hash===receipt.hash)||readPending().find(r=>r.hash===receipt.hash)||{...receipt,booth:chosen.id,visible};return record(saved);}
- function receiptList(rows){return rows.length>0&&<section className="support-receipts"><h2>Finish your scoreboard entry</h2><p>Your purchase is already submitted. Once it confirms, approve one free receipt message. Retrying this step never buys more BONEZ.</p>{rows.map(r=><article key={r.hash}><strong>Booth {r.booth} · {short(r.address)}</strong><a href={'https://explorer.multiversx.com/transactions/'+r.hash} target="_blank" rel="noreferrer">View transaction ↗</a><label><input type="checkbox" checked={typeof r.visible==='boolean'?r.visible:visible} disabled={busy||swapBusy} onChange={event=>{const next=pending.map(p=>p.hash===r.hash?{...p,visible:event.target.checked}:p);setPending(next);try{localStorage.setItem(pendingKey,JSON.stringify(next));}catch{}}}/> Show my herotag or shortened ERD and purchase totals on this booth’s public scoreboard.</label><button disabled={busy||swapBusy||account.address!==r.address} onClick={()=>record(r)}>{busy?'Saving receipt…':(typeof r.visible==='boolean'?r.visible:visible)?'Add confirmed purchase to scoreboard':'Save private purchase receipt'}</button></article>)}{!account.address&&<p>Connect the wallet that made the purchase using the booth’s buyer.</p>}</section>;}
- return <div className="support-room"><div inert={chosen?true:undefined}><header><a href="/flea-market/">← Pittz Flea Market</a><a href="/market-admin?return=back-booths">Admin sign-in ↗</a></header><main><section className="support-hero"><small>PITTZ FLEA MARKET / AFTER DARK</small><h1>Welcome to<br/><em>the back booths.</em></h1><p>Two booths. One community. Pick a corner, buy BONEZ for your wallet, and leave a little love on the supporter wall.</p><span>BONEZ ONLY · YOUR WALLET · YOUR CHOICE</span></section>{window.location.hostname.includes('deploy-preview-')&&<p className="support-preview">Preview boards are separate. Wallet purchases use real mainnet tokens.</p>}<p role="status">{message}</p>{!booths.length?<button onClick={()=>setTick(n=>n+1)}>Load support booths</button>:<div className="support-booths">{booths.map(b=><Booth key={b.id} booth={b} admin={false} refreshTick={tick} onRefresh={()=>setTick(n=>n+1)} onBuy={(b,button)=>{if(swapBusy)return;trigger.current=button;setChosen(b);}}/>)}</div>}
+ function receiptList(rows){return rows.length>0&&<section className="support-receipts"><h2>Finish your scoreboard entry</h2><p>Your purchase is already submitted. Once it confirms, approve one free receipt message. Retrying this step never buys more BONEZ.</p>{rows.map(r=><article key={r.hash}><strong>Booth {r.booth} · {short(r.address)}</strong><a href={'https://explorer.multiversx.com/transactions/'+r.hash} target="_blank" rel="noreferrer">View transaction ↗</a><label><input type="checkbox" checked={typeof r.visible==='boolean'?r.visible:visible} disabled={busy||swapBusy} onChange={event=>{const next=pending.map(p=>p.hash===r.hash?{...p,visible:event.target.checked}:p);setPending(next);try{localStorage.setItem(pendingKey,JSON.stringify(next));}catch{}}}/> Show my herotag or shortened ERD and purchase totals on this booth’s public scoreboard.</label><button disabled={busy||swapBusy||account.address!==r.address} onClick={()=>record(r)}>{busy?'Saving receipt…':(typeof r.visible==='boolean'?r.visible:visible)?'Add confirmed purchase to scoreboard':'Save private purchase receipt'}</button></article>)}{!account.address&&<p>Connect the wallet that made the purchase to finish your receipt.</p>}</section>;}
+ return <div className="support-room"><div inert={chosen?true:undefined}><header><a href="/flea-market/">← Pittz Flea Market</a><a href="/market-admin?return=back-booths">Admin sign-in ↗</a></header><main><section className="support-hero"><small>PITTZ FLEA MARKET / AFTER DARK</small><h1>Welcome to<br/><em>the back booths.</em></h1><p>Two booths. One community. Pick a corner, buy BONEZ for your wallet, and leave a little love on the supporter wall.</p><span>BONEZ ONLY · YOUR WALLET · YOUR CHOICE</span>
+ <div className="support-wallet">{account.address
+  ? <span role="status">Wallet connected · {short(account.address)}</span>
+  : <button type="button" className="support-primary" disabled={connecting} onClick={connectWallet}>{connecting?'Connecting…':'Connect Wallet'}</button>}
+  {walletError&&!account.address&&<p role="alert">{walletError}</p>}
+ </div></section>{window.location.hostname.includes('deploy-preview-')&&<p className="support-preview">Preview boards are separate. Wallet purchases use real mainnet tokens.</p>}<p role="status">{message}</p>{!booths.length?<button onClick={()=>setTick(n=>n+1)}>Load support booths</button>:<div className="support-booths">{booths.map(b=><Booth key={b.id} booth={b} admin={false} refreshTick={tick} onRefresh={()=>setTick(n=>n+1)} onBuy={(b,button)=>{if(swapBusy)return;trigger.current=button;setChosen(b);}}/>)}</div>}
 
  {receiptList(pending)}
 
  <footer>From the pack. For the pack. 🐾<a href="/flea-market/">Back to the market →</a></footer></main></div>
  {chosen&&<div className="support-buyer-overlay" onMouseDown={event=>{if(event.target===event.currentTarget)closeBuyer();}} onKeyDown={buyerKeys}><section ref={panel} className="support-buyer support-buyer-popup" role="dialog" aria-modal="true" aria-labelledby="support-buyer-title"><div className="support-popup-heading"><div><small>BACK BOOTH / 0{chosen.id}</small><h2 id="support-buyer-title">Buy BONEZ</h2><p>{chosen.title}</p></div><button className="support-popup-close" disabled={swapBusy||busy} onClick={closeBuyer} aria-label="Close BONEZ buyer">×</button></div><div className="support-board-choice"><label><input type="checkbox" checked={visible} disabled={swapBusy||busy} onChange={event=>setVisible(event.target.checked)}/> Show my herotag or shortened ERD and purchase totals on this booth’s scoreboard.</label><p>After your purchase confirms, we’ll ask your wallet to approve a free receipt message, then update the board. No second payment.</p></div><div inert={busy?true:undefined}><BonezSwap key={chosen.id} embedded purchaseOnly purchaseBooth={chosen.id} onBusyChange={setSwapBusy} onSubmitted={remember} onConfirmed={confirmed}/></div><p className="support-receipt-status" role="status" aria-live="polite">{message}</p>{receiptList(pending.filter(r=>r.booth===chosen.id))}{swapBusy&&<p className="support-popup-note" role="status">Keep this window open while your wallet or transaction is processing.</p>}<button className="support-back-to-booths" disabled={swapBusy||busy} onClick={closeBuyer}>← Back to the booths</button></section></div>}
+ <WalletConnectModal open={walletOpen} anchorRef={walletAnchor} onClose={()=>setWalletOpen(false)}/>
  </div>;
 }
 
