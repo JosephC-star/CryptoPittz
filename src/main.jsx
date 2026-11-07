@@ -9,6 +9,7 @@ import {adminWalletCallbackPath} from "./features/merchant/adminDestination.mjs"
 const MyPittzPage=lazy(()=>import("./features/my-pittz/MyPittzPage.jsx"));
 const CollectorProfile=lazy(()=>import("./features/collectors/CollectorProfile.jsx"));
 const DawgPound=lazy(()=>import("./features/dawg-pound/DawgPound.jsx"));
+const WelcomeCenter = lazy(() => import("./features/welcome-center/WelcomeCenter.jsx"));
 const App = lazy(() => import("./App.jsx"));
 const RentalCenter = lazy(() => import("./features/merchant/RentalCenter.jsx"));
 const MarketShop = lazy(() => import("./features/merchant/MarketShop.jsx"));
@@ -31,6 +32,7 @@ window.addEventListener('hashchange',routeLegacyExplorerLink);
 const pagePath = window.location.pathname.replace(/\/$/, "");
 
 const pageTitles = {
+  "/welcome-center": "Welcome Center · The PittzStop",
   "/meta-keyz": "The Meta Key Shop · The PittzStop",
   "/community-support": "The Back Booths · Pittz Flea Market",
   "/explorer": "CryptoPittz Explorer · The PittzStop",
@@ -72,12 +74,14 @@ const config = {
   },
 };
 
-initApp(config)
+const appReady = pagePath === "/welcome-center" ? Promise.resolve() : initApp(config);
+
+appReady
   .then(() => {
     createRoot(document.getElementById("root")).render(
       <StrictMode>
         <Suspense fallback={<p style={{padding:"24px",color:"#e9c77a"}}>Loading PittzStop…</p>}>
-          {pagePath === "/meta-keyz" ? <MetaKeyzShop /> : pagePath === "/community-support" ? <SupportRoom /> : pagePath === "/my-pittz" ? <MyPittzPage /> : pagePath === "/collector" ? <CollectorProfile /> : pagePath === "/dawg-pound" ? <DawgPound /> : pagePath === "/market-rent" ? <RentalCenter /> : pagePath === "/market-shop" ? <MarketShop /> : pagePath === "/market-admin" ? <MarketAdmin /> : pagePath === "/merchant-access" ? <MerchantStudio /> : pagePath === "/pittensor" ? <Pittensor /> : pagePath === "/financial-district" ? <FinancialDistrict /> : pagePath === "/bonez-swap" ? <BonezSwap /> : <App explorerPage={pagePath === "/explorer"} />}
+          {pagePath === "/welcome-center" ? <WelcomeCenter /> : pagePath === "/meta-keyz" ? <MetaKeyzShop /> : pagePath === "/community-support" ? <SupportRoom /> : pagePath === "/my-pittz" ? <MyPittzPage /> : pagePath === "/collector" ? <CollectorProfile /> : pagePath === "/dawg-pound" ? <DawgPound /> : pagePath === "/market-rent" ? <RentalCenter /> : pagePath === "/market-shop" ? <MarketShop /> : pagePath === "/market-admin" ? <MarketAdmin /> : pagePath === "/merchant-access" ? <MerchantStudio /> : pagePath === "/pittensor" ? <Pittensor /> : pagePath === "/financial-district" ? <FinancialDistrict /> : pagePath === "/bonez-swap" ? <BonezSwap /> : <App explorerPage={pagePath === "/explorer"} />}
         </Suspense>
       </StrictMode>,
     );

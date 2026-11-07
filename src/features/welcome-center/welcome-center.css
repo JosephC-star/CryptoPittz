@@ -1,0 +1,96 @@
+.welcome-center {
+  --welcome-gold: #ffd080;
+  --welcome-teal: #92f9e1;
+  box-sizing: border-box;
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 24px clamp(16px, 4vw, 42px) 52px;
+  color: #fff4e4;
+}
+
+.welcome-center a { color: var(--welcome-teal); }
+.welcome-center :focus-visible { outline: 3px solid var(--welcome-teal); outline-offset: 4px; }
+.welcome-home { display: inline-block; padding: 12px 0; margin-bottom: 12px; }
+
+.welcome-hero {
+  background: linear-gradient(90deg, #121019 7%, #121019e8 37%, #12101940 100%),
+    #121019 url("/images/pittzstop-launch-nov2026.jpg") center / cover no-repeat;
+  border: 1px solid #996d47;
+  border-radius: 22px;
+  box-shadow: 0 0 28px #f09a3c24;
+  padding: clamp(26px, 6vw, 72px);
+}
+
+.welcome-hero-copy { max-width: 570px; }
+.welcome-marker {
+  color: var(--welcome-gold);
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+.welcome-center h1 {
+  margin: 12px 0 16px;
+  font-size: clamp(2rem, 6.7vw, 4.7rem);
+  line-height: 1;
+}
+.welcome-center h1 span { display: block; color: var(--welcome-teal); text-shadow: 0 0 24px #46ecc856; }
+.welcome-center h2 { margin: 0 0 16px; font-size: clamp(1.4rem, 4vw, 2.2rem); }
+.welcome-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 22px; }
+.welcome-actions a, .welcome-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  padding: 9px 13px;
+  font: inherit;
+  font-weight: 750;
+  text-decoration: none;
+}
+.welcome-actions button { cursor: pointer; color: var(--welcome-teal); background: #1d242c; border-color: #4d6668; }
+.welcome-actions .welcome-primary { color: #17131c; background: var(--welcome-gold); border-color: var(--welcome-gold); }
+.welcome-actions :is(a, button):hover { box-shadow: 0 0 15px #92f9e144; }
+
+.welcome-tour {
+  margin-top: 24px;
+  padding: clamp(18px, 4vw, 34px);
+  border: 1px solid #449588;
+  border-radius: 18px;
+  background: #152429;
+}
+#destination-map { margin-top: 32px; scroll-margin-top: 20px; }
+.welcome-map {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 232px), 1fr));
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.welcome-map a {
+  display: grid;
+  gap: 7px;
+  height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  border: 1px solid #4b6065;
+  border-radius: 14px;
+  background: linear-gradient(150deg, #19282d, #17131e 65%);
+  text-decoration: none;
+}
+.welcome-map a:hover { border-color: var(--welcome-teal); }
+.welcome-map-sign { display: flex; justify-content: space-between; font-weight: 800; color: var(--welcome-gold); }
+.welcome-destination { font-size: 1.25rem; font-weight: 850; }
+.welcome-map strong { color: #fff4e4; }
+.welcome-description { color: #d7cbd8; line-height: 1.45; }
+
+@media (max-width: 600px) {
+  .welcome-hero {
+    background-image: linear-gradient(0deg, #121019 13%, #121019ed 60%, #12101920 100%),
+      url("/images/pittzstop-launch-nov2026.jpg");
+    padding-top: 108px;
+  }
+}
