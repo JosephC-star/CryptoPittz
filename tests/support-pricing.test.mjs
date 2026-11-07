@@ -12,3 +12,13 @@ test('pricing proof cannot change amount, booth, origin, or signing key',()=>{co
 test('receipt must pay the exact quoted EGLD within the pricing window; later recording remains valid',()=>{const p=issuePreset(options,secret),purchase={egld_atomic:p.egld_atomic,purchased_at:new Date(issued+1000).toISOString()};assert.throws(()=>pricedPurchase(p,{...purchase,egld_atomic:'1'}));assert.throws(()=>pricedPurchase(p,{...purchase,purchased_at:new Date(issued-1000).toISOString()}));assert.throws(()=>pricedPurchase(p,{...purchase,purchased_at:new Date(issued+301000).toISOString()}));assert.equal(pricedPurchase(p,purchase).usd_cents,1000);});
 test('receipt message binds the dollar budget and formats exact public totals',()=>{const input={origin,booth:1,hash:'a'.repeat(64),address:'erd1example',visible:true};assert.notEqual(supportMessage({...input,usd:10}),supportMessage({...input,usd:100}));assert.equal(dollars('123456789012345678900'),'$1,234,567,890,123,456,789.00');assert.equal(dollars(null),'USD not recorded');});
 test('invalid purchase increments are rejected before chain requests',async()=>{for(const usd of ['15','0','110']){const result=await handler({httpMethod:'GET',rawUrl:origin+'/.netlify/functions/market-support',headers:{},queryStringParameters:{route:'price',booth:'1',usd}});assert.equal(result.statusCode,400);}});
+test('automatic booth receipts require the purchasing wallet and the exact unique quote',()=>{
+ const address='erd1purchaser';
+ const quote=issuePreset({...options,address},secret);
+ const otherQuote=issuePreset({...options,address,booth:2},secret);
+ const preset=readPreset(quote.pricingToken,{origin,booth:1},secret);
+ const purchase={address,egld_atomic:quote.egld_atomic,purchased_at:new Date(issued+1000).toISOString()};
+ assert.equal(pricedPurchase(preset,purchase).usd_cents,quote.usd*100);
+ assert.throws(()=>pricedPurchase(preset,{...purchase,address:'erd1other'}),/quoted wallet/);
+ assert.throws(()=>pricedPurchase(readPreset(otherQuote.pricingToken,{origin,booth:2},secret),purchase),/verified purchase price/);
+});

@@ -73,18 +73,19 @@ export default function BonezSwap({embedded=false,onBusyChange,purchaseOnly=fals
   }
   async function getQuote(e){
     e.preventDefault();if(lock.current||pending)return;
+    if(purchaseOnly&&!account.address){await connect();return;}
     invalidate();const id=generation.current;
     lock.current=true;setBusy(true);setStatus('Finding a live route through JEX…');
     try{
       let preset=null;
-      if(purchaseOnly){const result=await getJson('/.netlify/functions/market-support?route=price&booth='+purchaseBooth+'&usd='+usd);preset=result.preset;if(preset?.usd!==usd||!/^\d+$/.test(preset.egld_atomic)||!preset.pricingToken)throw Error('Purchase pricing could not be verified.');}
+      if(purchaseOnly){const result=await getJson('/.netlify/functions/market-support?route=price&booth='+purchaseBooth+'&usd='+usd+'&address='+encodeURIComponent(account.address));preset=result.preset;if(preset?.address!==account.address||preset.usd!==usd||!/^\d+$/.test(preset.egld_atomic)||!preset.pricingToken)throw Error('Purchase pricing could not be verified.');}
       const value=preset?preset.egld_atomic:atomic(amount.trim(),inDecimals);
       const data={quote:await fetchSwapQuote(input,value,fetch,output)};
       verifyQuote(data.quote,input,value,output);
       minimum(data.quote,slippage);
       if(id!==generation.current)return;
       if(preset)setAmount(human(value,inDecimals));
-      setQuote({q:data.quote,input,output,amount:value,created:Date.now(),...(preset?{usd:preset.usd,pricingToken:preset.pricingToken}:{})});setStatus('Quote ready. Review your swap before signing.');
+      setQuote({q:data.quote,input,output,amount:value,created:Date.now(),...(preset?{usd:preset.usd,pricingToken:preset.pricingToken,boothWallet:preset.address}:{})});setStatus('Quote ready. Review your swap before signing.');
     }catch(e){setStatus(e.message||'Unable to fetch a quote.');}
     finally{lock.current=false;setBusy(false);}
   }
@@ -92,14 +93,14 @@ export default function BonezSwap({embedded=false,onBusyChange,purchaseOnly=fals
     if(lock.current||!quote)return;
     lock.current=true;setBusy(true);setStatus('Checking wallet balance and simulating the swap…');
     const id=generation.current;
-    try{const result=await reviewSwap({...quote,slippage});if(id===generation.current){setReview(result);setStatus('Review the amounts below, then approve in your wallet.');}}
+    try{if(purchaseOnly&&quote.boothWallet!==account.address)throw Error('Get a fresh quote for this wallet.');const result=await reviewSwap({...quote,slippage});if(id===generation.current){setReview(result);setStatus('Review the amounts below, then approve in your wallet.');}}
     catch(e){setStatus(e.message||'Unable to prepare swap.');setReview(null);}
     finally{lock.current=false;setBusy(false);}
   }
   async function sign(){
     if(lock.current||!review)return;
     lock.current=true;setBusy(true);setStatus('Approve the swap in your wallet. Open xPortal manually if needed.');
-    try{const result=await submitSwap(review);const receipt=result.hash?{hash:result.hash,address:review.address,...(purchaseOnly?{usd:review.usd,pricingToken:review.pricingToken}:{})}:null;setSent({...result,receipt});if(receipt)onSubmitted?.(receipt);setSettled(false);setQuote(null);setReview(null);setStatus(result.hash?'Swap sent. Waiting for network confirmation…':'Swap submitted. Check your wallet history for confirmation.');}
+    try{const result=await submitSwap(review);const receipt=result.hash?{hash:result.hash,address:review.address,...(purchaseOnly?{usd:review.usd,pricingToken:review.pricingToken,automatic:true}:{})}:null;setSent({...result,receipt});if(receipt)onSubmitted?.(receipt);setSettled(false);setQuote(null);setReview(null);setStatus(result.hash?'Swap sent. Waiting for network confirmation…':'Swap submitted. Check your wallet history for confirmation.');}
     catch(e){setStatus(e.message||'Signing was cancelled.');setReview(null);setQuote(null);}
     finally{lock.current=false;setBusy(false);}
   }
@@ -120,7 +121,7 @@ export default function BonezSwap({embedded=false,onBusyChange,purchaseOnly=fals
     <div className="amount-box receive"><label>You receive <span>estimated</span></label><div className="amount-row"><output title={quote?human(quote.q.net_amount_out,outDecimals):undefined}>{quote?displayAmount(quote.q.net_amount_out,outDecimals):'—'}</output>{purchaseOnly?<strong>BONEZ</strong>:<TokenPicker value={output} label="You receive" disabled={busy||pending} onChange={id=>{invalidate();if(id===input){setInput(output);setAmount(output==='EGLD'?'0.01':'1');}setOutput(id);}}/>}</div><small>{quote?'Live quote · expires after 30 seconds':'A fresh quote for your next move'}</small></div>
     <div className="settings"><label htmlFor="slippage">Slippage tolerance</label><select id="slippage" value={slippage} disabled={busy||pending} onChange={e=>{setSlippage(Number(e.target.value));setReview(null);}}><option value={50}>0.5%</option><option value={100}>1%</option><option value={200}>2%</option></select></div>
     {quote&&<div id="details"><div><span>Minimum received</span><strong>{displayAmount(minimum(quote.q,slippage),outDecimals)} {receiveToken.symbol}</strong></div><div><span>Aggregator fee</span><strong>{displayAmount(quote.q.fee_amount,getToken(quote.q.fee_token).decimals)} {getToken(quote.q.fee_token).symbol}</strong></div><div><span>Estimated network fee</span><strong>{displayAmount(quote.q.estimated_tx_fee_egld,18)} EGLD</strong></div><div><span>Route</span><strong>{[quote.q.route.token_in,...quote.q.route.hops.map(h=>h.token_out)].map(t=>t.split('-')[0]).join(' → ')}</strong></div></div>}
-    <button className="gold-button" type="submit" disabled={busy||pending}>{busy?'Please wait…':quote?'Refresh quote':'Get live quote'}<span>↗</span></button>
+    <button className="gold-button" type="submit" disabled={busy||pending}>{busy?'Please wait…':purchaseOnly&&!account.address?'Connect Wallet':quote?'Refresh quote':'Get live quote'}<span>↗</span></button>
     {quote&&!review&&<button className="gold-button swap-action" type="button" disabled={busy||pending} onClick={account.address?prepare:connect}>{account.address?'Review swap':'Connect wallet to swap'} <span>→</span></button>}
     {review&&<div className="swap-review"><h3>{purchaseOnly?"Confirm your BONEZ purchase":"Confirm your swap"}</h3>{purchaseOnly&&<p>Purchase budget: <strong>${review.usd}.00 USD</strong></p>}<p>You pay <strong>{displayAmount(review.amount,inDecimals)} {payToken.symbol}</strong></p><p>You receive at least <strong>{displayAmount(minimum(review.q,review.slippage),outDecimals)} {receiveToken.symbol}</strong></p><p>Maximum network fee <strong>{displayAmount(review.feeCap,18,true)} EGLD</strong></p>{review.guardian&&<p>Your wallet is protected. Complete the guardian approval in your wallet; the fee above includes the guardian gas allowance.</p>}<small>Network fees apply even if the swap fails. Your wallet shows exact amounts.</small><button type="button" className="gold-button swap-action" disabled={busy||pending} onClick={sign}>Approve in wallet <span>→</span></button><button type="button" className="cancel-review" disabled={busy||pending} onClick={()=>setReview(null)}>Back</button></div>}
     <p id="status" role="status" aria-live="polite">{status}</p>

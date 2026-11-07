@@ -24,3 +24,9 @@ test('private choice remains private and invalid purchase failures do not retry'
  const result=await saveSupportReceipt({receipt:privateReceipt,origin,visible:true,sign:async(_,message)=>{assert.match(message,/totals: no/);return 'signature';},save:async body=>{assert.equal(body.visible,false);return {recorded:true};}});assert.equal(result.visible,false);
  await assert.rejects(saveSupportReceipt({receipt,origin,sign:async()=> 'signature',save:async()=>{saves++;throw Object.assign(Error('Wrong purchase amount'),{status:422});},wait:async()=>{throw Error('must not retry');}}),/Wrong purchase amount/);assert.equal(saves,1);
 });
+test('automatic receipts post publicly without a second wallet prompt',async()=>{
+ const result=await saveSupportReceipt({receipt:{...receipt,automatic:true},origin,visible:false,
+  sign:async()=>assert.fail('Automatic purchases do not request a receipt signature'),
+  save:async body=>{assert.equal(body.visible,true);assert.equal(body.signature,undefined);return {recorded:true};}});
+ assert.equal(result.visible,true);
+});
