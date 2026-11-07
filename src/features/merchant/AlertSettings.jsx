@@ -5,7 +5,7 @@ export default function AlertSettings({onChange}){
  async function refresh(){const result=await api('settings');setData(result);setEmail(result.settings.email||result.settings.pending_email||'');onChange?.(result.settings.enabled===true&&!!result.settings.verified_at);}
  useEffect(()=>{refresh().catch(e=>setMessage(e.message));},[]);
  async function action(route,body){setBusy(true);setMessage('');try{const result=await api(route,body);setMessage(result.message||(route==='verify'?'Email verified. New inquiries will trigger an alert.':'Email alerts turned off.'));setCode('');await refresh();}catch(e){setMessage(e.message);}finally{setBusy(false);}}
- return <section id="merchant-alerts" tabIndex={-1} className="ml-panel" style={{marginTop:24}}><h2>New inquiry email alerts</h2><p>Get a short notification when a customer contacts your shop. Customer messages and pictures stay in your private inbox.</p>
+ return <section id="merchant-alerts" tabIndex={-1} className="ml-panel" style={{marginTop:24}}><h2>New inquiry email alerts</h2><p>Get a short notification when a customer contacts your booth. Customer messages and pictures stay in your private inbox.</p>
  {data&&!data.configured&&<p>Email delivery is awaiting setup. You can still read every inquiry in Customer inquiries.</p>}
  {data?.settings.enabled&&<p>Alerts enabled for <b>{data.settings.email}</b>.</p>}
  <form onSubmit={e=>{e.preventDefault();void action('start',{email});}}><label>Alert email<input type="email" required maxLength={320} value={email} onChange={e=>setEmail(e.target.value)} disabled={busy}/></label><button type="submit" disabled={busy||!data?.configured}>Send verification code</button></form>

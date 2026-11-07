@@ -28,7 +28,7 @@ export async function handler(event){try{
  const booth=Number(event.queryStringParameters?.booth);
  if(!Number.isSafeInteger(booth)||booth<1)fail(400,'Choose a valid booth.');
  const shops=await db('market_shops?booth_number=eq.'+booth+'&select=id,access_status,rental_expires_at,moderation_suspended&limit=1'),shop=shops?.[0];
- if(!active(shop))fail(404,'This shop is not available.');
+ if(!active(shop))fail(404,'This booth is not available.');
  if(route==='public'){
   const items=await db('market_portfolio?shop_id=eq.'+shop.id+'&status=eq.published&select=slot,title,caption,updated_at&order=slot.asc&limit='+PORTFOLIO_LIMIT);
   return response(200,{items:items.map(item=>({...item,image_url:imageUrl(booth,item.slot)+'&v='+encodeURIComponent(item.updated_at)}))});

@@ -22,7 +22,7 @@ export async function dispatchAlerts(context){
    const shops=await db('market_shops?id=eq.'+job.shop_id+'&owner_wallet=eq.'+job.owner_wallet+'&moderation_suspended=eq.false&select=id&limit=1');
    if(!contacts.length||!shops.length){await db(query,'PATCH',{state:'cancelled',lease_until:null});console.info('market-alert-dispatch: cancelled job; merchant alerts are no longer eligible');continue;}
    // Keep customer identity, message text and private pictures in the authenticated inbox.
-   const providerId=await sendMarketMail(job.recipient,'New inquiry for your PittzStop shop','A customer has sent a new inquiry to your shop.\n\nOpen your private inbox: https://thepittzstop.com/merchant-access\nReference: '+job.inquiry_id+'\n\nYou can turn off alerts in Shop details.','market-inquiry/'+job.id);
+   const providerId=await sendMarketMail(job.recipient,'New inquiry for your PittzStop booth','A customer has sent a new inquiry to your booth.\n\nOpen your private inbox: https://thepittzstop.com/merchant-access\nReference: '+job.inquiry_id+'\n\nYou can turn off alerts in Booth details.','market-inquiry/'+job.id);
    await db(query,'PATCH',{state:'sent',provider_id:providerId,lease_until:null});
    console.info('market-alert-dispatch: notification accepted by email provider');
   }catch{

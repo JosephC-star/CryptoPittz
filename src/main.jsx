@@ -33,7 +33,7 @@ const pagePath = window.location.pathname.replace(/\/$/, "");
 
 const pageTitles = {
   "/welcome-center": "Welcome Center · The PittzStop",
-  "/meta-keyz": "The Meta Key Shop · The PittzStop",
+  "/meta-keyz": "The Meta Key Booth · The PittzStop",
   "/community-support": "The Back Booths · Pittz Flea Market",
   "/explorer": "CryptoPittz Explorer · The PittzStop",
   "/my-pittz": "My Pittz · The PittzStop",

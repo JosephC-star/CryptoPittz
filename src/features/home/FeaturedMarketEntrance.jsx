@@ -13,7 +13,7 @@ export default function FeaturedMarketEntrance() {
         const response = await fetch('/.netlify/functions/market-api?route=featured', {
           cache: 'no-store', signal: controller.signal,
         });
-        if (!response.ok) throw new Error('Featured shop unavailable');
+        if (!response.ok) throw new Error('Featured booth unavailable');
         const {shop: featured} = await response.json();
         if (!disposed) setShop(featured && Number.isSafeInteger(featured.booth_number)
           && featured.booth_number > 0 && typeof featured.name === 'string'
@@ -38,7 +38,7 @@ export default function FeaturedMarketEntrance() {
     <span className="market-sticker">PACK UNITY</span>
     <div className="market-shop-strip">
       <b>{shop ? `Visit ${shop.name}` : 'Visit the Flea Market'}</b>
-      <span>{shop ? `Featured shop · Booth ${String(shop.booth_number).padStart(2, '0')}` : 'Discover shops made by the pack'}</span>
+      <span>{shop ? `Featured booth · Booth ${String(shop.booth_number).padStart(2, '0')}` : 'Discover booths made by the pack'}</span>
       <small>{shop ? 'STEP INSIDE THEIR SHOP ↗' : 'MEET THE MAKERS ↗'}</small>
     </div>
     <i className="market-sign-shimmer" aria-hidden="true" />
