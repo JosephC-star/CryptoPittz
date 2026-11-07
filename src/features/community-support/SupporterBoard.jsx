@@ -13,9 +13,9 @@ export default function SupporterBoard({rows,offset=0}){
  {rows.length?<ol className="support-scoreboard" start={offset+1}>{rows.map((r,index)=>{
   const rank=offset+index+1,name=r.herotag?'@'+r.herotag.replace(/\.elrond$/,''):short(r.wallet_address);
   const share=leading>0n?Number(BigInt(r.total_bonez||0)*10000n/leading)/100:0;
-  return <li className={'support-standing '+(rank<=2?'support-podium support-place-'+rank:'')} key={r.wallet_address} style={{'--support-share':share+'%'}}>
+  return <li className={'support-standing '+(rank<=3?'support-podium support-place-'+rank:'')} key={r.wallet_address} style={{'--support-share':share+'%'}}>
    <span className="support-rank" aria-label={'Position '+rank}>{rank===1?<span aria-hidden="true">♛</span>:String(rank).padStart(2,'0')}</span>
-   <div className="support-name"><strong title={r.wallet_address}>{name}</strong><small>{rank===1?'TOP DAWG':rank===2?'TOP SUPPORTER':'PART OF THE PACK'}</small></div>
+   <div className="support-name"><strong title={r.wallet_address}>{name}</strong><small>{rank===1?'TOP DAWG':rank===2?'TOP SUPPORTER':rank===3?'WEENIE WHISTLE':'PART OF THE PACK'}</small></div>
    <div className="support-score" title={human(r.total_bonez,6)+' BONEZ'}><strong>{dollars(r.total_usd_cents)}</strong><small className="support-bonez-total">{amount(r.total_bonez)} BONEZ</small></div>
   </li>;
  })}</ol>:<div className="support-board-welcome"><div aria-hidden="true"><span>01</span><span>🐾</span><span>03</span></div><strong>The first pawprints go here.</strong><p>After your BONEZ purchase confirms, your herotag or shortened wallet address and purchase totals will appear here.</p></div>}
