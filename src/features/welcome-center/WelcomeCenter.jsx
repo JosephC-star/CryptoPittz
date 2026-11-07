@@ -3,13 +3,13 @@ import "./welcome-center.css";
 
 // The route follows the destination entrances on the PittzStop homepage.
 const destinations = [
-  { sign: "01", x: 108, y: 326, title: "My Pittz", prompt: "Find your collection", description: "Connect your wallet to see and manage the Pittz you own.", href: "/my-pittz/" },
-  { sign: "02", x: 254, y: 326, title: "Financial District", prompt: "Explore BONEZ tools", description: "Find token swaps, BONEZ staking, and liquidity tools.", href: "/financial-district/" },
-  { sign: "03", x: 377, y: 246, title: "Dawg Pound", prompt: "Find a Pittz to buy", description: "See which Pittz are for sale and browse offers from the marketplaces.", href: "/dawg-pound/" },
-  { sign: "04", x: 566, y: 246, title: "Explorer", prompt: "Meet the Pittz", description: "Browse Original and Vice Pittz and discover the traits that make each one unique.", href: "/explorer/" },
-  { sign: "05", x: 629, y: 137, title: "Pittensor", prompt: "See the burn pile", description: "Explore the furnace and check the monthly BONEZ burn history.", href: "/pittensor/" },
-  { sign: "06", x: 449, y: 87, title: "Playground", prompt: "Play a game", description: "Drop into the arcade for Pittz Memory, Pinball, and more.", href: "/playground/#/playground" },
-  { sign: "07", x: 227, y: 114, title: "Flea Market", prompt: "Visit the booths", description: "Walk the merchant booths and see what the community has in stock.", href: "/flea-market/" },
+  { sign: "01", x: 108, y: 326, title: "My Pittz", prompt: "Find your collection", description: "Connect your wallet to see and manage the Pittz you own.", href: "/my-pittz/", highlights: ["Browse the Original and Vice Pittz in your connected wallet.", "See your listings and offers, and manage a Pittz you own.", "Start a sale or send a Pittz to another wallet."] },
+  { sign: "02", x: 254, y: 326, title: "Financial District", prompt: "Explore BONEZ tools", description: "Find token swaps, BONEZ staking, and liquidity tools.", href: "/financial-district/", highlights: ["Get a live quote before swapping supported tokens.", "See your BONEZ staking position and available actions.", "Check your liquidity position and manage your share of the pool."] },
+  { sign: "03", x: 377, y: 246, title: "Dawg Pound", prompt: "Find a Pittz to buy", description: "See which Pittz are for sale and browse offers from the marketplaces.", href: "/dawg-pound/", highlights: ["Browse Original and Vice Pittz currently listed for sale.", "Compare prices and see which marketplace has the listing.", "Explore collection-wide and trait-specific offers."] },
+  { sign: "04", x: 566, y: 246, title: "Explorer", prompt: "Meet the Pittz", description: "Browse Original and Vice Pittz and discover the traits that make each one unique.", href: "/explorer/", highlights: ["Browse Original and Vice Pittz side by side.", "Filter by traits to find a look you like.", "Compare rarity ranks and open a Pittz card for a closer look."] },
+  { sign: "05", x: 629, y: 137, title: "Pittensor", prompt: "See the burn pile", description: "Explore the furnace and check the monthly BONEZ burn history.", href: "/pittensor/", highlights: ["See how much BONEZ is in the current burn pile.", "Browse past months to see what was burned.", "Connect your wallet if you want to contribute BONEZ to the pile."] },
+  { sign: "06", x: 449, y: 87, title: "Playground", prompt: "Play a game", description: "Drop into the arcade for Pittz Memory, Pinball, and more.", href: "/playground/#/playground", highlights: ["Match pairs in Pittz Memory or aim for a high score in Pinball.", "Try a different cabinet, like Plinko or Pittz 21.", "Connect your wallet to bring one of your Pittz into supported games."] },
+  { sign: "07", x: 227, y: 114, title: "Flea Market", prompt: "Visit the booths", description: "Walk the merchant booths and see what the community has in stock.", href: "/flea-market/", highlights: ["Browse merchant booths and see what’s in stock.", "Contact a merchant about an item or leave a booth review.", "Check out the Meta Key Booth or visit the Back Booths."] },
 ];
 
 const entrance = { x: 30, y: 381 };
@@ -101,9 +101,23 @@ export default function WelcomeCenter() {
         <h2 id="tour-heading" tabIndex={-1} ref={tourHeading}>Ride through town</h2>
         <p>Follow the road one stop at a time or tap a numbered pin to jump there.</p>
         <TownMap step={step} animateRide={animateRide} onStop={index => showStop(index, false)} />
+        <span className="welcome-tour-announcement" role="status">
+          {stop && `Stop ${step + 1} of ${destinations.length}, ${stop.title}`}
+        </span>
         {stop && <>
-          <p className="welcome-marker" aria-live="polite">Stop {step + 1} of {destinations.length} · {stop.title}</p>
-          <p>{stop.description}</p>
+          <article className="welcome-flyer" key={stop.sign} aria-labelledby="welcome-flyer-title">
+            <div className="welcome-flyer-cover">
+              <p className="welcome-flyer-stamp">Stop {step + 1} of {destinations.length}</p>
+              <h3 id="welcome-flyer-title">{stop.title}</h3>
+              <p>{stop.description}</p>
+            </div>
+            <div className="welcome-flyer-guide">
+              <h4>What you can do here</h4>
+              <ul>
+                {stop.highlights.map(activity => <li key={activity}>{activity}</li>)}
+              </ul>
+            </div>
+          </article>
           <div className="welcome-actions">
             <a className="welcome-primary" href={stop.href}>Visit {stop.title} <span aria-hidden="true">↗</span></a>
             {step < destinations.length - 1

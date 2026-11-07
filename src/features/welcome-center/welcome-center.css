@@ -209,3 +209,55 @@
 @media (prefers-reduced-motion: reduce) {
   .welcome-ride.is-moving { transition: none; }
 }
+
+.welcome-tour-announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.welcome-flyer {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  margin-top: 24px;
+  border: 1px solid #d4a466;
+  border-radius: 6px 16px 16px 6px;
+  background: #ffe8c3;
+  color: #241c2b;
+  box-shadow: 0 10px 24px #080b1266;
+  overflow: hidden;
+}
+
+.welcome-flyer-cover, .welcome-flyer-guide {
+  padding: clamp(16px, 3vw, 26px);
+}
+
+.welcome-flyer-cover {
+  border-left: 5px solid #ffca7d;
+  background: linear-gradient(145deg, #392543, #1e2b39);
+  color: #fff4e4;
+}
+
+.welcome-flyer-stamp {
+  display: inline-block;
+  margin: 0 0 9px;
+  padding: 5px 8px;
+  border: 1px dashed #ffd080aa;
+  color: var(--welcome-gold);
+  font: 800 .75rem/1.2 system-ui, sans-serif;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.welcome-flyer h3 { margin: 0; font-size: clamp(1.4rem, 4vw, 2.25rem); }
+.welcome-flyer-cover p:last-child { margin: 8px 0 0; color: #f2e3eb; }
+.welcome-flyer-guide h4 { margin: 0 0 9px; }
+.welcome-flyer-guide ul { margin: 0; padding-inline-start: 1.2em; }
+.welcome-flyer-guide li + li { margin-top: 7px; }
+
+@media (max-width: 600px) {
+  .welcome-flyer { grid-template-columns: 1fr; }
+}
