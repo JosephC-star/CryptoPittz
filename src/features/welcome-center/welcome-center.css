@@ -1,27 +1,71 @@
 .welcome-center {
+  --welcome-ground: #101018;
   --welcome-gold: #ffd080;
   --welcome-teal: #92f9e1;
+  position: relative;
+  isolation: isolate;
+  min-height: 100svh;
   box-sizing: border-box;
-  max-width: 1150px;
-  margin: 0 auto;
-  padding: 24px clamp(16px, 4vw, 42px) 52px;
+  padding: 24px max(clamp(16px, 4vw, 42px), calc((100% - 1066px) / 2)) 52px;
   color: #fff4e4;
+}
+
+.welcome-center::before,
+.welcome-center::after {
+  position: absolute;
+  z-index: -1;
+  inset-inline: 0;
+  content: "";
+  pointer-events: none;
+}
+
+.welcome-center::before {
+  inset-block: 0;
+  background: var(--welcome-ground);
+}
+
+.welcome-center::after {
+  inset-block-start: 0;
+  height: clamp(460px, 60vw, 760px);
+  background:
+    linear-gradient(180deg, #10101855 0%, transparent 21%, #10101838 48%, #101018e6 87%, var(--welcome-ground) 100%),
+    linear-gradient(90deg, #101018ee, #101018a6 31%, transparent 66%),
+    url("/images/pittzstop-launch-nov2026.jpg") right 40% / cover no-repeat;
 }
 
 .welcome-center a { color: var(--welcome-teal); }
 .welcome-center :focus-visible { outline: 3px solid var(--welcome-teal); outline-offset: 4px; }
-.welcome-home { display: inline-block; padding: 12px 0; margin-bottom: 12px; }
-
-.welcome-hero {
-  background: linear-gradient(90deg, #121019 7%, #121019e8 37%, #12101940 100%),
-    #121019 url("/images/pittzstop-launch-nov2026.jpg") center / cover no-repeat;
-  border: 1px solid #996d47;
-  border-radius: 22px;
-  box-shadow: 0 0 28px #f09a3c24;
-  padding: clamp(26px, 6vw, 72px);
+.welcome-home {
+  display: inline-block;
+  padding: 11px 15px;
+  border: 1px solid #92f9e157;
+  border-radius: 999px;
+  background: #101018e8;
+  text-decoration: none;
 }
 
-.welcome-hero-copy { max-width: 570px; }
+.welcome-hero {
+  display: grid;
+  align-items: end;
+  min-height: clamp(365px, 41vw, 530px);
+  padding-block-end: 28px;
+}
+
+.welcome-hero-copy {
+  max-width: 570px;
+  text-shadow: 0 2px 12px #101018;
+}
+
+.welcome-hero .welcome-marker {
+  display: inline-block;
+  margin-block: 0;
+  padding: 8px 12px;
+  border: 1px solid #ffd0808c;
+  border-radius: 6px;
+  background: #201726;
+  box-shadow: 0 0 20px #ffb45b40;
+}
+
 .welcome-marker {
   color: var(--welcome-gold);
   font-size: .78rem;
@@ -49,6 +93,7 @@
   font: inherit;
   font-weight: 750;
   text-decoration: none;
+  text-shadow: none;
 }
 .welcome-actions button { cursor: pointer; color: var(--welcome-teal); background: #1d242c; border-color: #4d6668; }
 .welcome-actions .welcome-primary { color: #17131c; background: var(--welcome-gold); border-color: var(--welcome-gold); }
@@ -59,9 +104,9 @@
   padding: clamp(18px, 4vw, 34px);
   border: 1px solid #449588;
   border-radius: 18px;
-  background: #152429;
+  background: #152027f5;
 }
-#destination-map { margin-top: 32px; scroll-margin-top: 20px; }
+#destination-map { position: relative; margin-top: 32px; scroll-margin-top: 20px; }
 .welcome-map {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 232px), 1fr));
@@ -78,7 +123,8 @@
   box-sizing: border-box;
   border: 1px solid #4b6065;
   border-radius: 14px;
-  background: linear-gradient(150deg, #19282d, #17131e 65%);
+  background: linear-gradient(150deg, #1b292fee, #1c1424fa 70%);
+  box-shadow: inset 0 1px #ffd08024, 0 8px 24px #0b091540;
   text-decoration: none;
 }
 .welcome-map a:hover { border-color: var(--welcome-teal); }
@@ -88,9 +134,15 @@
 .welcome-description { color: #d7cbd8; line-height: 1.45; }
 
 @media (max-width: 600px) {
+  .welcome-center::after {
+    height: 590px;
+    background:
+      linear-gradient(180deg, #10101833 0%, transparent 27%, #101018a6 49%, #101018f2 77%, var(--welcome-ground) 100%),
+      url("/images/pittzstop-launch-nov2026.jpg") 84% top / auto 470px no-repeat;
+  }
+
   .welcome-hero {
-    background-image: linear-gradient(0deg, #121019 13%, #121019ed 60%, #12101920 100%),
-      url("/images/pittzstop-launch-nov2026.jpg");
-    padding-top: 108px;
+    min-height: 0;
+    padding-block: 178px 12px;
   }
 }
