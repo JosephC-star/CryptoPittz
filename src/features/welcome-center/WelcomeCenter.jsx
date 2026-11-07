@@ -69,6 +69,7 @@ export default function WelcomeCenter() {
   const tourHeading = useRef(null);
   const mapHeading = useRef(null);
   const startButton = useRef(null);
+  const brochure = useRef(null);
   const stop = destinations[step];
 
   function showStop(nextStep, animate = true) {
@@ -97,27 +98,43 @@ export default function WelcomeCenter() {
       </header>
 
       <section id="town-map" className="welcome-tour" aria-labelledby="tour-heading">
-        <p className="welcome-marker">PittzStop town map</p>
-        <h2 id="tour-heading" tabIndex={-1} ref={tourHeading}>Ride through town</h2>
-        <p>Follow the road one stop at a time or tap a numbered pin to jump there.</p>
+        <div className="welcome-tour-heading">
+          <div>
+            <p className="welcome-marker">PittzStop town map</p>
+            <h2 id="tour-heading" tabIndex={-1} ref={tourHeading}>Ride through town</h2>
+            <p>Follow the road one stop at a time or tap a numbered pin to jump there.</p>
+          </div>
+          {stop && (
+            <button className="welcome-brochure-button" type="button" aria-haspopup="dialog"
+              aria-label={`Open ${stop.title} brochure`}
+              onClick={() => brochure.current.showModal()}>
+              <span className="welcome-brochure-icon" aria-hidden="true">{stop.sign}</span>
+              <span>Brochure</span>
+            </button>
+          )}
+        </div>
         <TownMap step={step} animateRide={animateRide} onStop={index => showStop(index, false)} />
         <span className="welcome-tour-announcement" role="status">
           {stop && `Stop ${step + 1} of ${destinations.length}, ${stop.title}`}
         </span>
         {stop && <>
-          <article className="welcome-flyer" key={stop.sign} aria-labelledby="welcome-flyer-title">
-            <div className="welcome-flyer-cover">
-              <p className="welcome-flyer-stamp">Stop {step + 1} of {destinations.length}</p>
-              <h3 id="welcome-flyer-title">{stop.title}</h3>
-              <p>{stop.description}</p>
-            </div>
-            <div className="welcome-flyer-guide">
-              <h4>What you can do here</h4>
-              <ul>
-                {stop.highlights.map(activity => <li key={activity}>{activity}</li>)}
-              </ul>
-            </div>
-          </article>
+          <dialog className="welcome-brochure-dialog" ref={brochure} aria-labelledby="welcome-flyer-title">
+            <button className="welcome-brochure-close" type="button" aria-label="Close brochure"
+              autoFocus onClick={() => brochure.current.close()}>×</button>
+            <article className="welcome-flyer">
+              <div className="welcome-flyer-cover">
+                <p className="welcome-flyer-stamp">Stop {step + 1} of {destinations.length}</p>
+                <h3 id="welcome-flyer-title">{stop.title}</h3>
+                <p>{stop.description}</p>
+              </div>
+              <div className="welcome-flyer-guide">
+                <h4>What you can do here</h4>
+                <ul>
+                  {stop.highlights.map(activity => <li key={activity}>{activity}</li>)}
+                </ul>
+              </div>
+            </article>
+          </dialog>
           <div className="welcome-actions">
             <a className="welcome-primary" href={stop.href}>Visit {stop.title} <span aria-hidden="true">↗</span></a>
             {step < destinations.length - 1

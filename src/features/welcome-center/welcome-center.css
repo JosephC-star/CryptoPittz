@@ -222,7 +222,6 @@
 .welcome-flyer {
   display: grid;
   grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
-  margin-top: 24px;
   border: 1px solid #d4a466;
   border-radius: 6px 16px 16px 6px;
   background: #ffe8c3;
@@ -237,6 +236,7 @@
 
 .welcome-flyer-cover {
   border-left: 5px solid #ffca7d;
+  padding-top: 54px;
   background: linear-gradient(145deg, #392543, #1e2b39);
   color: #fff4e4;
 }
@@ -260,4 +260,76 @@
 
 @media (max-width: 600px) {
   .welcome-flyer { grid-template-columns: 1fr; }
+}
+
+.welcome-tour-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.welcome-brochure-button {
+  flex: none;
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  min-width: 66px;
+  padding: 7px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--welcome-gold);
+  font: 750 .73rem/1.15 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.welcome-brochure-icon {
+  display: grid;
+  place-items: center;
+  width: 35px;
+  height: 43px;
+  border: 1px solid #efbe79;
+  border-radius: 3px 6px 5px 3px;
+  background: linear-gradient(90deg, #bd8855 0 17%, #ffe0a6 17% 70%, #ebbd81 70%);
+  color: #281b29;
+  box-shadow: 3px 3px #694a53, 5px 6px #0c131a;
+  transform: rotate(9deg);
+  transition: transform 160ms ease;
+}
+.welcome-brochure-button:hover .welcome-brochure-icon,
+.welcome-brochure-button:focus-visible .welcome-brochure-icon { transform: rotate(0); }
+
+.welcome-brochure-dialog {
+  width: min(680px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  box-sizing: border-box;
+  padding: 0;
+  border: 0;
+  border-radius: 6px 16px 16px 6px;
+  background: #ffe8c3;
+  box-shadow: 0 20px 55px #0009;
+}
+.welcome-brochure-dialog::backdrop { background: #070a12c9; }
+
+.welcome-brochure-close {
+  position: absolute;
+  z-index: 1;
+  top: 8px;
+  right: 8px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #ffd080;
+  border-radius: 50%;
+  background: #211a2a;
+  color: #fff4e4;
+  font: 1.6rem/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+@media (min-width: 601px) {
+  .welcome-flyer-cover { padding-top: clamp(16px, 3vw, 26px); }
+  .welcome-flyer-guide { padding-top: 54px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .welcome-brochure-icon { transition: none; }
 }
