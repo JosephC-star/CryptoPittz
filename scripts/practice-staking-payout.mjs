@@ -8,6 +8,11 @@ function validState(state) {
     typeof state.listed === 'boolean' && typeof state.escrow === 'boolean';
 }
 
+function isContractAddress(wallet) {
+  // MultiversX contract addresses begin with eight zero bytes (64 bits of the Bech32 payload).
+  return /^erd1q{12}[qp]/i.test(wallet);
+}
+
 function replayHolding(nft, start, cutoff) {
   if (nft.evidence !== 'verified' || !validState(nft.anchor) || !Array.isArray(nft.events)) return null;
   let {wallet, listed, escrow} = nft.anchor;
@@ -24,7 +29,11 @@ function replayHolding(nft, start, cutoff) {
     if (after.wallet !== wallet || (escrow && !after.escrow)) heldSince = timestamp;
     ({wallet, listed, escrow} = after);
   }
-  return {collection: nft.collection, nonce: nft.nonce, rank: nft.rank, wallet, listed: listed || escrow, heldSince};
+  const contractHeld = escrow || isContractAddress(wallet);
+  return {
+    collection: nft.collection, nonce: nft.nonce, rank: nft.rank, wallet,
+    listed: listed || contractHeld, contractHeld, marketplaceListed: listed, heldSince,
+  };
 }
 
 export function practicePayout({cutoff, week, nfts}) {
@@ -59,9 +68,12 @@ export function practicePayout({cutoff, week, nfts}) {
 
   const allocation = allocate(budget, snapshot, holdings);
   const wallets = new Map();
-  const rows = allocation.rows.map(({id, wallet, status, amount}) => {
+  const rows = allocation.rows.map(({id, wallet, status, amount, contractHeld, marketplaceListed}) => {
     if (status === 'Eligible') wallets.set(wallet, (wallets.get(wallet) ?? 0n) + amount);
-    return {id, wallet, status, amountAtomic: String(amount)};
+    return {
+      id, wallet, status: contractHeld && !marketplaceListed ? 'Contract custody' : status,
+      amountAtomic: String(amount),
+    };
   });
   const walletTotal = [...wallets.values()].reduce((sum, amount) => sum + amount, 0n);
   if (walletTotal + allocation.unallocated !== budget) throw Error('Practice totals do not reconcile.');
