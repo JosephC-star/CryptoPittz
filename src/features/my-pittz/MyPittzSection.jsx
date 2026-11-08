@@ -1,4 +1,4 @@
-import {comparePittzNumber} from '../../utils/pittzSort.mjs';
+import {compareExplorerRanks, comparePittzNumber} from '../../utils/pittzSort.mjs';
 import { lazy, Suspense, useEffect, useState } from "react";
 
 import NftCard from "../../components/nft/NftCard";
@@ -18,7 +18,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
   useEffect(()=>{setEarningsExpanded(false);},[address]);
   const [view,setView]=useState("wallet");
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("rank");
+  const [sortBy, setSortBy] = useState("rank-high-to-low");
   const [bloodlineFilter, setBloodlineFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [collection, setCollection] = useState("all");
@@ -75,14 +75,8 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
       return matchesSearch && matchesBloodline && matchesType && matchesTraits;
     })
     .sort((a, b) => {
-      const aStats = getPittzStats(a.attributes);
-      const bStats = getPittzStats(b.attributes);
-
-      if (sortBy === "rank") {
-        return Number(aStats.rank || Infinity) - Number(bStats.rank || Infinity);
-      }
-      if (sortBy === "name") return comparePittzNumber(a,b);
-      return 0;
+      if (sortBy === "name") return comparePittzNumber(a, b);
+      return compareExplorerRanks(getPittzStats(a.attributes).rank, getPittzStats(b.attributes).rank, sortBy);
     });
   const totalPages = Math.max(1, Math.ceil(filteredNfts.length / PITTZ_PER_PAGE));
   const currentPage = Math.min(page, totalPages);
@@ -101,7 +95,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
 
   function resetFilters() {
     setSearchTerm("");
-    setSortBy("rank");
+    setSortBy("rank-high-to-low");
     setBloodlineFilter("all");
     setTypeFilter("all");
     setWalletTraits({});
@@ -237,11 +231,12 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                     setPage(1);
                   }}
                 />
-                <select value={sortBy} onChange={(event) => {
+                <select aria-label="Sort My Pittz" value={sortBy} onChange={(event) => {
                   setSortBy(event.target.value);
                   setPage(1);
                 }}>
-                  <option value="rank">Best Rank</option>
+                  <option value="rank-high-to-low">Rank High to Low</option>
+                  <option value="rank-low-to-high">Rank Low to High</option>
                   <option value="name">Pittz number</option>
                 </select>
                 <select
@@ -294,7 +289,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                   bloodlineFilter !== "all" ||
                   typeFilter !== "all" ||
                   Object.keys(walletTraits).length > 0 ||
-                  sortBy !== "rank") && (
+                  sortBy !== "rank-high-to-low") && (
                   <button className="reset-filters" type="button" onClick={resetFilters}>
                     ↻ Reset Filters
                   </button>
