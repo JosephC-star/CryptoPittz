@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
+import TransactionDialog from '../../components/transaction/TransactionDialog';
 import { formatAmount } from '@oox-marketplace/sdk-core';
 import { client, json } from './trade';
 import { checkDelisting, delist, delistingEnabled } from './delist';
@@ -44,6 +46,7 @@ function WalletListings({address,onDelisted}) {
   const [busy,setBusy]=useState(false);
   const [pending,setPending]=useState(null);
   const [message,setMessage]=useState('');
+  const [withdrawal,setWithdrawal]=useState(null);
   useEffect(()=>{
     if(!pending?.hash)return;
     let active=true, timer;
@@ -72,7 +75,8 @@ function WalletListings({address,onDelisted}) {
   },[pending,address,onDelisted]);
 
   async function withdraw(marketplace,listing){
-    if(busy||pending||!window.confirm(`Delist ${listing.identifier} from ${marketplace} and return it to your wallet? Your wallet will show the EGLD network fee.`))return;
+    if(busy||pending||!delistingEnabled)return;
+    flushSync(()=>setWithdrawal(null));
     setBusy(true);
     setMessage('Checking the listing before opening your wallet…');
     try{
@@ -87,7 +91,16 @@ function WalletListings({address,onDelisted}) {
   const current=result?.address===address&&result.page===page&&result.refresh===refresh?result:null;
   return <div className="oox-listings">
     <div className="oox-listings-heading"><div><h3>Your Pittz listings</h3><p>Listed Pittz can be held by the marketplace contract, so they appear here separately from your wallet.</p></div><button className="btn" onClick={()=>setRefresh(x=>x+1)}>Refresh listings</button></div>
-    {message&&<p role="status">{message}</p>}
+    {withdrawal&&<TransactionDialog title="Review delisting" onClose={()=>setWithdrawal(null)}>
+      <p>Delist {withdrawal.listing.identifier} from {withdrawal.marketplace} and return it to your wallet? Your wallet will show the EGLD network fee.</p>
+      {!delistingEnabled&&<p>Preview only. Signing is disabled.</p>}
+      <button className="btn primary" type="button" disabled={!delistingEnabled||busy||!!pending} onClick={()=>withdraw(withdrawal.marketplace,withdrawal.listing)}>Approve delisting in wallet</button>
+    </TransactionDialog>}
+    {message&&!busy&&<TransactionDialog title="Delisting update" onClose={()=>setMessage('')}>
+      <p role="status">{message}</p>
+      {pending?.hash&&<a href={`https://explorer.multiversx.com/transactions/${pending.hash}`} target="_blank" rel="noreferrer">View delisting transaction ↗</a>}
+    </TransactionDialog>}
+    {message&&busy&&<p role="status">{message}</p>}
     {pending?.hash&&<a href={`https://explorer.multiversx.com/transactions/${pending.hash}`} target="_blank" rel="noreferrer">View delisting transaction ↗</a>}
     {!address?<p>Connect your wallet to see your listings.</p>:!current?<p role="status">Looking up your OOX and XOXNO listings…</p>:<>
       {current.errors.map(error=><p role="alert" key={error}>{error}</p>)}
@@ -97,7 +110,7 @@ function WalletListings({address,onDelisted}) {
         <span className="oox-market-label">{marketplace} · {active?'Active listing':'Inactive / expired'}</span>
         <h4>{nft?.name||listing.identifier}</h4><small>{listing.identifier}</small>
         <p className="oox-price">{price} <small>{listing.paymentToken}</small></p>
-        {delistingEnabled&&<button type="button" className="btn" disabled={busy||!!pending} onClick={()=>withdraw(marketplace,listing)}>Delist Pitt</button>}
+        {(delistingEnabled||import.meta.env.VITE_OOX_PREVIEW==='true')&&<button type="button" className="btn" disabled={busy||!!pending} onClick={()=>setWithdrawal({marketplace,listing})}>Delist Pitt</button>}
         <a className="btn" href={href} target="_blank" rel="noopener noreferrer">Manage on {marketplace} ↗</a>
       </article>)}</div>
       <div className="oox-listing-pages"><button className="btn" disabled={page===0} onClick={()=>setPage(p=>p-1)}>Previous</button><span>Page {page+1}</span><button className="btn" disabled={!current.hasMore} onClick={()=>setPage(p=>p+1)}>Next</button></div>

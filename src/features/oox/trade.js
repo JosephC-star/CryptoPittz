@@ -16,8 +16,8 @@ export async function json(url, options={}) {
 }
 export function hex(value) { const s=BigInt(value).toString(16); return s.padStart(Math.ceil(s.length/2)*2,'0'); }
 export function textHex(value) { return Array.from(new TextEncoder().encode(value),b=>b.toString(16).padStart(2,'0')).join(''); }
-async function context() {
-  if(import.meta.env.VITE_OOX_TRANSACTIONS!=='true'||import.meta.env.VITE_OOX_PREVIEW!=='true') throw Error('Marketplace transactions are disabled.');
+async function context({reviewOnly=false}={}) {
+  if((!reviewOnly&&import.meta.env.VITE_OOX_TRANSACTIONS!=='true')||import.meta.env.VITE_OOX_PREVIEW!=='true') throw Error('Marketplace transactions are disabled.');
   const address=getAccount().address;
   Address.newFromBech32(address);
   if(getNetworkConfig().network.chainId!=='1') throw Error('Connect a mainnet wallet.');
@@ -30,7 +30,7 @@ async function context() {
 }
 export async function prepare(action,nft,listing,price,days) {
   if(!['buy','list'].includes(action)) throw Error('Unsupported marketplace action.');
-  const {address,account}=await context();
+  const {address,account}=await context({reviewOnly:true});
   let tx,expected,amount=0n;
   if(action==='buy') {
     const result=await client.prepareBuy({buyer:address,auctionId:listing.auctionId,nonce:BigInt(account.nonce)});
@@ -63,6 +63,7 @@ async function bonezFunds(address,price,feeCap,account){
 async function simulate(tx){return assertSimulation(await json('https://api.multiversx.com/transaction/simulate?checkSignature=false',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...tx.toSendable(),signature:'0'.repeat(128)})}));}
 let inFlight=false;
 export async function submit(review) {
+  if(import.meta.env.VITE_OOX_TRANSACTIONS!=='true'||import.meta.env.VITE_OOX_PREVIEW!=='true') throw Error('Marketplace transactions are disabled.');
   if(inFlight) throw Error('Another marketplace transaction is in progress.');
   inFlight=true;
   try {
