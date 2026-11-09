@@ -1,52 +1,59 @@
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import "./welcome-center.css";
 
 // The route follows the destination entrances on the PittzStop homepage.
 const destinations = [
-  { sign: "01", x: 108, y: 326, title: "My Pittz", prompt: "Find your collection", description: "Connect your wallet to see and manage the Pittz you own.", href: "/my-pittz/", highlights: ["Browse the Original and Vice Pittz in your connected wallet.", "See your listings and offers, and manage a Pittz you own.", "Start a sale or send a Pittz to another wallet."] },
-  { sign: "02", x: 254, y: 326, title: "Financial District", prompt: "Explore BONEZ tools", description: "Find token swaps, BONEZ staking, and liquidity tools.", href: "/financial-district/", highlights: ["Get a live quote before swapping supported tokens.", "See your BONEZ staking position and available actions.", "Check your liquidity position and manage your share of the pool."] },
-  { sign: "03", x: 377, y: 246, title: "Dawg Pound", prompt: "Find a Pittz to buy", description: "See which Pittz are for sale and browse offers from the marketplaces.", href: "/dawg-pound/", highlights: ["Browse Original and Vice Pittz currently listed for sale.", "Compare prices and see which marketplace has the listing.", "Explore collection-wide and trait-specific offers."] },
-  { sign: "04", x: 566, y: 246, title: "Explorer", prompt: "Meet the Pittz", description: "Browse Original and Vice Pittz and discover the traits that make each one unique.", href: "/explorer/", highlights: ["Browse Original and Vice Pittz side by side.", "Filter by traits to find a look you like.", "Compare rarity ranks and open a Pittz card for a closer look."] },
-  { sign: "05", x: 629, y: 137, title: "Pittensor", prompt: "See the burn pile", description: "Explore the furnace and check the monthly BONEZ burn history.", href: "/pittensor/", highlights: ["See how much BONEZ is in the current burn pile.", "Browse past months to see what was burned.", "Connect your wallet if you want to contribute BONEZ to the pile."] },
-  { sign: "06", x: 449, y: 87, title: "Playground", prompt: "Play a game", description: "Drop into the arcade for Pittz Memory, Pinball, and more.", href: "/playground/#/playground", highlights: ["Match pairs in Pittz Memory or aim for a high score in Pinball.", "Try a different cabinet, like Plinko or Pittz 21.", "Connect your wallet to bring one of your Pittz into supported games."] },
-  { sign: "07", x: 227, y: 114, title: "Flea Market", prompt: "Visit the booths", description: "Walk the merchant booths and see what the community has in stock.", href: "/flea-market/", highlights: ["Browse merchant booths and see what’s in stock.", "Contact a merchant about an item or leave a booth review.", "Check out the Meta Key Booth or visit the Back Booths."] },
+  { sign: "01", x: 106, y: 342, title: "My Pittz", prompt: "Find your collection", description: "Connect your wallet to see and manage the Pittz you own.", href: "/my-pittz/", highlights: ["Browse the Original and Vice Pittz in your connected wallet.", "See your listings and offers, and manage a Pittz you own.", "Start a sale or send a Pittz to another wallet."] },
+  { sign: "02", x: 254, y: 332, title: "Financial District", prompt: "Explore BONEZ tools", description: "Find token swaps, BONEZ staking, and liquidity tools.", href: "/financial-district/", highlights: ["Get a live quote before swapping supported tokens.", "See your BONEZ staking position and available actions.", "Check your liquidity position and manage your share of the pool."] },
+  { sign: "03", x: 378, y: 252, title: "Dawg Pound", prompt: "Find a Pittz to buy", description: "See which Pittz are for sale and browse offers from the marketplaces.", href: "/dawg-pound/", highlights: ["Browse Original and Vice Pittz currently listed for sale.", "Compare prices and see which marketplace has the listing.", "Explore collection-wide and trait-specific offers."] },
+  { sign: "04", x: 567, y: 251, title: "Explorer", prompt: "Meet the Pittz", description: "Browse Original and Vice Pittz and discover the traits that make each one unique.", href: "/explorer/", highlights: ["Browse Original and Vice Pittz side by side.", "Filter by traits to find a look you like.", "Compare rarity ranks and open a Pittz card for a closer look."] },
+  { sign: "05", x: 633, y: 145, title: "Pittensor", prompt: "See the burn pile", description: "Explore the furnace and check the monthly BONEZ burn history.", href: "/pittensor/", highlights: ["See how much BONEZ is in the current burn pile.", "Browse past months to see what was burned.", "Connect your wallet if you want to contribute BONEZ to the pile."] },
+  { sign: "06", x: 452, y: 121, title: "Playground", prompt: "Play a game", description: "Drop into the arcade for Pittz Memory, Pinball, and more.", href: "/playground/#/playground", highlights: ["Match pairs in Pittz Memory or aim for a high score in Pinball.", "Try a different cabinet, like Plinko or Pittz 21.", "Connect your wallet to bring one of your Pittz into supported games."] },
+  { sign: "07", x: 226, y: 141, title: "Flea Market", prompt: "Visit the booths", description: "Walk the merchant booths and see what the community has in stock.", href: "/flea-market/", highlights: ["Browse merchant booths and see what’s in stock.", "Contact a merchant about an item or leave a booth review.", "Check out the Meta Key Booth or visit the Back Booths."] },
 ];
 
-const entrance = { x: 30, y: 381 };
-const road = [entrance, ...destinations, { x: 65, y: 64 }]
+const entrance = { x: 43, y: 344 };
+// Waypoints keep the ride on the illustrated streets between landmarks.
+const bends = [
+  [],
+  [{ x: 161, y: 334 }, { x: 205, y: 332 }],
+  [{ x: 345, y: 333 }, { x: 349, y: 266 }],
+  [{ x: 472, y: 249 }],
+  [{ x: 516, y: 249 }, { x: 473, y: 231 }, { x: 477, y: 179 }, { x: 501, y: 137 }, { x: 545, y: 141 }],
+  [{ x: 550, y: 143 }, { x: 506, y: 134 }, { x: 475, y: 122 }],
+  [{ x: 366, y: 121 }, { x: 298, y: 130 }],
+];
+const road = [entrance, ...destinations.flatMap((stop, index) => [...bends[index], stop])]
   .map(({ x, y }) => `${x},${y}`).join(" ");
+const carTransform = ({ x, y }) => `translate(${x}px, ${y}px)`;
 
-function TownMap({ step, animateRide, onStop }) {
+function TownMap({ step, ride, facesLeft, onStop }) {
   const position = destinations[step] ?? entrance;
+  const car = useRef(null);
+
+  useLayoutEffect(() => {
+    if (!ride || !car.current?.animate || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const { from, to } = ride;
+    const start = destinations[from] ?? entrance;
+    const turns = bends[Math.max(from, to)];
+    const points = [start, ...(from < to ? turns : [...turns].reverse()), position];
+    const animation = car.current.animate(points.map(point => ({ transform: carTransform(point) })), {
+      duration: 650 + turns.length * 85,
+      easing: "ease-in-out",
+    });
+    return () => animation.cancel();
+  }, [ride, position]);
+
   return (
     <div className="welcome-town">
       <svg viewBox="0 0 720 420" aria-hidden="true">
-        <defs>
-          <pattern id="welcome-town-grid" width="24" height="24" patternUnits="userSpaceOnUse">
-            <path d="M24 0H0V24" fill="none" stroke="#81c5cf" strokeOpacity=".13" />
-          </pattern>
-        </defs>
-        <path fill="#162831" d="M0 0h720v420H0z" />
-        <path fill="url(#welcome-town-grid)" d="M0 0h720v420H0z" />
-        <path fill="#12424c" d="M0 0h74c52 52 8 101 37 141s13 74-42 110C28 278 7 318 0 353z" />
-        <path fill="none" stroke="#57b5bb" strokeOpacity=".38" strokeWidth="3" d="M74 0c52 52 8 101 37 141s13 74-42 110C28 278 7 318 0 353" />
-        <g className="welcome-town-blocks">
-          <path d="M142 23h105v48l-67 9-38-14zM279 22h119v39l-119 16zM473 26h118v41l-118-17zM626 23h75v57l-75-19z" />
-          <path d="M152 154l89 12v78h-89zM270 153l113-15v58l-113 49zM413 130l132 31-18 44H413zM650 172h48v79h-92z" />
-          <path d="M111 271h103v23H97zM332 350l67-55h102v44l-67 40h-102zM544 285h157v99H544zM108 374h139v27H108z" />
-        </g>
-        <g className="welcome-town-streets">
-          <path d="M133 98l77-2m41 41v116m149-135v84m185-64-33 75m43 77h105M518 284v111M274 350v54" />
-          <path d="M151 183h90m-90 29h90m171-47h99m-89 156h64m80-15h117m-117 24h117m-117 24h117" />
-        </g>
+        <image href="/images/welcome-town-map.webp" width="720" height="420" preserveAspectRatio="none" />
         <polyline className="welcome-road-edge" points={road} />
         <polyline className="welcome-road" points={road} />
         <polyline className="welcome-road-stripe" points={road} />
-        <g className={animateRide ? "welcome-ride is-moving" : "welcome-ride"} style={{ transform: `translate(${position.x}px, ${position.y}px)` }}>
-          <circle r="16" />
-          <path d="M-10 3v-5l4-5H4l5 5v5z" />
-          <path d="M-5-5H3l3 3H-7z" />
-          <path d="M-7 3v3m13-3v3" />
+        <g ref={car} className="welcome-ride" style={{ transform: carTransform(position) }}>
+          <image href="/images/welcome-tour-convertible.webp" x="-41" y="-25" width="82" height="30"
+            transform={facesLeft ? "scale(-1 1)" : undefined} />
         </g>
       </svg>
       {destinations.map(({ sign, title, x, y }, index) => (
@@ -65,7 +72,8 @@ function TownMap({ step, animateRide, onStop }) {
 
 export default function WelcomeCenter() {
   const [step, setStep] = useState(null);
-  const [animateRide, setAnimateRide] = useState(false);
+  const [ride, setRide] = useState(null);
+  const [facesLeft, setFacesLeft] = useState(false);
   const tourHeading = useRef(null);
   const mapHeading = useRef(null);
   const startButton = useRef(null);
@@ -73,7 +81,13 @@ export default function WelcomeCenter() {
   const stop = destinations[step];
 
   function showStop(nextStep, animate = true) {
-    setAnimateRide(animate);
+    const from = destinations[step] ?? entrance;
+    const to = destinations[nextStep] ?? entrance;
+    if (from.x !== to.x) setFacesLeft(to.x < from.x);
+    const currentIndex = step ?? -1;
+    setRide(animate && Math.abs(nextStep - currentIndex) === 1 && nextStep !== null
+      ? { from: currentIndex, to: nextStep }
+      : null);
     setStep(nextStep);
   }
 
@@ -113,7 +127,7 @@ export default function WelcomeCenter() {
             </button>
           )}
         </div>
-        <TownMap step={step} animateRide={animateRide} onStop={index => showStop(index, false)} />
+        <TownMap step={step} ride={ride} facesLeft={facesLeft} onStop={index => showStop(index, false)} />
         <span className="welcome-tour-announcement" role="status">
           {stop && `Stop ${step + 1} of ${destinations.length}, ${stop.title}`}
         </span>
