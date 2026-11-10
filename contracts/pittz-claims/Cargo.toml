@@ -1,0 +1,17 @@
+[package]
+name = "pittz-claims"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+multiversx-sc = "=0.66.3"
+
+[dev-dependencies]
+multiversx-sc-scenario = "=0.66.3"
+
+[workspace]
+members = [".", "meta"]
