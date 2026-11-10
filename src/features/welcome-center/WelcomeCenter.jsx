@@ -170,10 +170,16 @@ export default function WelcomeCenter() {
         <section className="welcome-tour welcome-finish" aria-labelledby="tour-finish-heading">
           <p className="welcome-marker">Tour complete</p>
           <h2 id="tour-finish-heading" tabIndex={-1} ref={finishHeading}>Ready to roll?</h2>
-          <p>New to MultiversX? Get xPortal to set up a wallet when you’re ready to connect at the PittzStop.</p>
-          <div className="welcome-actions">
+          <div className="welcome-wallet-strip welcome-actions">
+            <span className="welcome-wallet-icon" aria-hidden="true">📱</span>
+            <div>
+              <h3>Need a wallet?</h3>
+              <p>Set up your MultiversX wallet with xPortal.</p>
+            </div>
             <a className="welcome-primary" href="https://xportal.app.link/referral?code=xdsu8lsipv"
               target="_blank" rel="noreferrer">Get xPortal ↗</a>
+          </div>
+          <div className="welcome-actions">
             <a href="/#join">Explore the CryptoPittz Ecosystem →</a>
           </div>
         </section>
