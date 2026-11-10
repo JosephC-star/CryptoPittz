@@ -75,12 +75,18 @@ export default function WelcomeCenter() {
   const [ride, setRide] = useState(null);
   const [facesLeft, setFacesLeft] = useState(false);
   const tourHeading = useRef(null);
-  const mapHeading = useRef(null);
+  const [tourComplete, setTourComplete] = useState(false);
+  const finishHeading = useRef(null);
   const startButton = useRef(null);
   const brochure = useRef(null);
   const stop = destinations[step];
 
+  useLayoutEffect(() => {
+    if (tourComplete) finishHeading.current.focus();
+  }, [tourComplete]);
+
   function showStop(nextStep, animate = true) {
+    setTourComplete(false);
     const from = destinations[step] ?? entrance;
     const to = destinations[nextStep] ?? entrance;
     if (from.x !== to.x) setFacesLeft(to.x < from.x);
@@ -153,16 +159,29 @@ export default function WelcomeCenter() {
             <a className="welcome-primary" href={stop.href}>Visit {stop.title} <span aria-hidden="true">↗</span></a>
             {step < destinations.length - 1
               ? <button type="button" onClick={() => showStop(step + 1)}>Drive to next stop →</button>
-              : <button type="button" onClick={() => closeTour(mapHeading)}>Finish tour →</button>}
+              : <button type="button" onClick={() => { showStop(null, false); setTourComplete(true); }}>Finish tour →</button>}
             {step > 0 && <button type="button" onClick={() => showStop(step - 1)}>← Previous stop</button>}
             <button type="button" onClick={() => closeTour(startButton)}>Exit tour</button>
           </div>
         </>}
       </section>
 
+      {tourComplete && (
+        <section className="welcome-tour welcome-finish" aria-labelledby="tour-finish-heading">
+          <p className="welcome-marker">Tour complete</p>
+          <h2 id="tour-finish-heading" tabIndex={-1} ref={finishHeading}>Ready to roll?</h2>
+          <p>New to MultiversX? Get xPortal to set up a wallet when you’re ready to connect at the PittzStop.</p>
+          <div className="welcome-actions">
+            <a className="welcome-primary" href="https://xportal.app.link/referral?code=xdsu8lsipv"
+              target="_blank" rel="noreferrer">Get xPortal ↗</a>
+            <a href="/#join">Explore the CryptoPittz Ecosystem →</a>
+          </div>
+        </section>
+      )}
+
       <section id="destination-map" aria-labelledby="destination-heading">
         <p className="welcome-marker">PittzStop directory</p>
-        <h2 id="destination-heading" tabIndex={-1} ref={mapHeading}>Where are you headed?</h2>
+        <h2 id="destination-heading">Where are you headed?</h2>
         <ul className="welcome-map">
           {destinations.map(({ sign, title, prompt, description, href }) => (
             <li key={href}>

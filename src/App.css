@@ -2410,9 +2410,36 @@ html {
 }
 
 @media (max-width: 750px) {
-  .ecosystem-grid {
-    grid-template-columns: 1fr;
+  #join .ecosystem-grid {
+    width: 100%;
+    gap: 8px;
   }
+
+  #join .ecosystem-card {
+    min-width: 0;
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  #join .ecosystem-icon {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 8px;
+    font-size: 17px;
+  }
+
+  #join .ecosystem-card h3 { font-size: 15px; }
+  #join .ecosystem-card p { margin-bottom: 10px; line-height: 1.4; }
+  #join .ecosystem-card .btn {
+    max-width: 100%;
+    padding: 6px 8px;
+    min-height: 44px;
+    font-size: 11px;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  #join .ecosystem-actions { gap: 5px; }
 }
 .ecosystem-card:last-child {
   grid-column: 1 / -1;
