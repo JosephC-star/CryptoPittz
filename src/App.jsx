@@ -319,6 +319,15 @@ function App({ explorerPage: isExplorerPage = false }) {
     explorerPage * explorerVisiblePageSize + explorerVisiblePageSize,
   );
 
+  const explorerPageSizeToggle = (
+    <button type="button" className="explorer-fold-toggle" onClick={() => {
+      setExplorerExpanded(expanded => !expanded);
+      setExplorerPage(0);
+    }}>
+      {explorerExpanded ? "Compact view · Show 40 per page" : "Show 100 per page"}
+    </button>
+  );
+
   return (
     <>
       <div className="blob b1"></div>
@@ -798,6 +807,7 @@ function App({ explorerPage: isExplorerPage = false }) {
 
             <div id="explorer-content" hidden={explorerHidden} className={explorerExpanded?"is-expanded":"is-compact"}>
 
+            <div className="explorer-page-size-top">{explorerPageSizeToggle}</div>
             <div className="explorer-tabs">
               <button type="button" className={`explorer-tab ${explorerCollection === "both" ? "active" : ""}`} aria-pressed={explorerCollection === "both"} onClick={() => changeExplorerCollection("both")}>
                 Original + Vice
@@ -943,7 +953,8 @@ function App({ explorerPage: isExplorerPage = false }) {
               </div>
             </div>
               <div className="explorer-fold-footer">
-                <button type="button" className="explorer-fold-toggle" onClick={()=>{setExplorerExpanded(v=>!v);setExplorerPage(0);}}>{explorerExpanded?"Compact view · Show 40 per page":"Show 100 per page"}</button><button type="button" className="explorer-fold-toggle" aria-expanded={!explorerHidden} aria-controls="explorer-content" onClick={retractExplorer}>Retract Explorer ↑</button>
+                {explorerPageSizeToggle}
+                <button type="button" className="explorer-fold-toggle" aria-expanded={!explorerHidden} aria-controls="explorer-content" onClick={retractExplorer}>Retract Explorer ↑</button>
                 <a href="/flea-market/">Visit the Flea Market →</a>
               </div>
             </div>
