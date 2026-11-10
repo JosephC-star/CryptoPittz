@@ -1,0 +1,32 @@
+html:has(.pittz-transaction-dialog[open]),
+body:has(.pittz-transaction-dialog[open]) {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.pittz-transaction-dialog {
+  box-sizing: border-box;
+  width: min(560px, calc(100% - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  overflow-wrap: anywhere;
+  padding: clamp(16px, 4vw, 26px);
+  border: 1px solid #c6a368;
+  border-radius: 16px;
+  background: #171722;
+  color: #fff1d8;
+  box-shadow: 0 16px 60px #0009;
+}
+.pittz-transaction-dialog::backdrop { background: #07070bd9; }
+.pittz-transaction-dialog header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pittz-transaction-dialog h2 { margin: 0; font-size: clamp(1.25rem, 5vw, 1.7rem); }
+.pittz-transaction-dialog header button { min-width: 44px; min-height: 44px; }
+.pittz-transaction-dialog > .btn { margin: 4px 8px 4px 0; }
+.pittz-transaction-dialog a { color: #a8f5e6; }
+.pittz-transaction-dialog pre { overflow: auto; white-space: pre-wrap; }

@@ -19,6 +19,7 @@ export default function NftCard({
   variant = "wallet",
   onClick,
 }) {
+  const isCompactWallet = variant === "wallet-compact";
   const stats = getPittzStats(nft.attributes);
   const traits = showTraits ? decodePittzAttributes(nft.attributes) : [];
   const collection = nft.collection || nft.identifier?.split('-').slice(0,2).join('-');
@@ -92,20 +93,20 @@ export default function NftCard({
         )}
 
         <div className={`pittz-stats ${compactTraits ? "compact-trait-stats" : ""}`}>
-          {stats.rank && (
+          {(stats.rank || isCompactWallet) && (
             <div className="pittz-stat rank-stat">
               <span>🏆 Rank</span>
-              <strong>#{stats.rank}</strong>
+              <strong>{stats.rank ? `#${stats.rank}` : "—"}</strong>
             </div>
           )}
 
           {earnings && <div className="pittz-stat earnings-stat"><span>🦴 BONEZ / day</span><strong>{earnings.daily.toLocaleString(undefined,{maximumFractionDigits:2})}</strong></div>}
-          {rareTraits.slice(0,2).map(traitBox)}
+          {rareTraits.slice(0, isCompactWallet ? 1 : 2).map(traitBox)}
 
         </div>
 
         {isOwned && <button type="button" className="btn owned-pittz-action" onClick={event=>{event.stopPropagation();onClick?.();}}>Sell / Send this Pittz →</button>}
-        {!compactTraits && stats.type && <small className="nft-type-label">Type · {stats.type}</small>}
+        {!compactTraits && !isCompactWallet && stats.type && <small className="nft-type-label">Type · {stats.type}</small>}
 
         {traits.length > 0 && (
           <div className="pittz-traits">

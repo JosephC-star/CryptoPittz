@@ -13,7 +13,7 @@ export default function ExplorerControls({
   filteredCount,
   onReset,
 }) {
-  const filtersActive = Boolean(search);
+  const filtersActive = Boolean(search) || rankOrder.startsWith("type-");
   const progressPercent =
     loadProgress.total > 0
       ? Math.min(100, (loadProgress.loaded / loadProgress.total) * 100)
@@ -89,9 +89,12 @@ export default function ExplorerControls({
 
         <label className="explorer-rank-order">
           <span>Sort</span>
-          <select aria-label="Sort Explorer by rank" value={rankOrder} onChange={(event)=>onRankOrderChange(event.target.value)}>
+          <select aria-label="Sort or filter Explorer" value={rankOrder} onChange={(event)=>onRankOrderChange(event.target.value)}>
             <option value="rank-high-to-low">Rank High to Low</option>
             <option value="rank-low-to-high">Rank Low to High</option>
+            <option value="type-core">Core</option>
+            <option value="type-holo">Holo</option>
+            <option value="type-legendary">Legendary</option>
           </select>
         </label>
 
