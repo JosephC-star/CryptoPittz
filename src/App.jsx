@@ -985,8 +985,7 @@ function App({ explorerPage: isExplorerPage = false }) {
                     <h3>Join the Pack</h3>
 
                     <p>
-                      Connect with the CryptoPittz community, talk with holders, and stay up to date
-                      on the project.
+                      Meet the pack and catch up on CryptoPittz news.
                     </p>
 
                     <a
@@ -1005,7 +1004,7 @@ function App({ explorerPage: isExplorerPage = false }) {
                     <h3>Marketplace</h3>
 
                     <p>
-                      Browse Pittz for sale from OOX and XOXNO, right here at The PittzStop.
+                      Browse Original and Vice Pittz from OOX and XOXNO.
                     </p>
 
                     <div className="ecosystem-actions">
@@ -1013,14 +1012,14 @@ function App({ explorerPage: isExplorerPage = false }) {
                         className="btn primary"
                         href="/dawg-pound/?collection=original"
                       >
-                        Original Pittz for sale →
+                        Original Pittz →
                       </a>
 
                       <a
                         className="btn"
                         href="/dawg-pound/?collection=vice"
                       >
-                        Vice Pittz for sale →
+                        Vice Pittz →
                       </a>
                     </div>
                   </div>
@@ -1031,8 +1030,7 @@ function App({ explorerPage: isExplorerPage = false }) {
                     <h3>Pittz Financial District</h3>
 
                     <p>
-                      Swap tokens, add BONEZ + WEGLD liquidity, and stake BONEZ.
-                      Manage your currencies, pool deposits, and staking rewards in one golden home.
+                      Swap tokens, stake BONEZ, or manage BONEZ + WEGLD liquidity.
                     </p>
 
                     <a
@@ -1048,7 +1046,7 @@ function App({ explorerPage: isExplorerPage = false }) {
 
                     <h3>Pittensor</h3>
 
-                    <p>Add BONEZ to the pack’s monthly burn pile. Deposits join the pile; the team carries out the monthly burn.</p>
+                    <p>Add BONEZ to the pile for the team’s monthly burn.</p>
 
                     <a
                       className="btn primary"
@@ -1057,15 +1055,13 @@ function App({ explorerPage: isExplorerPage = false }) {
                       Enter Pittensor →
                     </a>
                   </div>
-                  <div className="ecosystem-card">
-                    <div className="ecosystem-icon">📱</div>
+                  <div className="ecosystem-card ecosystem-wallet">
+                    <div className="ecosystem-icon" aria-hidden="true">📱</div>
 
-                    <h3>xPortal</h3>
-
-                    <p>
-                      Get the xPortal app and join the MultiversX ecosystem using the CryptoPittz
-                      referral link.
-                    </p>
+                    <div>
+                      <h3>Need a wallet?</h3>
+                      <p>Set up your MultiversX wallet with xPortal.</p>
+                    </div>
 
                     <a
                       className="btn primary"

@@ -2439,7 +2439,31 @@ html {
     white-space: normal;
     overflow-wrap: anywhere;
   }
-  #join .ecosystem-actions { gap: 5px; }
+  #join .ecosystem-card:not(.ecosystem-wallet) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #join .ecosystem-card:not(.ecosystem-wallet) > :is(.btn, .ecosystem-actions) {
+    margin-top: auto;
+  }
+
+  #join .ecosystem-card .ecosystem-actions {
+    display: grid;
+    gap: 5px;
+  }
+
+  #join .ecosystem-wallet {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    box-sizing: border-box;
+    max-width: none;
+  }
+
+  #join .ecosystem-wallet :is(.ecosystem-icon, p) { margin: 0; }
+  #join .ecosystem-wallet h3 { margin-bottom: 3px; }
 }
 .ecosystem-card:last-child {
   grid-column: 1 / -1;
