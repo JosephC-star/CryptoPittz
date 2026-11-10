@@ -304,7 +304,7 @@ function MyPittzSection({ address, nfts, loading, error, bonezUsdPrice, onOpenNf
                     nft={nft}
                     bonez={getBonezGeneration(nft)}
                     isOwned
-                    showTraits
+                    variant="wallet-compact"
                     onClick={() => onOpenNft(nft, visibleNfts)}
                   />
                 ))}
