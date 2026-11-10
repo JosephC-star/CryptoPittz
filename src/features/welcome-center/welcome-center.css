@@ -115,7 +115,12 @@
   padding: 0;
   margin: 0;
 }
-.welcome-map a {
+.welcome-map button {
+  width: 100%;
+  font: inherit;
+  text-align: start;
+  color: var(--welcome-teal);
+  cursor: pointer;
   display: grid;
   gap: 7px;
   height: 100%;
@@ -127,7 +132,7 @@
   box-shadow: inset 0 1px #ffd08024, 0 8px 24px #0b091540;
   text-decoration: none;
 }
-.welcome-map a:hover { border-color: var(--welcome-teal); }
+.welcome-map button:hover { border-color: var(--welcome-teal); }
 .welcome-map-sign { display: flex; justify-content: space-between; font-weight: 800; color: var(--welcome-gold); }
 .welcome-destination { font-size: 1.25rem; font-weight: 850; }
 .welcome-map strong { color: #fff4e4; }

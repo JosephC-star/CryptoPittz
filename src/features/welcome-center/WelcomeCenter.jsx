@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import "./welcome-center.css";
 
 // The route follows the destination entrances on the PittzStop homepage.
@@ -85,6 +86,7 @@ export default function WelcomeCenter() {
   const finishHeading = useRef(null);
   const startButton = useRef(null);
   const brochure = useRef(null);
+  const [brochureStop, setBrochureStop] = useState(null);
   const stop = destinations[step];
 
   useLayoutEffect(() => {
@@ -101,6 +103,11 @@ export default function WelcomeCenter() {
       ? { from: currentIndex, to: nextStep }
       : null);
     setStep(nextStep);
+  }
+
+  function openBrochure(destination) {
+    flushSync(() => setBrochureStop(destination));
+    brochure.current.showModal();
   }
 
   function closeTour(destination) {
@@ -133,7 +140,7 @@ export default function WelcomeCenter() {
           {stop && (
             <button className="welcome-brochure-button" type="button" aria-haspopup="dialog"
               aria-label={`Open ${stop.title} brochure`}
-              onClick={() => brochure.current.showModal()}>
+              onClick={() => openBrochure(stop)}>
               <span className="welcome-brochure-icon" aria-hidden="true">{stop.sign}</span>
               <span>Brochure</span>
             </button>
@@ -144,23 +151,6 @@ export default function WelcomeCenter() {
           {stop && `Stop ${step + 1} of ${destinations.length}, ${stop.title}`}
         </span>
         {stop && <>
-          <dialog className="welcome-brochure-dialog" ref={brochure} aria-labelledby="welcome-flyer-title">
-            <button className="welcome-brochure-close" type="button" aria-label="Close brochure"
-              autoFocus onClick={() => brochure.current.close()}>×</button>
-            <article className="welcome-flyer">
-              <div className="welcome-flyer-cover">
-                <p className="welcome-flyer-stamp">Stop {step + 1} of {destinations.length}</p>
-                <h3 id="welcome-flyer-title">{stop.title}</h3>
-                <p>{stop.description}</p>
-              </div>
-              <div className="welcome-flyer-guide">
-                <h4>What you can do here</h4>
-                <ul>
-                  {stop.highlights.map(activity => <li key={activity}>{activity}</li>)}
-                </ul>
-              </div>
-            </article>
-          </dialog>
           <div className="welcome-actions">
             <a className="welcome-primary" href={stop.href}>Visit {stop.title} <span aria-hidden="true">↗</span></a>
             {step < destinations.length - 1
@@ -195,18 +185,43 @@ export default function WelcomeCenter() {
         <p className="welcome-marker">PittzStop directory</p>
         <h2 id="destination-heading">Where are you headed?</h2>
         <ul className="welcome-map">
-          {destinations.map(({ sign, title, prompt, description, href }) => (
-            <li key={href}>
-              <a href={href} aria-label={`${title} · ${prompt}`}>
-                <span className="welcome-map-sign" aria-hidden="true">{sign} <span>↗</span></span>
-                <span className="welcome-destination">{title}</span>
-                <strong>{prompt}</strong>
-                <span className="welcome-description">{description}</span>
-              </a>
-            </li>
-          ))}
+          {destinations.map(destination => {
+            const { sign, title, prompt, description, href } = destination;
+            return (
+              <li key={href}>
+                <button type="button" aria-haspopup="dialog" aria-label={`Open ${title} brochure`} onClick={() => openBrochure(destination)}>
+                  <span className="welcome-map-sign" aria-hidden="true">{sign} <span>＋</span></span>
+                  <span className="welcome-destination">{title}</span>
+                  <strong>{prompt}</strong>
+                  <span className="welcome-description">{description}</span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </section>
+      {brochureStop && (
+        <dialog className="welcome-brochure-dialog" ref={brochure} aria-labelledby="welcome-flyer-title">
+          <button className="welcome-brochure-close" type="button" aria-label="Close brochure"
+            autoFocus onClick={() => brochure.current.close()}>×</button>
+          <article className="welcome-flyer">
+            <div className="welcome-flyer-cover">
+              <p className="welcome-flyer-stamp">Stop {Number(brochureStop.sign)} of {destinations.length}</p>
+              <h3 id="welcome-flyer-title">{brochureStop.title}</h3>
+              <p>{brochureStop.description}</p>
+            </div>
+            <div className="welcome-flyer-guide">
+              <h4>What you can do here</h4>
+              <ul>
+                {brochureStop.highlights.map(activity => <li key={activity}>{activity}</li>)}
+              </ul>
+              <div className="welcome-actions">
+                <a className="welcome-primary" href={brochureStop.href}>Visit {brochureStop.title} <span aria-hidden="true">↗</span></a>
+              </div>
+            </div>
+          </article>
+        </dialog>
+      )}
     </main>
   );
 }
