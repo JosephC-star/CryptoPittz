@@ -158,10 +158,6 @@
   box-shadow: 0 12px 28px #080b1280;
 }
 .welcome-town svg { display: block; width: 100%; height: auto; border-radius: inherit; }
-.welcome-road-edge, .welcome-road, .welcome-road-stripe { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.welcome-road-edge { stroke: #e4ac66; stroke-width: 16; }
-.welcome-road { stroke: #292332; stroke-width: 13; }
-.welcome-road-stripe { stroke: #ffd080; stroke-width: 1.5; stroke-dasharray: 6 7; }
 .welcome-ride { filter: drop-shadow(0 2px 2px #050610); }
 
 .welcome-town-pin {

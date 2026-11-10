@@ -23,8 +23,6 @@ const bends = [
   [{ x: 550, y: 143 }, { x: 506, y: 134 }, { x: 475, y: 122 }],
   [{ x: 366, y: 121 }, { x: 298, y: 130 }],
 ];
-const road = [entrance, ...destinations.flatMap((stop, index) => [...bends[index], stop])]
-  .map(({ x, y }) => `${x},${y}`).join(" ");
 const carTransform = ({ x, y }) => `translate(${x}px, ${y}px)`;
 
 function TownMap({ step, ride, facesLeft, onStop }) {
@@ -57,9 +55,6 @@ function TownMap({ step, ride, facesLeft, onStop }) {
     <div className="welcome-town">
       <svg viewBox="0 0 720 420" aria-hidden="true">
         <image href="/images/welcome-town-map.webp" width="720" height="420" preserveAspectRatio="none" />
-        <polyline className="welcome-road-edge" points={road} />
-        <polyline className="welcome-road" points={road} />
-        <polyline className="welcome-road-stripe" points={road} />
         <g ref={car} className="welcome-ride" style={{ transform: carTransform(position) }}>
           <image href="/images/welcome-tour-convertible.webp" x="-41" y="-25" width="82" height="30"
             transform={facesLeft ? "scale(-1 1)" : undefined} />
