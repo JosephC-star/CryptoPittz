@@ -29,6 +29,12 @@ import TraitFinder from "./features/traits/TraitFinder";
 import { getPittzStats, getPittzTraits } from "./utils/nftUtils";
 
 
+const explorerTypes = {
+  "type-core": ["core"],
+  "type-holo": ["holo", "holoz"],
+  "type-legendary": ["legendary", "legendaryz", "lego", "legoz"],
+};
+
 function App({ explorerPage: isExplorerPage = false }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileGroup, setMobileGroup] = useState(null);
@@ -131,6 +137,7 @@ function App({ explorerPage: isExplorerPage = false }) {
   }
 
   function resetExplorerFilters() {
+    if (explorerTypes[explorerRankOrder]) setExplorerRankOrder("rank-high-to-low");
     setExplorerSearch("");
     setExplorerTraits({});
     setExplorerPage(0);
@@ -276,6 +283,10 @@ function App({ explorerPage: isExplorerPage = false }) {
     }
   }
 
+  const selectedExplorerTypes = explorerTypes[explorerRankOrder];
+  const matchesExplorerType = nft =>
+    !selectedExplorerTypes || selectedExplorerTypes.includes(getPittzStats(nft.attributes).type.trim().toLowerCase());
+
   const filteredExplorerNfts = explorerAllNfts
     .filter((nft) => {
       const matchesSearch = matchesPittzNumber(nft,explorerSearch);
@@ -285,7 +296,7 @@ function App({ explorerPage: isExplorerPage = false }) {
         traits.some((item) => item.trait === category && values.includes(item.value)),
       );
 
-      return matchesSearch && matchesTraits;
+      return matchesSearch && matchesTraits && matchesExplorerType(nft);
     })
     .sort((a, b) => {
       const aStats = getPittzStats(a.attributes);
@@ -869,7 +880,7 @@ function App({ explorerPage: isExplorerPage = false }) {
                       <div className="explorer-search-message">{globalSearchError}</div>
                     )}
 
-                    {globalSearchResult &&
+                    {globalSearchResult && matchesExplorerType(globalSearchResult) &&
                       (() => {
                         const stats = getPittzStats(globalSearchResult.attributes);
 
