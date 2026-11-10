@@ -30,9 +30,14 @@ const carTransform = ({ x, y }) => `translate(${x}px, ${y}px)`;
 function TownMap({ step, ride, facesLeft, onStop }) {
   const position = destinations[step] ?? entrance;
   const car = useRef(null);
+  const [arrivedRide, setArrivedRide] = useState(null);
 
   useLayoutEffect(() => {
-    if (!ride || !car.current?.animate || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!ride) return;
+    if (!car.current?.animate || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const frame = requestAnimationFrame(() => setArrivedRide(ride));
+      return () => cancelAnimationFrame(frame);
+    }
     const { from, to } = ride;
     const start = destinations[from] ?? entrance;
     const turns = bends[Math.max(from, to)];
@@ -41,7 +46,11 @@ function TownMap({ step, ride, facesLeft, onStop }) {
       duration: 650 + turns.length * 85,
       easing: "ease-in-out",
     });
-    return () => animation.cancel();
+    animation.onfinish = () => setArrivedRide(ride);
+    return () => {
+      animation.onfinish = null;
+      animation.cancel();
+    };
   }, [ride, position]);
 
   return (
@@ -63,7 +72,9 @@ function TownMap({ step, ride, facesLeft, onStop }) {
           aria-current={step === index ? "step" : undefined}
           onClick={() => onStop(index)}>
           {sign}
-          <span className="welcome-town-label" aria-hidden="true">{title}</span>
+          {step === index && (!ride || arrivedRide === ride) && (
+            <span className="welcome-town-label" aria-hidden="true">{title}</span>
+          )}
         </button>
       ))}
     </div>

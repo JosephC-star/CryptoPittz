@@ -185,7 +185,6 @@
   box-shadow: 0 0 15px #ffd08099;
 }
 .welcome-town-label {
-  display: none;
   position: absolute;
   bottom: calc(100% + 4px);
   left: 50%;
@@ -197,9 +196,6 @@
   color: #fff4e4;
   white-space: nowrap;
   pointer-events: none;
-}
-@media (min-width: 650px) {
-  .welcome-town-label { display: block; }
 }
 
 .welcome-tour-announcement {
