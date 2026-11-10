@@ -2348,6 +2348,7 @@ html {
 
 .ecosystem-grid {
   display: grid;
+  width: 100%;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   margin-top: 20px;
@@ -2409,9 +2410,13 @@ html {
   flex-wrap: wrap;
 }
 
+.ecosystem-mobile-copy { display: none; }
+
 @media (max-width: 750px) {
+  .ecosystem-desktop-copy { display: none; }
+  .ecosystem-mobile-copy { display: inline; }
+
   #join .ecosystem-grid {
-    width: 100%;
     gap: 8px;
   }
 

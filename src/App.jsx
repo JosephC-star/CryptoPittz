@@ -1007,7 +1007,7 @@ function App({ explorerPage: isExplorerPage = false }) {
                     <h3>Join the Pack</h3>
 
                     <p>
-                      Meet the pack and catch up on CryptoPittz news.
+                      <span className="ecosystem-desktop-copy">Connect with the CryptoPittz community, talk with holders, and stay up to date on the project.</span><span className="ecosystem-mobile-copy">Meet the pack and catch up on CryptoPittz news.</span>
                     </p>
 
                     <a
@@ -1026,7 +1026,7 @@ function App({ explorerPage: isExplorerPage = false }) {
                     <h3>Marketplace</h3>
 
                     <p>
-                      Browse Original and Vice Pittz from OOX and XOXNO.
+                      <span className="ecosystem-desktop-copy">Browse Pittz for sale from OOX and XOXNO, right here at The PittzStop.</span><span className="ecosystem-mobile-copy">Browse Original and Vice Pittz from OOX and XOXNO.</span>
                     </p>
 
                     <div className="ecosystem-actions">
@@ -1034,14 +1034,14 @@ function App({ explorerPage: isExplorerPage = false }) {
                         className="btn primary"
                         href="/dawg-pound/?collection=original"
                       >
-                        Original Pittz →
+                        <span>Original Pittz<span className="ecosystem-desktop-copy"> for sale</span> →</span>
                       </a>
 
                       <a
                         className="btn"
                         href="/dawg-pound/?collection=vice"
                       >
-                        Vice Pittz →
+                        <span>Vice Pittz<span className="ecosystem-desktop-copy"> for sale</span> →</span>
                       </a>
                     </div>
                   </div>
@@ -1052,7 +1052,7 @@ function App({ explorerPage: isExplorerPage = false }) {
                     <h3>Pittz Financial District</h3>
 
                     <p>
-                      Swap tokens, stake BONEZ, or manage BONEZ + WEGLD liquidity.
+                      <span className="ecosystem-desktop-copy">Swap tokens, add BONEZ + WEGLD liquidity, and stake BONEZ. Manage your currencies, pool deposits, and staking rewards in one golden home.</span><span className="ecosystem-mobile-copy">Swap tokens, stake BONEZ, or manage BONEZ + WEGLD liquidity.</span>
                     </p>
 
                     <a
@@ -1068,7 +1068,7 @@ function App({ explorerPage: isExplorerPage = false }) {
 
                     <h3>Pittensor</h3>
 
-                    <p>Add BONEZ to the pile for the team’s monthly burn.</p>
+                    <p><span className="ecosystem-desktop-copy">Add BONEZ to the pack’s monthly burn pile. Deposits join the pile; the team carries out the monthly burn.</span><span className="ecosystem-mobile-copy">Add BONEZ to the pile for the team’s monthly burn.</span></p>
 
                     <a
                       className="btn primary"
@@ -1081,8 +1081,8 @@ function App({ explorerPage: isExplorerPage = false }) {
                     <div className="ecosystem-icon" aria-hidden="true">📱</div>
 
                     <div>
-                      <h3>Need a wallet?</h3>
-                      <p>Set up your MultiversX wallet with xPortal.</p>
+                      <h3><span className="ecosystem-desktop-copy">xPortal</span><span className="ecosystem-mobile-copy">Need a wallet?</span></h3>
+                      <p><span className="ecosystem-desktop-copy">Get the xPortal app and join the MultiversX ecosystem using the CryptoPittz referral link.</span><span className="ecosystem-mobile-copy">Set up your MultiversX wallet with xPortal.</span></p>
                     </div>
 
                     <a
