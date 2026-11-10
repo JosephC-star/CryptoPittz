@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Mock claim test · The PittzStop</title>
+<link rel="stylesheet" href="./style.css">
+<style>
+.controls{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0}.controls button{flex:1;min-width:140px}
+#wallet-select{max-width:100%;width:100%}#wallet-address{overflow-wrap:anywhere;color:var(--muted)}
+.test-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.test-stats strong{display:block;font-size:1.25rem}
+#message{min-height:3em}button:disabled{opacity:.5;cursor:not-allowed}.test-stats article{padding:16px;background:#ffffff08;border-radius:12px}
+@media(max-width:650px){.test-stats{grid-template-columns:1fr 1fr}.controls button{min-width:40%}}
+</style>
+</head>
+<body>
+<header><a href="./index.html">🐾 THE PITTZSTOP</a><span class="pill">MOCK CLAIM TEST</span></header>
+<main>
+<section class="hero"><div><p class="eyebrow">VERIFIED NOV 8–10 REHEARSAL</p><h1>Test your<br><em>practice claim.</em></h1>
+<p class="intro">823 eligible wallets · 6,480 eligible Pittz · 423,414.683044 practice BONEZ</p></div></section>
+<div class="notice"><strong>Browser-local simulation.</strong> Select a public snapshot wallet to act as a test user.
+Receipts stay in this browser. Wallet selection is simulated identity. This page uses the verified Nov 10 snapshot with illustrative Week 1 claim dates.</div>
+<section class="card">
+<p class="eyebrow">CONTROLLED TEST CLOCK</p><h2 id="clock">Loading snapshot…</h2>
+<p id="window"></p>
+<div class="controls" id="clock-controls">
+<button data-time="before">Before opening</button><button data-time="open">Window open</button>
+<button data-time="last">Just before deadline</button><button data-time="closed">At deadline</button>
+</div><p class="muted">Time buttons explore the same saved ledger at different instants. Going back in simulated time preserves receipts. Reset clears the test ledger for a new scenario.</p>
+</section>
+<section class="dashboard">
+<article class="card">
+<label>Snapshot wallet <select id="wallet-select" disabled></select></label>
+<p id="wallet-address"></p><p class="eyebrow">FIXED SNAPSHOT ALLOCATION</p>
+<h2><span id="allocation">—</span> <small>practice BONEZ</small></h2>
+<p id="eligibility"></p>
+<label class="check"><input type="checkbox" id="fail-next"> Simulate a failure before saving the next claim</label>
+<div class="controls"><button class="primary" id="claim" disabled>Claim practice BONEZ</button></div>
+<p id="message" role="status" aria-live="polite"></p>
+</article>
+<article class="card"><h2>Saved claim receipt</h2><p id="receipt">No saved claim for this wallet.</p>
+<p class="muted">Refresh or reopen this page to check persistence. Two tabs share the same mock ledger and serialize claims using a browser lock.</p>
+<button id="reset">Reset all practice receipts</button>
+</article></section>
+<section class="card"><h2>Pool reconciliation</h2><div class="test-stats">
+<article>Claimed<strong id="claimed-total">—</strong></article>
+<article>Unclaimed<strong id="remaining-total">—</strong></article>
+<article>Expired<strong id="expired-total">—</strong></article>
+<article>Unallocated<strong id="unallocated-total">—</strong></article>
+</div><p id="reconciled" role="status"></p><p class="muted">At the exclusive deadline, the remaining allocated balance is classified as expired. Its destination remains a separate distribution-policy decision.</p></section>
+<footer>THE PITTZSTOP · MOCK CLAIM TEST<br><span>Practice data and browser-local receipts.</span></footer>
+</main><script type="module" src="./claim-test.js"></script>
+</body></html>
