@@ -13,18 +13,33 @@ import './support-room.css';
 async function api(route,body){const r=await fetch('/.netlify/functions/market-support?route='+route,{method:body?'POST':'GET',credentials:'same-origin',cache:'no-store',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});const data=await r.json();if(!r.ok)throw Object.assign(Error(data.error||'Please try again.'),{status:r.status});return data;}
 const short=a=>a.slice(0,10)+'…'+a.slice(-6);
 const boardPageSize=4;
+const previewBooths=[
+ {id:1,title:'BONEZ Booth 1',description:'More BONEZ. More community. Buy BONEZ and enter for a chance to win a custom rug from the legendary Stache! Every $10 is an entry.',image_url:'https://thepittzstop.com/.netlify/functions/market-support?route=image&booth=1',updated_at:'2026-11-02'},
+ {id:2,title:'BONEZ Booth 2',description:'More BONEZ. More community. Buy BONEZ for your wallet and say hello on the supporter board.'},
+];
+const previewSupporters=[
+ ['examplepack',2000,'199844720000'],
+ ['examplepitt',1000,'99922360000'],
+ ['examplepaw',1000,'96401120000'],
+ ['examplebonez',1000,'94200960000'],
+ ['examplepup',1000,'90300800000'],
+].map(([herotag,total_usd_cents,total_bonez])=>({
+ wallet_address:herotag,herotag,total_usd_cents,total_bonez,
+}));
 const pendingKey='pittz-support-receipts-v1';
 function readPending(){try{return JSON.parse(localStorage.getItem(pendingKey)||'[]').filter(r=>/^[a-f0-9]{64}$/.test(r.hash)&&[1,2].includes(r.booth)&&typeof r.address==='string').slice(-30);}catch{return [];}}
-function Booth({booth,admin,onBuy,onRefresh,refreshTick=0}){
+function Booth({booth,admin,onBuy,onRefresh,refreshTick=0,example=false}){
  const [page,setPage]=useState(null),[offset,setOffset]=useState(0),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[tick,setTick]=useState(0),[clear,setClear]=useState(false);
  const [title,setTitle]=useState(booth.title),[description,setDescription]=useState(booth.description);
- useEffect(()=>{let live=true;api('board&booth='+booth.id+'&offset='+offset+'&limit='+boardPageSize).then(d=>{if(live)setPage({offset,rows:d.supporters,more:d.hasMore});}).catch(e=>{if(live)setMessage(e.message);});return()=>{live=false;};},[booth.id,offset,tick,booth.updated_at,refreshTick]);
+ useEffect(()=>{if(example)return;let live=true;api('board&booth='+booth.id+'&offset='+offset+'&limit='+boardPageSize).then(d=>{if(live)setPage({offset,rows:d.supporters,more:d.hasMore});}).catch(e=>{if(live)setMessage(e.message);});return()=>{live=false;};},[booth.id,offset,tick,booth.updated_at,refreshTick,example]);
+ const examples=booth.id===1?previewSupporters:[];
+ const currentPage=example?{offset,rows:examples.slice(offset,offset+boardPageSize),more:offset+boardPageSize<examples.length}:page;
  async function action(route,body){if(busy)return;setBusy(true);setMessage('');try{await api(route,{booth:booth.id,...body});setMessage(route==='clear'?'Board cleared. Purchase receipts are preserved.':'Booth updated.');setClear(false);setOffset(0);setTick(n=>n+1);onRefresh();}catch(e){setMessage(e.message);}finally{setBusy(false);}}
  async function photo(file){if(!file)return;if(file.size>2097152){setMessage('Choose a picture under 2 MB.');return;}try{const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=reject;reader.readAsDataURL(file);});await action('photo',{data,type:file.type});}catch{setMessage('Picture could not be opened.');}}
  return <article className={'support-booth support-booth-'+booth.id}>
   <BoothPicture booth={booth}/>
-  <div className="support-booth-body"><h2>{booth.title}</h2><p className="support-copy">{booth.description}</p>{!admin&&<button className="support-primary" onClick={event=>onBuy(booth,event.currentTarget)} aria-haspopup="dialog">Buy BONEZ ↗</button>}
-  {page?.offset===offset&&<SupporterBoard rows={page.rows}/>}<div className="support-pagination"><button disabled={offset===0} onClick={()=>setOffset(n=>Math.max(0,n-boardPageSize))}>← Previous</button><button disabled={page?.offset!==offset||!page.more} onClick={()=>setOffset(n=>n+boardPageSize)}>Next →</button>{admin&&<button disabled={busy} onClick={()=>setTick(n=>n+1)}>Refresh board</button>}</div>
+  <div className="support-booth-body"><h2>{booth.title}</h2><p className="support-copy">{booth.description}</p>{!admin&&<button className="support-primary" disabled={example} onClick={event=>onBuy(booth,event.currentTarget)} aria-haspopup="dialog">Buy BONEZ ↗</button>}
+  {currentPage?.offset===offset&&<SupporterBoard rows={currentPage.rows}/>}<div className="support-pagination"><button disabled={offset===0} onClick={()=>setOffset(n=>Math.max(0,n-boardPageSize))}>← Previous</button><button disabled={currentPage?.offset!==offset||!currentPage.more} onClick={()=>setOffset(n=>n+boardPageSize)}>Next →</button>{admin&&<button disabled={busy} onClick={()=>setTick(n=>n+1)}>Refresh board</button>}</div>
   {admin&&<details className="support-editor" open><summary>Edit booth & board</summary><form onSubmit={e=>{e.preventDefault();action('edit',{title,description});}}><label>Booth title<input required maxLength={100} value={title} onChange={e=>setTitle(e.target.value)}/></label><label>A little text<textarea maxLength={1500} value={description} onChange={e=>setDescription(e.target.value)}/></label><button disabled={busy}>Save text</button></form><label>Change picture · JPG, PNG or WebP, up to 2 MB<input disabled={busy} type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>photo(e.target.files[0])}/></label><button disabled={busy} onClick={()=>setClear(true)}>Clear board…</button>{clear&&<div className="support-clear"><p>Clear the public names for {booth.title}? Existing purchase receipts stay saved. Only new purchases after this reset appear here.</p><button disabled={busy} onClick={()=>action('clear',{confirm:true})}>Confirm clear board</button><button disabled={busy} onClick={()=>setClear(false)}>Cancel</button></div>}</details>}
   <p role="status">{message}</p></div></article>;
 }
@@ -32,7 +47,22 @@ export default function SupportRoom(){
  const panel=useRef(null),trigger=useRef(null),recording=useRef(false),walletAnchor=useRef(null);
  const [connecting,setConnecting]=useState(false),[walletOpen,setWalletOpen]=useState(false),[walletError,setWalletError]=useState('');
  const account=useGetAccount();const [booths,setBooths]=useState([]),[chosen,setChosen]=useState(null),[pending,setPending]=useState(readPending),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[swapBusy,setSwapBusy]=useState(false),[tick,setTick]=useState(0);
- useEffect(()=>{let live=true;api('booths').then(d=>{if(live)setBooths(d.booths);}).catch(e=>{if(live)setMessage(e.message);});return()=>{live=false;};},[tick]);
+ const deployPreview=window.location.hostname.startsWith('deploy-preview-');
+ const [showExamples,setShowExamples]=useState(false);
+ useEffect(()=>{
+  let live=true;
+  api('booths').then(d=>{
+   if(!live)return;
+   setBooths(d.booths);
+   setShowExamples(deployPreview&&d.booths.length<2);
+  }).catch(error=>{
+   if(!live)return;
+   if(deployPreview)setShowExamples(true);
+   else setMessage(error.message);
+  });
+  return()=>{live=false;};
+ },[tick,deployPreview]);
+ const displayedBooths=showExamples?previewBooths:booths;
  useEffect(()=>{
   if(!chosen)return;
   const previous=document.body.style.overflow;document.body.style.overflow='hidden';
@@ -87,11 +117,11 @@ export default function SupportRoom(){
  return <div className="support-room"><div inert={chosen?true:undefined}><header><a href="/flea-market/">← Pittz Flea Market</a><a href="/market-admin?return=back-booths">Admin sign-in ↗</a></header><main><section className="support-hero"><small>PITTZ FLEA MARKET / AFTER DARK</small><h1>Welcome to<br/><em>the back booths.</em></h1>
  <div className="support-wallet">{account.address
   ? <span role="status">Wallet connected · {short(account.address)}</span>
-  : <button type="button" className="support-primary" disabled={connecting} onClick={connectWallet}>{connecting?'Connecting…':'Connect Wallet'}</button>}
+  : <button type="button" className="support-primary" disabled={connecting||showExamples} onClick={connectWallet}>{connecting?'Connecting…':'Connect Wallet'}</button>}
   {walletError&&!account.address&&<p role="alert">{walletError}</p>}
- </div></section>{window.location.hostname.includes('deploy-preview-')&&<p className="support-preview">Preview boards are separate. Wallet purchases use real mainnet tokens.</p>}<p role="status">{message}</p>{!booths.length?<button onClick={()=>setTick(n=>n+1)}>Load support booths</button>:<div className="support-booths">{booths.map(b=><Booth key={b.id} booth={b} admin={false} refreshTick={tick} onRefresh={()=>setTick(n=>n+1)} onBuy={(b,button)=>{if(swapBusy)return;trigger.current=button;setChosen(b);}}/>)}</div>}
+ </div></section>{deployPreview&&<p className="support-preview">{showExamples?'Layout preview with sample supporter totals. Purchases are disabled.':'Preview boards are separate. Wallet purchases use real mainnet tokens.'}</p>}<p role="status">{message}</p>{!displayedBooths.length?<button onClick={()=>setTick(n=>n+1)}>Load support booths</button>:<div className="support-booths">{displayedBooths.map(b=><Booth key={b.id} booth={b} admin={false} example={showExamples} refreshTick={tick} onRefresh={()=>setTick(n=>n+1)} onBuy={(b,button)=>{if(swapBusy)return;trigger.current=button;setChosen(b);}}/>)}</div>}
 
- {receiptList(pending)}
+ {!showExamples&&receiptList(pending)}
 
  <footer>From the pack. For the pack. 🐾<a href="/flea-market/">Back to the market →</a></footer></main></div>
  {chosen&&<div className="support-buyer-overlay" onMouseDown={event=>{if(event.target===event.currentTarget)closeBuyer();}} onKeyDown={buyerKeys}><section ref={panel} className="support-buyer support-buyer-popup" role="dialog" aria-modal="true" aria-labelledby="support-buyer-title"><div className="support-popup-heading"><div><small>BACK BOOTH / 0{chosen.id}</small><h2 id="support-buyer-title">Buy BONEZ</h2><p>{chosen.title}</p></div><button className="support-popup-close" disabled={swapBusy||busy} onClick={closeBuyer} aria-label="Close BONEZ buyer">×</button></div><div className="support-board-choice"><p>After your purchase confirms, your herotag or shortened wallet address and purchase totals will appear on this booth’s public scoreboard.</p></div><div inert={busy?true:undefined}><BonezSwap key={chosen.id} embedded purchaseOnly purchaseBooth={chosen.id} onBusyChange={setSwapBusy} onSubmitted={remember} onConfirmed={confirmed}/></div><p className="support-receipt-status" role="status" aria-live="polite">{message}</p>{receiptList(pending.filter(r=>r.booth===chosen.id))}{swapBusy&&<p className="support-popup-note" role="status">Keep this window open while your wallet or transaction is processing.</p>}<button className="support-back-to-booths" disabled={swapBusy||busy} onClick={closeBuyer}>← Back to the booths</button></section></div>}
