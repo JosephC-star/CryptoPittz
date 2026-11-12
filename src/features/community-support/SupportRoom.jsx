@@ -38,12 +38,23 @@ function Booth({booth,admin,onBuy,onRefresh,refreshTick=0,example=false}){
  const currentPage=example?{offset,rows:examples.slice(offset,offset+boardPageSize),more:offset+boardPageSize<examples.length}:page;
  async function action(route,body){if(busy)return;setBusy(true);setMessage('');try{await api(route,{booth:booth.id,...body});setMessage(route==='clear'?'Board cleared. Purchase receipts are preserved.':'Booth updated.');setClear(false);setOffset(0);setTick(n=>n+1);onRefresh();}catch(e){setMessage(e.message);}finally{setBusy(false);}}
  async function photo(file){if(!file)return;if(file.size>2097152){setMessage('Choose a picture under 2 MB.');return;}try{const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=reject;reader.readAsDataURL(file);});await action('photo',{data,type:file.type});}catch{setMessage('Picture could not be opened.');}}
+ const supporterList=<>
+  {currentPage?.offset===offset&&<SupporterBoard rows={currentPage.rows}/>}
+  <div className="support-pagination">
+   <button disabled={offset===0} onClick={()=>setOffset(n=>Math.max(0,n-boardPageSize))}>← Previous</button>
+   <button disabled={currentPage?.offset!==offset||!currentPage.more} onClick={()=>setOffset(n=>n+boardPageSize)}>Next →</button>
+   {admin&&<button disabled={busy} onClick={()=>setTick(n=>n+1)}>Refresh board</button>}
+  </div>
+ </>;
  return <article className={'support-booth support-booth-'+booth.id}>
   {!admin&&<h2 className="support-booth-toggle-heading"><button type="button" className="support-booth-toggle" aria-expanded={expanded} aria-controls={contentId} onClick={()=>setExpanded(value=>!value)}>{booth.title}<span className="support-booth-chevron" aria-hidden="true"/></button></h2>}
   <div id={contentId} className={(!admin&&!expanded)?'support-booth-content is-collapsed':'support-booth-content'}>
    <BoothPicture booth={booth}/>
    <div className="support-booth-body"><h2 className="support-booth-title">{booth.title}</h2><p className="support-copy">{booth.description}</p>{!admin&&<button className="support-primary" disabled={example} onClick={event=>onBuy(booth,event.currentTarget)} aria-haspopup="dialog">Buy BONEZ ↗</button>}
-  {currentPage?.offset===offset&&<SupporterBoard rows={currentPage.rows}/>}<div className="support-pagination"><button disabled={offset===0} onClick={()=>setOffset(n=>Math.max(0,n-boardPageSize))}>← Previous</button><button disabled={currentPage?.offset!==offset||!currentPage.more} onClick={()=>setOffset(n=>n+boardPageSize)}>Next →</button>{admin&&<button disabled={busy} onClick={()=>setTick(n=>n+1)}>Refresh board</button>}</div>
+   {admin?supporterList:<details className="support-spotlight">
+    <summary>Supporter Spotlight<span className="support-booth-chevron" aria-hidden="true"/></summary>
+    {supporterList}
+   </details>}
   {admin&&<details className="support-editor" open><summary>Edit booth & board</summary><form onSubmit={e=>{e.preventDefault();action('edit',{title,description});}}><label>Booth title<input required maxLength={100} value={title} onChange={e=>setTitle(e.target.value)}/></label><label>A little text<textarea maxLength={1500} value={description} onChange={e=>setDescription(e.target.value)}/></label><button disabled={busy}>Save text</button></form><label>Change picture · JPG, PNG or WebP, up to 2 MB<input disabled={busy} type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>photo(e.target.files[0])}/></label><button disabled={busy} onClick={()=>setClear(true)}>Clear board…</button>{clear&&<div className="support-clear"><p>Clear the public names for {booth.title}? Existing purchase receipts stay saved. Only new purchases after this reset appear here.</p><button disabled={busy} onClick={()=>action('clear',{confirm:true})}>Confirm clear board</button><button disabled={busy} onClick={()=>setClear(false)}>Cancel</button></div>}</details>}
    <p role="status">{message}</p></div>
   </div>
