@@ -61,49 +61,6 @@
 .support-wallet>span{color:#d5fc79}
 .support-wallet>p{margin:8px 0 0;font-size:14px}
 
-.support-booth .support-booth-toggle-heading {
-  display: none;
-}
-
-@media (max-width: 700px) {
-  .support-room main .support-booths {
-    gap: 12px;
-  }
-
-  .support-booth .support-booth-toggle-heading {
-    display: block;
-    margin: 0;
-    font-size: 18px;
-  }
-
-  .support-room .support-booth-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    width: 100%;
-    min-height: 52px;
-    padding: 14px 18px;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    color: inherit;
-    font-weight: 750;
-    line-height: 1.25;
-    text-align: left;
-    overflow-wrap: anywhere;
-  }
-
-  .support-room .support-booth-toggle:focus-visible {
-    outline-offset: -4px;
-  }
-
-  .support-booth-content.is-collapsed,
-  .support-booth-toggle-heading + .support-booth-content .support-booth-title {
-    display: none;
-  }
-}
-
 .support-booth-chevron {
   flex: 0 0 9px;
   height: 9px;
@@ -116,7 +73,6 @@
   border-color: #f1b3e2;
 }
 
-.support-booth-toggle[aria-expanded="true"] .support-booth-chevron,
 .support-spotlight[open] .support-booth-chevron {
   transform: translateY(2px) rotate(225deg);
 }
