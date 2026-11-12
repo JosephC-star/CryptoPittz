@@ -1,5 +1,5 @@
 import BoothPicture from './BoothPicture';
-import {useEffect,useId,useRef,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {useGetAccount} from '@multiversx/sdk-dapp/out/react/account/useGetAccount';
 import {UnlockPanelManager} from '@multiversx/sdk-dapp/out/managers/UnlockPanelManager';
 import WalletConnectModal from '../../components/WalletConnectModal';
@@ -29,8 +29,6 @@ const previewSupporters=[
 const pendingKey='pittz-support-receipts-v1';
 function readPending(){try{return JSON.parse(localStorage.getItem(pendingKey)||'[]').filter(r=>/^[a-f0-9]{64}$/.test(r.hash)&&[1,2].includes(r.booth)&&typeof r.address==='string').slice(-30);}catch{return [];}}
 function Booth({booth,admin,onBuy,onRefresh,refreshTick=0,example=false}){
- const contentId=useId();
- const [expanded,setExpanded]=useState(false);
  const [page,setPage]=useState(null),[offset,setOffset]=useState(0),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[tick,setTick]=useState(0),[clear,setClear]=useState(false);
  const [title,setTitle]=useState(booth.title),[description,setDescription]=useState(booth.description);
  useEffect(()=>{if(example)return;let live=true;api('board&booth='+booth.id+'&offset='+offset+'&limit='+boardPageSize).then(d=>{if(live)setPage({offset,rows:d.supporters,more:d.hasMore});}).catch(e=>{if(live)setMessage(e.message);});return()=>{live=false;};},[booth.id,offset,tick,booth.updated_at,refreshTick,example]);
@@ -47,16 +45,17 @@ function Booth({booth,admin,onBuy,onRefresh,refreshTick=0,example=false}){
   </div>
  </>;
  return <article className={'support-booth support-booth-'+booth.id}>
-  {!admin&&<h2 className="support-booth-toggle-heading"><button type="button" className="support-booth-toggle" aria-expanded={expanded} aria-controls={contentId} onClick={()=>setExpanded(value=>!value)}>{booth.title}<span className="support-booth-chevron" aria-hidden="true"/></button></h2>}
-  <div id={contentId} className={(!admin&&!expanded)?'support-booth-content is-collapsed':'support-booth-content'}>
-   <BoothPicture booth={booth}/>
-   <div className="support-booth-body"><h2 className="support-booth-title">{booth.title}</h2><p className="support-copy">{booth.description}</p>{!admin&&<button className="support-primary" disabled={example} onClick={event=>onBuy(booth,event.currentTarget)} aria-haspopup="dialog">Buy BONEZ ↗</button>}
+  <BoothPicture booth={booth}/>
+  <div className="support-booth-body">
+   <h2>{booth.title}</h2>
+   <p className="support-copy">{booth.description}</p>
+   {!admin&&<button className="support-primary" disabled={example} onClick={event=>onBuy(booth,event.currentTarget)} aria-haspopup="dialog">Buy BONEZ ↗</button>}
    {admin?supporterList:<details className="support-spotlight">
     <summary>Supporter Spotlight<span className="support-booth-chevron" aria-hidden="true"/></summary>
     {supporterList}
    </details>}
   {admin&&<details className="support-editor" open><summary>Edit booth & board</summary><form onSubmit={e=>{e.preventDefault();action('edit',{title,description});}}><label>Booth title<input required maxLength={100} value={title} onChange={e=>setTitle(e.target.value)}/></label><label>A little text<textarea maxLength={1500} value={description} onChange={e=>setDescription(e.target.value)}/></label><button disabled={busy}>Save text</button></form><label>Change picture · JPG, PNG or WebP, up to 2 MB<input disabled={busy} type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>photo(e.target.files[0])}/></label><button disabled={busy} onClick={()=>setClear(true)}>Clear board…</button>{clear&&<div className="support-clear"><p>Clear the public names for {booth.title}? Existing purchase receipts stay saved. Only new purchases after this reset appear here.</p><button disabled={busy} onClick={()=>action('clear',{confirm:true})}>Confirm clear board</button><button disabled={busy} onClick={()=>setClear(false)}>Cancel</button></div>}</details>}
-   <p role="status">{message}</p></div>
+   <p role="status">{message}</p>
   </div>
  </article>;
 }
