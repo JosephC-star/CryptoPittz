@@ -12,7 +12,6 @@ import {saveSupportReceipt} from './receipt-flow.mjs';
 import './support-room.css';
 async function api(route,body){const r=await fetch('/.netlify/functions/market-support?route='+route,{method:body?'POST':'GET',credentials:'same-origin',cache:'no-store',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});const data=await r.json();if(!r.ok)throw Object.assign(Error(data.error||'Please try again.'),{status:r.status});return data;}
 const short=a=>a.slice(0,10)+'…'+a.slice(-6);
-const boardPageSize=4;
 const previewBooths=[
  {id:1,title:'BONEZ Booth 1',description:'More BONEZ. More community. Buy BONEZ and enter for a chance to win a custom rug from the legendary Stache! Every $10 is an entry.',image_url:'https://thepittzstop.com/.netlify/functions/market-support?route=image&booth=1',updated_at:'2026-11-02'},
  {id:2,title:'BONEZ Booth 2',description:'More BONEZ. More community. Buy BONEZ for your wallet and say hello on the supporter board.'},
@@ -23,21 +22,28 @@ const previewSupporters=[
  ['examplepaw',1000,'96401120000'],
  ['examplebonez',1000,'94200960000'],
  ['examplepup',1000,'90300800000'],
+ ['examplecrew',1000,'89731300000'],
 ].map(([herotag,total_usd_cents,total_bonez])=>({
  wallet_address:herotag,herotag,total_usd_cents,total_bonez,
 }));
 const pendingKey='pittz-support-receipts-v1';
 function readPending(){try{return JSON.parse(localStorage.getItem(pendingKey)||'[]').filter(r=>/^[a-f0-9]{64}$/.test(r.hash)&&[1,2].includes(r.booth)&&typeof r.address==='string').slice(-30);}catch{return [];}}
 function Booth({booth,admin,onBuy,onRefresh,refreshTick=0,example=false}){
+ const spotlight=useRef(null);
+ const boardPageSize=admin?4:5;
  const [page,setPage]=useState(null),[offset,setOffset]=useState(0),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[tick,setTick]=useState(0),[clear,setClear]=useState(false);
  const [title,setTitle]=useState(booth.title),[description,setDescription]=useState(booth.description);
- useEffect(()=>{if(example)return;let live=true;api('board&booth='+booth.id+'&offset='+offset+'&limit='+boardPageSize).then(d=>{if(live)setPage({offset,rows:d.supporters,more:d.hasMore});}).catch(e=>{if(live)setMessage(e.message);});return()=>{live=false;};},[booth.id,offset,tick,booth.updated_at,refreshTick,example]);
+ useEffect(()=>{if(example)return;let live=true;api('board&booth='+booth.id+'&offset='+offset+'&limit='+boardPageSize).then(d=>{if(live)setPage({offset,rows:d.supporters,more:d.hasMore});}).catch(e=>{if(live)setPage({offset,error:e.message});});return()=>{live=false;};},[booth.id,offset,tick,booth.updated_at,refreshTick,example,boardPageSize]);
  const examples=booth.id===1?previewSupporters:[];
  const currentPage=example?{offset,rows:examples.slice(offset,offset+boardPageSize),more:offset+boardPageSize<examples.length}:page;
  async function action(route,body){if(busy)return;setBusy(true);setMessage('');try{await api(route,{booth:booth.id,...body});setMessage(route==='clear'?'Board cleared. Purchase receipts are preserved.':'Booth updated.');setClear(false);setOffset(0);setTick(n=>n+1);onRefresh();}catch(e){setMessage(e.message);}finally{setBusy(false);}}
  async function photo(file){if(!file)return;if(file.size>2097152){setMessage('Choose a picture under 2 MB.');return;}try{const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=reject;reader.readAsDataURL(file);});await action('photo',{data,type:file.type});}catch{setMessage('Picture could not be opened.');}}
  const supporterList=<>
-  {currentPage?.offset===offset&&<SupporterBoard rows={currentPage.rows}/>}
+  {currentPage?.offset!==offset
+   ?<p role="status">Loading supporters…</p>
+   :currentPage.error
+    ?<p role="status">{currentPage.error}</p>
+    :<SupporterBoard rows={currentPage.rows}/>}
   <div className="support-pagination">
    <button disabled={offset===0} onClick={()=>setOffset(n=>Math.max(0,n-boardPageSize))}>← Previous</button>
    <button disabled={currentPage?.offset!==offset||!currentPage.more} onClick={()=>setOffset(n=>n+boardPageSize)}>Next →</button>
@@ -50,10 +56,18 @@ function Booth({booth,admin,onBuy,onRefresh,refreshTick=0,example=false}){
    <h2>{booth.title}</h2>
    <p className="support-copy">{booth.description}</p>
    {!admin&&<button className="support-primary" disabled={example} onClick={event=>onBuy(booth,event.currentTarget)} aria-haspopup="dialog">Buy BONEZ ↗</button>}
-   {admin?supporterList:<details className="support-spotlight">
-    <summary>Supporter Spotlight<span className="support-booth-chevron" aria-hidden="true"/></summary>
-    {supporterList}
-   </details>}
+   {admin?supporterList:<>
+    <button type="button" className="support-spotlight-button" aria-haspopup="dialog" onClick={()=>spotlight.current.showModal()}>
+     Supporter Spotlight<span aria-hidden="true">↗</span>
+    </button>
+    <dialog ref={spotlight} className="support-spotlight-dialog" aria-label={'Supporter Spotlight · '+booth.title} onClick={event=>{if(event.target===event.currentTarget)spotlight.current.close();}}>
+     <div className="support-spotlight-heading">
+      <div><h2>Supporter Spotlight</h2><p>{booth.title}</p></div>
+      <button type="button" autoFocus aria-label="Close Supporter Spotlight" onClick={()=>spotlight.current.close()}>×</button>
+     </div>
+     {supporterList}
+    </dialog>
+   </>}
   {admin&&<details className="support-editor" open><summary>Edit booth & board</summary><form onSubmit={e=>{e.preventDefault();action('edit',{title,description});}}><label>Booth title<input required maxLength={100} value={title} onChange={e=>setTitle(e.target.value)}/></label><label>A little text<textarea maxLength={1500} value={description} onChange={e=>setDescription(e.target.value)}/></label><button disabled={busy}>Save text</button></form><label>Change picture · JPG, PNG or WebP, up to 2 MB<input disabled={busy} type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>photo(e.target.files[0])}/></label><button disabled={busy} onClick={()=>setClear(true)}>Clear board…</button>{clear&&<div className="support-clear"><p>Clear the public names for {booth.title}? Existing purchase receipts stay saved. Only new purchases after this reset appear here.</p><button disabled={busy} onClick={()=>action('clear',{confirm:true})}>Confirm clear board</button><button disabled={busy} onClick={()=>setClear(false)}>Cancel</button></div>}</details>}
    <p role="status">{message}</p>
   </div>
